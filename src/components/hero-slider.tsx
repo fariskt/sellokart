@@ -165,7 +165,6 @@ export function HeroSlider() {
           exit="exit"
           className="absolute inset-0 w-full h-full flex items-center"
         >
-          {/* Main Background Image and Overlay */}
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             {/* Themed background gradient based on slide type */}
             <div className={cn(
