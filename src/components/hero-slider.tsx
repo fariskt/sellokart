@@ -113,7 +113,7 @@ export function HeroSlider() {
       x: 0,
       opacity: 1,
       transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
+        x: { type: "spring" as const, stiffness: 300, damping: 30 },
         opacity: { duration: 0.5 },
       },
     },
@@ -121,7 +121,7 @@ export function HeroSlider() {
       x: dir < 0 ? "100%" : "-100%",
       opacity: 0,
       transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
+        x: { type: "spring" as const, stiffness: 300, damping: 30 },
         opacity: { duration: 0.5 },
       },
     }),
@@ -142,7 +142,7 @@ export function HeroSlider() {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 15,
       },
