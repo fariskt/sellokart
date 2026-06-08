@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+/* ========================================
+   THEME TOKENS
+======================================== */
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-foreground: #ffffff;
+
+  --secondary: #eff6ff;
+  --secondary-foreground: #1e3a8a;
+
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+
+  --accent: #dbeafe;
+  --accent-foreground: #1e40af;
+
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+
+  --radius: 0px;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+
+  --hero-gradient:
+    linear-gradient(
+      135deg,
+      #eff6ff 0%,
+      #ffffff 50%,
+      #dbeafe 100%
+    );
+}
+
+/* ========================================
+   TAILWIND V4 THEME VARIABLES
+======================================== */
+
+@theme {
+  --font-sans: var(--font-jakarta), var(--font-inter), sans-serif;
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-full: 0px;
+  --radius: 0px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+
+  --radius-lg: var(--radius);
+}
+
+/* ========================================
+   BASE
+======================================== */
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========================================
+   SCROLLBAR
+======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bfdbfe;
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #93c5fd;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+/* ========================================
+   REUSABLE UTILITIES
+======================================== */
+
+@utility container-page {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@utility section-padding {
+  padding-block: 5rem;
+}
+
+@utility card-shadow {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 8px 24px rgb(37 99 235 / 0.08);
+}
+
+@utility button-shadow {
+  box-shadow:
+    0 4px 14px rgb(37 99 235 / 0.25);
+}
+
+@utility hero-bg {
+  background: var(--hero-gradient);
+}
+
+/* ========================================
+   ECOMMERCE HELPERS
+======================================== */
+
+.product-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 0px;
+  transition: all 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  border-color: #bfdbfe;
+  box-shadow:
+    0 10px 30px rgb(37 99 235 / 0.08);
+}
+
+.price {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.sale-price {
+  color: var(--destructive);
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: var(--muted-foreground);
+}
+
+.badge-sale {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-stock {
+  background: #dcfce7;
+  color: #166534;
+}
