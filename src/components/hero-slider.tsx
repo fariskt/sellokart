@@ -3,9 +3,16 @@
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, ArrowRight, Pause, Play } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Pause,
+  Play,
+} from "lucide-react";
 import { Title } from "@/components/ui/title";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
 
 interface Slide {
   id: number;
@@ -23,7 +30,8 @@ const slides: Slide[] = [
     id: 1,
     badge: "Exclusive Tech",
     title: "Acoustic Perfection Redefined",
-    description: "Experience premium sound with custom active noise cancellation, smart ambient awareness, and up to 40 hours of lossless audio playback.",
+    description:
+      "Experience premium sound with custom active noise cancellation, smart ambient awareness, and up to 40 hours of lossless audio playback.",
     image: "/images/headphones.png",
     primaryCta: "Pre-order Now",
     secondaryCta: "Specifications",
@@ -33,7 +41,8 @@ const slides: Slide[] = [
     id: 2,
     badge: "Productivity",
     title: "Elevate Your Creative Space",
-    description: "Transform your daily workflow with handcrafted minimalist desk accessories, smart lighting, and ergonomic organizers designed for focus.",
+    description:
+      "Transform your daily workflow with handcrafted minimalist desk accessories, smart lighting, and ergonomic organizers designed for focus.",
     image: "/images/workspace.png",
     primaryCta: "Explore Accessories",
     secondaryCta: "Get Inspiration",
@@ -43,7 +52,8 @@ const slides: Slide[] = [
     id: 3,
     badge: "Trending Style",
     title: "Aesthetic Premium Apparel",
-    description: "Uncompromising quality meets contemporary silhouettes. Discover sustainable materials tailored for ultimate comfort and daily styling.",
+    description:
+      "Uncompromising quality meets contemporary silhouettes. Discover sustainable materials tailored for ultimate comfort and daily styling.",
     image: "/images/fashion.png",
     primaryCta: "Shop New Season",
     secondaryCta: "Watch Lookbook",
@@ -89,7 +99,9 @@ export function HeroSlider() {
 
   const handlePrev = () => {
     setDirection(-1);
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + slides.length) % slides.length);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + slides.length) % slides.length,
+    );
   };
 
   const handleDotClick = (index: number) => {
@@ -150,8 +162,8 @@ export function HeroSlider() {
   };
 
   return (
-    <section 
-      className="relative w-full h-[650px] md:h-[900px] overflow-hidden select-none bg-slate-950"
+    <section
+      className="relative w-full h-[650px] md:h-screen overflow-hidden select-none bg-slate-950"
       onMouseEnter={stopAutoplay}
       onMouseLeave={startAutoplay}
     >
@@ -167,29 +179,37 @@ export function HeroSlider() {
         >
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             {/* Themed background gradient based on slide type */}
-            <div className={cn(
-              "absolute inset-0 transition-colors duration-1000",
-              currentSlide.theme === "tech" 
-                ? "bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/40"
-                : currentSlide.theme === "fashion"
-                ? "bg-gradient-to-br from-slate-950 via-zinc-900 to-amber-950/20"
-                : "bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-900"
-            )} />
+            <div
+              className={cn(
+                "absolute inset-0 transition-colors duration-1000",
+                currentSlide.theme === "tech"
+                  ? "bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/40"
+                  : currentSlide.theme === "fashion"
+                    ? "bg-gradient-to-br from-slate-950 via-zinc-900 to-amber-950/20"
+                    : "bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-900",
+              )}
+            />
 
             {/* Glowing background blob matching slide theme */}
-            <div className={cn(
-              "absolute top-1/4 left-1/4 w-80 h-80 rounded-full blur-3xl opacity-90 transition-colors duration-1000",
-              currentSlide.theme === "tech" 
-                ? "bg-blue-500" 
-                : currentSlide.theme === "fashion" 
-                ? "bg-amber-500" 
-                : "bg-neutral-500"
-            )} />
+            <div
+              className={cn(
+                "absolute top-1/4 left-1/4 w-80 h-80 rounded-full blur-3xl opacity-90 transition-colors duration-1000",
+                currentSlide.theme === "tech"
+                  ? "bg-blue-500"
+                  : currentSlide.theme === "fashion"
+                    ? "bg-amber-500"
+                    : "bg-neutral-500",
+              )}
+            />
 
             {/* Watermark/background product image */}
             <motion.div
               initial={{ scale: 1.15, opacity: 0, rotate: -2 }}
-              animate={{ scale: 1.3, opacity: currentSlide.theme === "tech" ? 0.35 : 0.25, rotate: 2 }}
+              animate={{
+                scale: 1.3,
+                opacity: currentSlide.theme === "tech" ? 0.35 : 0.25,
+                rotate: 2,
+              }}
               transition={{ duration: 6, ease: "easeOut" }}
               className="absolute -right-20 -bottom-20 md:right-10 md:bottom-10 w-[120%] md:w-[60%] h-[120%] md:h-[90%] flex justify-center items-center pointer-events-none select-none"
             >
@@ -199,8 +219,6 @@ export function HeroSlider() {
                 className="w-full h-full object-contain filter brightness-90 saturate-[1.1] drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
               />
             </motion.div>
-
-
           </div>
 
           {/* Slide Content (Overlaid over Background) */}
@@ -209,7 +227,7 @@ export function HeroSlider() {
               variants={textContainerVariants}
               initial="hidden"
               animate="visible"
-              className="max-w-2xl flex flex-col space-y-4 md:space-y-6 text-white"
+              className="max-w-2xl flex flex-col justify-center space-y-4 md:space-y-6 text-white"
             >
               {/* Badge */}
               <motion.div variants={textItemVariants}>
@@ -220,14 +238,16 @@ export function HeroSlider() {
 
               {/* Title */}
               <motion.div variants={textItemVariants}>
-                <Title 
-                  as="h1" 
-                  size="xl" 
+                <Title
+                  as="h1"
+                  size="2xl"
                   className={cn(
-                    "leading-[1.1] font-extrabold text-white",
-                    currentSlide.theme === "tech" 
+                    "leading-[1.05] font-black tracking-tighter",
+                    currentSlide.theme === "tech"
                       ? "bg-linear-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent"
-                      : "text-white"
+                      : currentSlide.theme === "fashion"
+                        ? "bg-linear-to-r from-amber-200 via-orange-300 to-amber-100 bg-clip-text text-transparent"
+                        : "bg-linear-to-r from-zinc-100 via-stone-200 to-neutral-200 bg-clip-text text-transparent"
                   )}
                 >
                   {currentSlide.title}
@@ -235,7 +255,7 @@ export function HeroSlider() {
               </motion.div>
 
               {/* Description */}
-              <motion.p 
+              <motion.p
                 variants={textItemVariants}
                 className="text-slate-300 text-base md:text-lg leading-relaxed max-w-xl"
               >
@@ -243,23 +263,17 @@ export function HeroSlider() {
               </motion.p>
 
               {/* Call to Actions */}
-              <motion.div 
+              <motion.div
                 variants={textItemVariants}
                 className="flex flex-wrap gap-4 pt-2"
               >
-                <button 
-                  type="button"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer bg-primary text-primary-foreground hover:bg-primary-hover button-shadow hover:translate-y-[-2px] active:translate-y-[0px]"
-                >
+                <Button type="button" variant="default" size="lg">
                   <span>{currentSlide.primaryCta}</span>
                   <ArrowRight className="ml-2 w-4 h-4" />
-                </button>
-                <button 
-                  type="button"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer border border-white/20 text-white hover:bg-white/10 hover:border-white/40 hover:translate-y-[-2px] active:translate-y-[0px]"
-                >
+                </Button>
+                <Button variant="outline" size="lg" type="button">
                   {currentSlide.secondaryCta}
-                </button>
+                </Button>
               </motion.div>
             </motion.div>
           </div>
@@ -267,30 +281,31 @@ export function HeroSlider() {
       </AnimatePresence>
 
       {/* Navigation Controls */}
-      
+
       {/* Left Arrow */}
-      <button
+      <Button
         onClick={handlePrev}
         type="button"
         aria-label="Previous Slide"
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full border border-white/10 bg-slate-900/60 hover:bg-slate-900/80 text-white flex items-center justify-center shadow-xs backdrop-blur-xs transition-all hover:scale-105 active:scale-95 cursor-pointer opacity-0 md:opacity-100 hover:border-primary/50"
+        variant="ghost"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 text-white flex items-center justify-center shadow-xs backdrop-blur-xs transition-all hover:scale-105 active:scale-95 cursor-pointer opacity-0 md:opacity-100 hover:border-primary/50"
       >
         <ChevronLeft className="w-5 h-5" />
-      </button>
+      </Button>
 
       {/* Right Arrow */}
-      <button
+      <Button
         onClick={handleNext}
         type="button"
+        variant="ghost"
         aria-label="Next Slide"
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full border border-white/10 bg-slate-900/60 hover:bg-slate-900/80 text-white flex items-center justify-center shadow-xs backdrop-blur-xs transition-all hover:scale-105 active:scale-95 cursor-pointer opacity-0 md:opacity-100 hover:border-primary/50"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 text-white  flex items-center justify-center shadow-xs backdrop-blur-xs transition-all hover:scale-105 active:scale-95 cursor-pointer opacity-0 md:opacity-100 hover:border-primary/50"
       >
         <ChevronRight className="w-5 h-5" />
-      </button>
+      </Button>
 
       {/* Controls Overlay (Dots, Playback, Progress) */}
       <div className="absolute bottom-6 left-0 right-0 z-20 flex flex-col items-center justify-center gap-4">
-        
         {/* Progress Bar */}
         {isPlaying && (
           <div className="w-48 h-[2px] bg-white/20 rounded-full overflow-hidden">
@@ -312,7 +327,11 @@ export function HeroSlider() {
             className="text-slate-400 hover:text-white transition-colors cursor-pointer"
             aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
           </button>
 
           {/* Separator */}
@@ -330,7 +349,7 @@ export function HeroSlider() {
                   "w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer",
                   currentIndex === idx
                     ? "bg-primary w-6"
-                    : "bg-white/30 hover:bg-white/60"
+                    : "bg-white/30 hover:bg-white/60",
                 )}
               />
             ))}

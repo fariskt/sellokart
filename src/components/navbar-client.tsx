@@ -4,11 +4,12 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Menu, X, User as UserIcon, LogOut, ShoppingBag, Settings, LayoutDashboard } from "lucide-react";
+import { Menu, X, User as UserIcon, LogOut, ShoppingBag, Settings, LayoutDashboard, Search, ShoppingCart } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { signout } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useCartStore } from "@/store/cart-store";
 
 interface NavbarClientProps {
   user: User | null;
@@ -16,9 +17,30 @@ interface NavbarClientProps {
 
 export function NavbarClient({ user }: NavbarClientProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [navSearch, setNavSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  const { items } = useCartStore();
+  const cartItemCount = items.reduce((count, item) => count + item.quantity, 0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isTransparent = pathname === "/" && !hasScrolled;
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (navSearch.trim() !== "") {
+      router.push(`/search?q=${encodeURIComponent(navSearch.trim())}`);
+      setNavSearch("");
+      setIsOpen(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,16 +68,17 @@ export function NavbarClient({ user }: NavbarClientProps) {
   };
 
   const navLinks = [
-    { name: "Shop", href: "#" },
-    { name: "Features", href: "#" },
-    { name: "Categories", href: "#" },
-    { name: "Sell", href: "#" },
+    { name: "Shop", href: "/products" },
+    { name: "Categories", href: "/categories" },
+    { name: "Featured", href: "/featured" },
+    { name: "Deals", href: "/deals" },
+    { name: "Sellers", href: "/sellers" },
   ];
 
   return (
     <nav className={cn(
       "fixed top-0 left-0 right-0 z-50 w-full select-none transition-all duration-300",
-      hasScrolled 
+      !isTransparent 
         ? "border-b border-border bg-background/85 backdrop-blur-md shadow-xs" 
         : "bg-transparent"
     )}>
@@ -75,7 +98,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
               href={link.href}
               className={cn(
                 "text-sm font-semibold transition-colors duration-200",
-                hasScrolled 
+                !isTransparent 
                   ? "text-muted-foreground hover:text-primary" 
                   : "text-white/80 hover:text-white"
               )}
@@ -87,6 +110,45 @@ export function NavbarClient({ user }: NavbarClientProps) {
 
         {/* Action Buttons (Auth states) */}
         <div className="hidden md:flex items-center space-x-4">
+          {/* Search Form */}
+          <form onSubmit={handleSearchSubmit} className="relative w-36 lg:w-48 h-9 flex items-center">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={navSearch}
+              onChange={(e) => setNavSearch(e.target.value)}
+              className={cn(
+                "w-full h-full pl-8 pr-3 text-xs rounded-xl border bg-transparent focus:outline-none transition-all duration-300",
+                !isTransparent
+                  ? "border-border text-foreground focus:ring-1 focus:ring-primary focus:bg-white"
+                  : "border-border-dark text-white placeholder-white/50 focus:ring-1 focus:ring-white focus:bg-white/10"
+              )}
+            />
+            <Search className={cn(
+              "absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none",
+              !isTransparent ? "text-muted-foreground" : "text-white/60"
+            )} />
+          </form>
+
+          {/* Cart Icon Link */}
+          <Link
+            href="/cart"
+            className={cn(
+              "relative h-9 w-9 rounded-xl border border-transparent flex items-center justify-center transition-all duration-300 cursor-pointer",
+              !isTransparent
+                ? "hover:bg-muted/50 hover:border-border text-foreground"
+                : "hover:bg-white/10 hover:border-border-dark text-white"
+            )}
+            aria-label="View Shopping Cart"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            {mounted && cartItemCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center border border-white shadow-xs animate-in zoom-in">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+
           {user ? (
             <div className="relative">
               {/* User Profile Trigger */}
@@ -94,15 +156,23 @@ export function NavbarClient({ user }: NavbarClientProps) {
                 onClick={toggleDropdown}
                 type="button"
                 className={cn(
-                  "flex items-center space-x-2 p-1.5 rounded-full border border-transparent transition-all cursor-pointer",
-                  hasScrolled
+                  "flex items-center space-x-2 h-9 pl-1.5 pr-3 rounded-full border border-transparent transition-all cursor-pointer",
+                  !isTransparent
                     ? "hover:bg-muted/50 hover:border-border text-foreground"
-                    : "hover:bg-white/10 hover:border-white/10 text-white"
+                    : "hover:bg-white/10 hover:border-border-dark text-white"
                 )}
               >
-                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground border border-accent/20">
-                  <UserIcon className="w-4 h-4" />
-                </div>
+                {user.user_metadata?.avatar_url ? (
+                  <img 
+                    src={user.user_metadata.avatar_url} 
+                    alt={user.user_metadata?.full_name || "Profile"} 
+                    className="w-6 h-6 rounded-full object-cover border border-accent/20 shrink-0"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground border border-accent/20 shrink-0">
+                    <UserIcon className="w-3.5 h-3.5" />
+                  </div>
+                )}
                 <span className="text-sm font-semibold max-w-[120px] truncate">
                   {user.user_metadata?.full_name || user.email?.split("@")[0]}
                 </span>
@@ -128,7 +198,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                       </div>
 
                       <Link
-                        href="#"
+                        href="/account"
                         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-muted/50 transition-colors"
                       >
                         <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
@@ -136,7 +206,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                       </Link>
 
                       <Link
-                        href="#"
+                        href="/account/orders"
                         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-muted/50 transition-colors"
                       >
                         <ShoppingBag className="w-4 h-4 text-muted-foreground" />
@@ -144,7 +214,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                       </Link>
 
                       <Link
-                        href="#"
+                        href="/account/profile"
                         className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm text-foreground hover:bg-muted/50 transition-colors"
                       >
                         <Settings className="w-4 h-4 text-muted-foreground" />
@@ -172,7 +242,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                 href="/login"
                 className={cn(
                   "text-sm font-semibold transition-colors duration-200",
-                  hasScrolled 
+                  !isTransparent 
                     ? "text-muted-foreground hover:text-primary" 
                     : "text-white/80 hover:text-white"
                 )}
@@ -181,7 +251,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center px-4 py-2 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary-hover button-shadow hover:translate-y-[-1px] active:translate-y-[1px] transition-all cursor-pointer"
+                className="inline-flex items-center justify-center h-9 px-4 rounded-xl font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary-hover button-shadow hover:translate-y-[-1px] active:translate-y-[1px] transition-all cursor-pointer"
               >
                 Get Started
               </Link>
@@ -189,14 +259,33 @@ export function NavbarClient({ user }: NavbarClientProps) {
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden flex items-center">
+        {/* Mobile Menu & Cart Actions */}
+        <div className="md:hidden flex items-center space-x-2">
+          {/* Cart Icon Link */}
+          <Link
+            href="/cart"
+            className={cn(
+              "relative p-2 rounded-xl transition-all duration-300 cursor-pointer",
+              !isTransparent
+                ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                : "text-white/80 hover:text-white hover:bg-white/10"
+            )}
+            aria-label="View Shopping Cart"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {mounted && cartItemCount > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center border border-white shadow-xs">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+
           <button
             onClick={toggleMenu}
             type="button"
             className={cn(
               "p-1.5 rounded-lg transition-colors cursor-pointer",
-              hasScrolled
+              !isTransparent
                 ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 : "text-white/80 hover:text-white hover:bg-white/10"
             )}
@@ -218,6 +307,18 @@ export function NavbarClient({ user }: NavbarClientProps) {
             className="md:hidden border-t border-border bg-white overflow-hidden shadow-lg"
           >
             <div className="container-page py-4 flex flex-col space-y-4">
+              {/* Mobile Search Form */}
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={navSearch}
+                  onChange={(e) => setNavSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent"
+                />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground pointer-events-none" />
+              </form>
+
               {navLinks.map((link) => (
                 <Link
                   key={link.name}

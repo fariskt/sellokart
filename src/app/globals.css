@@ -14,8 +14,8 @@
   --popover: #ffffff;
   --popover-foreground: #0f172a;
 
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
+  --primary: #0071e3;
+  --primary-hover: #0062c5;
   --primary-foreground: #ffffff;
 
   --secondary: #eff6ff;
@@ -28,6 +28,7 @@
   --accent-foreground: #1e40af;
 
   --border: #e2e8f0;
+  --border-dark: rgba(255, 255, 255, 0.08);
   --input: #e2e8f0;
   --ring: #2563eb;
 
@@ -37,7 +38,7 @@
 
   --radius: 0px;
 
-  --sidebar: #ffffff;
+  --sidebar: #f8fafc;
   --sidebar-foreground: #0f172a;
   --sidebar-border: #e2e8f0;
 
@@ -52,7 +53,7 @@
 
 /* ========================================
    TAILWIND V4 THEME VARIABLES
-======================================== */
+   ======================================== */
 
 @theme {
   --font-sans: var(--font-jakarta), var(--font-inter), sans-serif;
@@ -90,12 +91,17 @@
   --color-accent-foreground: var(--accent-foreground);
 
   --color-border: var(--border);
+  --color-border-dark: var(--border-dark);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-destructive: var(--destructive);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
 
   --radius-lg: var(--radius);
 }
