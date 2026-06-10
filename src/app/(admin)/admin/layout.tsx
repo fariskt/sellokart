@@ -30,7 +30,7 @@ export default function AdminLayout({
         "w-full flex flex-col min-h-screen transition-all duration-300",
         isExpanded ? "md:pl-64" : "md:pl-16"
       )}>
-        <main className="flex-1 w-full overflow-x-hidden bg-muted/10 pt-16">
+        <main className="flex-1 w-full overflow-x-hidden bg-muted/10 pt-24 px-6">
           {children}
         </main>
       </div>

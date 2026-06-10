@@ -1,10 +1,39 @@
-import * as React from "react";
+import { ProductsPageClient } from "@/features/products/components/ProductPageClient";
+import { getProductsPaginated } from "@/features/products/lib/action";
 
-export default function Page() {
+interface ProductsPageProps {
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    category?: string;
+    status?: string;
+    sort?: string;
+  }>;
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
+  const params = await searchParams;
+
+  const products = await getProductsPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+    categoryId: params.category,
+    status: params.status,
+    sort: params.sort,
+  });
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Products</h1>
-      <p className="text-muted-foreground">This is the placeholder for products/page.tsx.</p>
-    </div>
+    <ProductsPageClient
+      initialData={products}
+      filters={{
+        search: params.search ?? "",
+        categoryId: params.category ?? "",
+        status: params.status ?? "",
+        sort: params.sort ?? "newest",
+      }}
+    />
   );
 }

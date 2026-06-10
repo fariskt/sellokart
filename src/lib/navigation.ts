@@ -69,8 +69,6 @@ export const adminNavigation: NavigationGroup[] = [
       },
       { name: "Categories", href: "/admin/categories", icon: Layers },
       { name: "Brands", href: "/admin/brands", icon: Bookmark },
-      { name: "Attributes", href: "/admin/attributes", icon: Sliders },
-      { name: "Variants", href: "/admin/variants", icon: GitBranch }
     ]
   },
   {
