@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-
 import { AppSelect } from "@/components/AppSelect";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-import { createProduct, updateProduct } from "../lib/action";
+import { createProduct, updateProduct } from "../lib/product.action";
 
 import { ProductFormValues } from "../lib/types";
+import { ImageUpload } from "@/components/common/ImageUploader";
+import { toast } from "sonner";
+import { ProductImagesUpload } from "./ProductImageUpload";
 
 interface Props {
   mode: "create" | "edit";
@@ -22,33 +22,25 @@ interface Props {
   }[];
 
   onSuccess: () => void;
-  setLoading: (val: boolean) => void;
 }
 
-export function ProductForm({
-  mode,
-  product,
-  categories,
-  onSuccess,
-  setLoading,
-}: Props) {
+export function ProductForm({ mode, product, categories, onSuccess }: Props) {
   async function handleSubmit(formData: FormData) {
-    setLoading(true);
-
     const result =
       mode === "create"
         ? await createProduct(formData)
         : await updateProduct(product!.id!, formData);
 
-    setLoading(false);
-
     if (result.success) {
+      toast.success("Product created successfully!");
       onSuccess();
+    } else {
+      toast.error(result.message);
     }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form action={handleSubmit} className="space-y-6" id="product-form">
       <Input
         label="Product Name"
         name="name"
@@ -116,6 +108,7 @@ export function ProductForm({
           </label>
 
           <AppSelect
+            name="categoryId"
             defaultValue={product?.categoryId}
             placeholder="Select category"
             options={categories.map((category) => ({
@@ -129,6 +122,7 @@ export function ProductForm({
           <label className="text-sm font-medium text-foreground">Status</label>
 
           <AppSelect
+            name="status"
             defaultValue={product?.status ?? "draft"}
             options={[
               {
@@ -148,20 +142,27 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg border border-border p-4">
-        <input
-          id="featured"
-          name="featured"
-          type="checkbox"
-          defaultChecked={product?.featured}
-        />
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 rounded-lg border border-border p-4">
+          <input
+            id="featured"
+            name="featured"
+            type="checkbox"
+            defaultChecked={product?.featured}
+          />
 
-        <label
-          htmlFor="featured"
-          className="text-sm font-medium text-foreground"
-        >
-          Featured Product
-        </label>
+          <label
+            htmlFor="featured"
+            className="text-sm font-medium text-foreground"
+          >
+            Featured Product
+          </label>
+        </div>
+        <ProductImagesUpload
+          name="images"
+          maxSize={5}
+          defaultImages={product?.product_images ?? []}
+        />
       </div>
     </form>
   );

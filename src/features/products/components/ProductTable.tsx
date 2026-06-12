@@ -9,7 +9,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { ProductRowActions } from "./ProductRowActions";
-
+import { TableSkeleton } from "@/components/common/TableSkeleton";
+import { TableImage } from "@/components/common/TableImage";
+import { ProductImage } from "./ProductImageUpload";
 
 interface Product {
   id: string;
@@ -19,6 +21,7 @@ interface Product {
   stock: number;
   featured: boolean;
   status: string;
+  product_images: ProductImage[];
 
   categories?: {
     name: string;
@@ -27,98 +30,101 @@ interface Product {
 
 interface Props {
   products: Product[];
-
   onEdit: (product: Product) => void;
 }
 
-export function ProductsTable({
-  products,
-  onEdit,
-}: Props) {
+export function ProductsTable({ products, onEdit }: Props) {
   return (
     <div className="overflow-hidden rounded-[var(--radius)] border bg-card">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
-              Product
-            </TableHead>
+            <TableHead>Product</TableHead>
 
-            <TableHead>
-              Category
-            </TableHead>
+            <TableHead>Category</TableHead>
 
-            <TableHead>
-              SKU
-            </TableHead>
+            <TableHead>SKU</TableHead>
 
-            <TableHead>
-              Price
-            </TableHead>
+            <TableHead>Price</TableHead>
 
-            <TableHead>
-              Stock
-            </TableHead>
+            <TableHead>Stock</TableHead>
 
-            <TableHead>
-              Status
-            </TableHead>
+            <TableHead>Status</TableHead>
 
             <TableHead />
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {products.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell>
-                <div>
-                  <p className="font-medium">
-                    {product.name}
-                  </p>
-
-                  {product.featured && (
-                    <p className="text-xs text-muted-foreground">
-                      Featured
-                    </p>
-                  )}
-                </div>
-              </TableCell>
-
-              <TableCell>
-                {product.categories?.name ??
-                  "-"}
-              </TableCell>
-
-              <TableCell>
-                {product.sku ?? "-"}
-              </TableCell>
-
-              <TableCell>
-                ₹
-                {Number(
-                  product.price
-                ).toLocaleString()}
-              </TableCell>
-
-              <TableCell>
-                {product.stock}
-              </TableCell>
-
-              <TableCell>
-                <Badge>
-                  {product.status}
-                </Badge>
-              </TableCell>
-
-              <TableCell>
-                <ProductRowActions
-                  product={product}
-                  onEdit={onEdit}
-                />
+          {products.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={7}
+                className="h-32 text-center text-muted-foreground"
+              >
+                No products found
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="relative shrink-0">
+                      <TableImage
+                        src={
+                          product.product_images.find(
+                            (image) => image.is_primary,
+                          )?.image_url
+                        }
+                        alt={product.name}
+                      />
+
+                      {product.product_images.length > 1 && (
+                        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+                          {product.product_images.length}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="font-medium">{product.name}</p>
+
+                      <div className="flex items-center gap-2">
+                        {product.featured && (
+                          <p className="text-xs text-muted-foreground">
+                            Featured
+                          </p>
+                        )}
+
+                        {product.product_images.length > 1 && (
+                          <p className="text-xs text-muted-foreground">
+                            {product.product_images.length} images
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+
+                <TableCell>{product.categories?.name ?? "-"}</TableCell>
+
+                <TableCell>{product.sku ?? "-"}</TableCell>
+
+                <TableCell>₹{Number(product.price).toLocaleString()}</TableCell>
+
+                <TableCell>{product.stock}</TableCell>
+
+                <TableCell>
+                  <Badge>{product.status}</Badge>
+                </TableCell>
+
+                <TableCell>
+                  <ProductRowActions product={product} onEdit={onEdit} />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
 
 interface SelectOption {
   label: string;
@@ -14,6 +15,7 @@ interface SelectOption {
 }
 
 interface AppSelectProps {
+  name: string;
   value?: string;
   defaultValue?: string;
 
@@ -21,9 +23,7 @@ interface AppSelectProps {
 
   options: SelectOption[];
 
-  onValueChange?: (
-    value: string
-  ) => void;
+  onValueChange?: (value: string) => void;
 
   className?: string;
 
@@ -31,6 +31,7 @@ interface AppSelectProps {
 }
 
 export function AppSelect({
+  name,
   value,
   defaultValue,
   placeholder = "Select",
@@ -39,29 +40,33 @@ export function AppSelect({
   className,
   disabled,
 }: AppSelectProps) {
+  const [selectedValue, setSelectedValue] = useState(
+    value ?? defaultValue ?? "",
+  );
   return (
-    <Select
-      value={value}
-      defaultValue={defaultValue}
-      onValueChange={onValueChange}
-      disabled={disabled}
-    >
-      <SelectTrigger className={className}>
-        <SelectValue
-          placeholder={placeholder}
-        />
-      </SelectTrigger>
+    <>
+      <Select
+        value={selectedValue}
+        onValueChange={(newValue) => {
+          setSelectedValue(newValue);
 
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem
-            key={option.value}
-            value={option.value}
-          >
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+          onValueChange?.(newValue);
+        }}
+        disabled={disabled}
+      >
+        <SelectTrigger className={className}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {name && <input type="hidden" name={name} value={selectedValue} />}
+    </>
   );
 }

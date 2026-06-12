@@ -1,5 +1,6 @@
 import { ProductsPageClient } from "@/features/products/components/ProductPageClient";
-import { getProductsPaginated } from "@/features/products/lib/action";
+import { getCategoriesPaginated } from "@/features/products/lib/categories.action";
+import { getProductsPaginated } from "@/features/products/lib/product.action";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -25,9 +26,18 @@ export default async function ProductsPage({
     sort: params.sort,
   });
 
+  const categories = await getCategoriesPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+  });
+
+  
+
   return (
     <ProductsPageClient
       initialData={products}
+      categories={categories?.data || []}
       filters={{
         search: params.search ?? "",
         categoryId: params.category ?? "",

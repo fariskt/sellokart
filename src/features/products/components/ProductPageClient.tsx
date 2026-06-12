@@ -9,17 +9,16 @@ import { ProductStats } from "./ProductStats";
 import { ProductsTable } from "./ProductTable";
 import { ProductDialog } from "./ProductDialog";
 
-export function ProductsPageClient({
-  initialData,
-  filters,
-}: any) {
+export function ProductsPageClient({ initialData, filters, categories }: any) {
   const [open, setOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  console.log(selectedProduct);
+  
 
   return (
     <div className="space-y-6">
-      <ProductsHeader
-        onCreate={() => setOpen(true)}
-      />
+      <ProductsHeader onCreate={() => setOpen(true)} />
 
       <ProductStats
         total={initialData.pagination.total}
@@ -28,28 +27,27 @@ export function ProductsPageClient({
         outOfStock={0}
       />
 
-      <ProductFilters
-        {...filters}
-        categoryOptions={[]}
-      />
+      <ProductFilters {...filters} categoryOptions={[]} />
 
       <ProductsTable
         products={initialData.data}
-        onEdit={() => {}}
+        onEdit={(product) => {
+          setSelectedProduct(product);
+          setOpen(true);
+        }}
       />
 
       <AppPagination
         page={initialData.pagination.page}
-        totalPages={
-          initialData.pagination.totalPages
-        }
+        totalPages={initialData.pagination.totalPages}
       />
 
       <ProductDialog
         open={open}
         onOpenChange={setOpen}
-        mode="create"
-        categories={[]}
+        mode={selectedProduct ? "edit" : "create"}
+        categories={categories}
+        product={selectedProduct}
       />
     </div>
   );

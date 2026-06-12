@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { MoreHorizontal } from "lucide-react";
-import { deleteProduct, toggleFeatured } from "../lib/action";
+import { deleteProduct, toggleFeatured } from "../lib/product.action";
 
 
 interface Props {

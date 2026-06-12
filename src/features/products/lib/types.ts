@@ -9,6 +9,12 @@ export interface ProductFormValues {
   sku?: string;
   featured: boolean;
   status: "draft" | "active" | "archived";
+  product_images?: {
+    id: string;
+    image_url: string;
+    is_primary: boolean;
+    sort_order: number;
+  }[];
 }
 
 export interface ProductDialogProps {

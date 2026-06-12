@@ -6,6 +6,7 @@ import { ProductForm } from "./ProductForm";
 import { DialogActions } from "@/components/DialogActions";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { SubmitButton } from "@/components/common/SubmitButton";
 
 interface ProductDialogProps {
   open: boolean;
@@ -28,8 +29,6 @@ export function ProductDialog({
   product,
   categories,
 }: ProductDialogProps) {
-  const [loading, setLoading] = useState(false);
-
   const isEdit = mode === "edit";
 
   return (
@@ -40,13 +39,12 @@ export function ProductDialog({
       description={isEdit ? "Update product details." : "Add a new product."}
       size="xl"
       footer={
-        <Button type="submit">
-          {loading
-            ? "Saving..."
-            : mode === "create"
-              ? "Create Product"
-              : "Update Product"}
-        </Button>
+        <SubmitButton
+          mode={mode}
+          form="product-form"
+          createText="Create Product"
+          updateText="Update Product"
+        />
       }
     >
       <ProductForm
@@ -54,7 +52,6 @@ export function ProductDialog({
         categories={categories}
         mode={mode}
         onSuccess={() => onOpenChange(false)}
-        setLoading={setLoading}
       />
     </AppDialog>
   );

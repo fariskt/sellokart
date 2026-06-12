@@ -1,10 +1,33 @@
-import * as React from "react";
+import { CategoriesPageClient } from "@/features/products/components/CategoriesPageClient";
+import { getCategoriesPaginated } from "@/features/products/lib/categories.action";
 
-export default function Page() {
+interface CategoriesPageProps {
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+  }>;
+}
+
+export default async function CategoriesPage({
+  searchParams,
+}: CategoriesPageProps) {
+  const params = await searchParams;
+
+  const categories = await getCategoriesPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+  });
+
+  console.log("categories", categories);
+  
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Categories</h1>
-      <p className="text-muted-foreground">This is the placeholder for categories/page.tsx.</p>
-    </div>
+    <CategoriesPageClient
+      initialData={categories}
+      filters={{
+        search: params.search ?? "",
+      }}
+    />
   );
 }
