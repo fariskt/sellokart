@@ -1,10 +1,29 @@
-import * as React from "react";
+import { ShipmentsPageClient } from "@/features/shipments/components/ShipmentsPageClient";
+import { getShipmentsPaginated } from "@/features/shipments/lib/shipments.action";
 
-export default function Page() {
+interface ShipmentsPageProps {
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    status?: string;
+    courier?: string;
+  }>;
+}
+
+export default async function ShipmentsPage({ searchParams }: ShipmentsPageProps) {
+  const params = await searchParams;
+
+  const shipmentsData = await getShipmentsPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+    status: params.status,
+    courier: params.courier,
+  });
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Shipments</h1>
-      <p className="text-muted-foreground">This is the placeholder for shipments/page.tsx.</p>
+      <ShipmentsPageClient initialData={shipmentsData} />
     </div>
   );
 }

@@ -11,15 +11,18 @@ import { Button } from "@/components/ui/button";
 
 import { MoreHorizontal } from "lucide-react";
 import { deleteProduct, toggleFeatured } from "../lib/product.action";
+import type { Product } from "./ProductTable";
 
 
 interface Props {
-  product: any;
-  onEdit: (product: any) => void;
+  product: Product;
+  onView: (product: Product) => void;
+  onEdit: (product: Product) => void;
 }
 
 export function ProductRowActions({
   product,
+  onView,
   onEdit,
 }: Props) {
   return (
@@ -36,6 +39,14 @@ export function ProductRowActions({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() =>
+            onView(product)
+          }
+        >
+          View
+        </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={() =>
             onEdit(product)

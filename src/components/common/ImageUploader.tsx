@@ -11,6 +11,7 @@ interface ImageUploadProps {
   label?: string;
   defaultImage?: string | null;
   maxSize?: number; // MB
+  removeName?: string;
 }
 
 export function ImageUpload({
@@ -18,6 +19,7 @@ export function ImageUpload({
   label = "Image",
   defaultImage,
   maxSize = 5,
+  removeName = "remove_image",
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -26,6 +28,7 @@ export function ImageUpload({
   );
 
   const [error, setError] = useState("");
+  const [removed, setRemoved] = useState(false);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement>
@@ -48,6 +51,7 @@ export function ImageUpload({
     }
 
     setError("");
+    setRemoved(false);
 
     setPreview(
       URL.createObjectURL(file)
@@ -57,6 +61,7 @@ export function ImageUpload({
   function removeImage() {
     setPreview(null);
     setError("");
+    setRemoved(true);
 
     if (inputRef.current) {
       inputRef.current.value = "";
@@ -89,8 +94,15 @@ export function ImageUpload({
           onChange={handleChange}
         />
 
+        <input
+          type="hidden"
+          name={removeName}
+          value={removed ? "true" : "false"}
+        />
+
         {preview ? (
           <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={preview}
               alt="Preview"

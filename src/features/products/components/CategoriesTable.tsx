@@ -8,40 +8,30 @@ import {
 } from "@/components/ui/table";
 import { CategoryRowActions } from "./CategoryRowActions";
 import { TableImage } from "@/components/common/TableImage";
-
-interface Category {
-  id: string;
-  name: string;
-  image_url?: string;
-  slug: string;
-  parent_id: string | null;
-  created_at: string;
-
-  parent?: {
-    id: string;
-    name: string;
-  } | null;
-}
+import type { Category } from "../lib/category.actions";
 
 interface Props {
   categories: Category[];
 
+  onView: (category: Category) => void;
   onEdit: (category: Category) => void;
 }
 
-export function CategoriesTable({ categories, onEdit }: Props) {
+export function CategoriesTable({ categories, onView, onEdit }: Props) {
   return (
     <div className="overflow-hidden rounded-[var(--radius)] border bg-card">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Category</TableHead>
+            <TableHead>Image</TableHead>
+
+            <TableHead>Name</TableHead>
 
             <TableHead>Slug</TableHead>
 
-            <TableHead>Parent</TableHead>
+            <TableHead>Parent Category</TableHead>
 
-            <TableHead>Created</TableHead>
+            <TableHead>Created At</TableHead>
 
             <TableHead />
           </TableRow>
@@ -51,7 +41,7 @@ export function CategoriesTable({ categories, onEdit }: Props) {
           {categories.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className="h-32 text-center text-muted-foreground"
               >
                 No categories found
@@ -61,25 +51,24 @@ export function CategoriesTable({ categories, onEdit }: Props) {
             categories.map((category) => (
               <TableRow key={category.id}>
                 <TableCell>
-                  <div className="flex items-center gap-3">
-                    <TableImage src={category?.image_url} alt={category.name} />
+                  <TableImage src={category?.image_url} alt={category.name} />
+                </TableCell>
 
-                    <div>
-                      <p className="font-medium">{category.name}</p>
+                <TableCell>
+                  <div>
+                    <p className="font-medium">{category.name}</p>
 
+                    {category.parent_id && (
                       <p className="text-xs text-muted-foreground">
-                        /category/{category.slug}
+                        Sub Category
                       </p>
-
-                      {category.parent_id && (
-                        <p className="text-xs text-muted-foreground">
-                          Sub Category
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </TableCell>
-                <TableCell>{category.slug}</TableCell>
+
+                <TableCell>
+                  <span className="font-mono text-xs">{category.slug}</span>
+                </TableCell>
 
                 <TableCell>{category.parent?.name ?? "-"}</TableCell>
 
@@ -88,7 +77,11 @@ export function CategoriesTable({ categories, onEdit }: Props) {
                 </TableCell>
 
                 <TableCell>
-                  <CategoryRowActions category={category} onEdit={onEdit} />
+                  <CategoryRowActions
+                    category={category}
+                    onView={onView}
+                    onEdit={onEdit}
+                  />
                 </TableCell>
               </TableRow>
             ))

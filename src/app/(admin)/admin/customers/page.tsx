@@ -1,10 +1,33 @@
-import * as React from "react";
+import { CustomersPageClient } from "@/features/customers/components/CustomersPageClient";
+import { getCustomersPaginated } from "@/features/customers/lib/customers.action";
 
-export default function Page() {
+interface CustomersPageProps {
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    dateRange?: string;
+    startDate?: string;
+    endDate?: string;
+    customerType?: "all" | "new" | "returning" | "high_value";
+  }>;
+}
+
+export default async function CustomersPage({ searchParams }: CustomersPageProps) {
+  const params = await searchParams;
+
+  const initialData = await getCustomersPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+    dateRange: params.dateRange,
+    startDate: params.startDate,
+    endDate: params.endDate,
+    customerType: params.customerType,
+  });
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Customers</h1>
-      <p className="text-muted-foreground">This is the placeholder for customers/page.tsx.</p>
+      <CustomersPageClient initialData={initialData} />
     </div>
   );
 }

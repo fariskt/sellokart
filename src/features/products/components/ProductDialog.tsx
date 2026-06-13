@@ -3,9 +3,6 @@
 import { AppDialog } from "@/components/AppDialog";
 import { ProductFormValues } from "../lib/types";
 import { ProductForm } from "./ProductForm";
-import { DialogActions } from "@/components/DialogActions";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { SubmitButton } from "@/components/common/SubmitButton";
 
 interface ProductDialogProps {
@@ -37,7 +34,7 @@ export function ProductDialog({
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Product" : "Create Product"}
       description={isEdit ? "Update product details." : "Add a new product."}
-      size="xl"
+      size="2xl"
       footer={
         <SubmitButton
           mode={mode}
@@ -48,6 +45,7 @@ export function ProductDialog({
       }
     >
       <ProductForm
+        key={product?.id ?? "new-product"}
         product={product}
         categories={categories}
         mode={mode}

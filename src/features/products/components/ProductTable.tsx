@@ -9,31 +9,42 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { ProductRowActions } from "./ProductRowActions";
-import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { TableImage } from "@/components/common/TableImage";
 import { ProductImage } from "./ProductImageUpload";
+import type { ProductAttribute, ProductVariant } from "../lib/types";
 
-interface Product {
+export interface Product {
   id: string;
   name: string;
+  slug?: string;
+  description?: string;
+  categoryId?: string;
+  category_id?: string;
   sku: string | null;
   price: number;
+  sale_price?: number | null;
+  salePrice?: number | null;
   stock: number;
   featured: boolean;
-  status: string;
+  status: "draft" | "active" | "archived";
   product_images: ProductImage[];
 
   categories?: {
+    id?: string;
     name: string;
   } | null;
+
+  product_attributes?: ProductAttribute[];
+  product_variants?: ProductVariant[];
 }
 
 interface Props {
   products: Product[];
+  onView: (product: Product) => void;
   onEdit: (product: Product) => void;
 }
 
-export function ProductsTable({ products, onEdit }: Props) {
+export function ProductsTable({ products, onView, onEdit }: Props) {
   return (
     <div className="overflow-hidden rounded-[var(--radius)] border bg-card">
       <Table>
@@ -120,7 +131,11 @@ export function ProductsTable({ products, onEdit }: Props) {
                 </TableCell>
 
                 <TableCell>
-                  <ProductRowActions product={product} onEdit={onEdit} />
+                  <ProductRowActions
+                    product={product}
+                    onView={onView}
+                    onEdit={onEdit}
+                  />
                 </TableCell>
               </TableRow>
             ))

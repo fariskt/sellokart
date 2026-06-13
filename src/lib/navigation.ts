@@ -30,7 +30,7 @@ import {
   Settings,
   User,
   Heart,
-  Home
+  Home,
 } from "lucide-react";
 
 export interface NavigationItem {
@@ -52,8 +52,8 @@ export const adminNavigation: NavigationGroup[] = [
   {
     groupName: "Overview",
     items: [
-      { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard }
-    ]
+      { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    ],
   },
   {
     groupName: "Catalog",
@@ -62,14 +62,10 @@ export const adminNavigation: NavigationGroup[] = [
         name: "Products",
         href: "/admin/products",
         icon: Package,
-        subItems: [
-          { name: "List Products", href: "/admin/products" },
-          { name: "Add Product", href: "/admin/products/create" }
-        ]
       },
       { name: "Categories", href: "/admin/categories", icon: Layers },
       { name: "Brands", href: "/admin/brands", icon: Bookmark },
-    ]
+    ],
   },
   {
     groupName: "Sales & Logistics",
@@ -77,32 +73,32 @@ export const adminNavigation: NavigationGroup[] = [
       { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
       { name: "Returns", href: "/admin/returns", icon: RotateCcw },
       { name: "Shipments", href: "/admin/shipments", icon: Truck },
-      { name: "Tracking", href: "/admin/tracking", icon: MapPin }
-    ]
+      { name: "Tracking", href: "/admin/tracking", icon: MapPin },
+    ],
   },
   {
     groupName: "Customers & Feedback",
     items: [
       { name: "Customers", href: "/admin/customers", icon: Users },
       { name: "Reviews", href: "/admin/reviews", icon: Star },
-      { name: "Support Tickets", href: "/admin/tickets", icon: LifeBuoy }
-    ]
+      { name: "Support Tickets", href: "/admin/tickets", icon: LifeBuoy },
+    ],
   },
   {
     groupName: "Finance & Inventory",
     items: [
       { name: "Inventory", href: "/admin/inventory", icon: Box },
       { name: "Payments", href: "/admin/payments", icon: CreditCard },
-      { name: "Refunds", href: "/admin/refunds", icon: Receipt }
-    ]
+      { name: "Refunds", href: "/admin/refunds", icon: Receipt },
+    ],
   },
   {
     groupName: "Marketing",
     items: [
       { name: "Coupons", href: "/admin/coupons", icon: Ticket },
       { name: "Banners", href: "/admin/banners", icon: ImageIcon },
-      { name: "Promotions", href: "/admin/promotions", icon: Megaphone }
-    ]
+      { name: "Promotions", href: "/admin/promotions", icon: Megaphone },
+    ],
   },
   {
     groupName: "Content & Comms",
@@ -111,8 +107,8 @@ export const adminNavigation: NavigationGroup[] = [
       { name: "Blog", href: "/admin/blog", icon: BookOpen },
       { name: "FAQs", href: "/admin/faqs", icon: HelpCircle },
       { name: "Notifications", href: "/admin/notifications", icon: Bell },
-      { name: "Email Templates", href: "/admin/email-templates", icon: Mail }
-    ]
+      { name: "Email Templates", href: "/admin/email-templates", icon: Mail },
+    ],
   },
   {
     groupName: "System",
@@ -123,9 +119,9 @@ export const adminNavigation: NavigationGroup[] = [
       { name: "Files Manager", href: "/admin/files", icon: Folder },
       { name: "Audit Logs", href: "/admin/audit-logs", icon: ScrollText },
       { name: "Settings", href: "/admin/settings", icon: Settings },
-      { name: "My Profile", href: "/admin/profile", icon: User }
-    ]
-  }
+      { name: "My Profile", href: "/admin/profile", icon: User },
+    ],
+  },
 ];
 
 // -------------------------------------------------------------
@@ -134,9 +130,7 @@ export const adminNavigation: NavigationGroup[] = [
 export const customerNavigation: NavigationGroup[] = [
   {
     groupName: "Dashboard",
-    items: [
-      { name: "Overview", href: "/account", icon: LayoutDashboard }
-    ]
+    items: [{ name: "Overview", href: "/account", icon: LayoutDashboard }],
   },
   {
     groupName: "My Purchases",
@@ -144,22 +138,22 @@ export const customerNavigation: NavigationGroup[] = [
       { name: "Orders", href: "/account/orders", icon: ShoppingBag },
       { name: "Returns", href: "/account/returns", icon: RotateCcw },
       { name: "Wishlist", href: "/account/wishlist", icon: Heart },
-      { name: "Coupons", href: "/account/coupons", icon: Ticket }
-    ]
+      { name: "Coupons", href: "/account/coupons", icon: Ticket },
+    ],
   },
   {
     groupName: "Account Details",
     items: [
       { name: "Profile Info", href: "/account/profile", icon: User },
       { name: "Addresses", href: "/account/addresses", icon: MapPin },
-      { name: "Security & Login", href: "/account/security", icon: Lock }
-    ]
+      { name: "Security & Login", href: "/account/security", icon: Lock },
+    ],
   },
   {
     groupName: "Activity",
     items: [
       { name: "Reviews", href: "/account/reviews", icon: Star },
-      { name: "Notifications", href: "/account/notifications", icon: Bell }
-    ]
-  }
+      { name: "Notifications", href: "/account/notifications", icon: Bell },
+    ],
+  },
 ];

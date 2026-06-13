@@ -1,17 +1,9 @@
 "use client";
 
-import { useState } from "react";
-
 import { AppDialog } from "@/components/AppDialog";
-import { Button } from "@/components/ui/button";
 import { CategoryForm } from "./CategoryForm";
 import { SubmitButton } from "@/components/common/SubmitButton";
-
-interface Category {
-  id: string;
-  name: string;
-  parent_id: string | null;
-}
+import type { Category } from "../lib/category.actions";
 
 interface CategoryDialogProps {
   open: boolean;
@@ -31,7 +23,6 @@ export function CategoryDialog({
   category,
   categories,
 }: CategoryDialogProps) {
-
   const isEdit = mode === "edit";
 
   return (
@@ -40,17 +31,18 @@ export function CategoryDialog({
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Category" : "Create Category"}
       description={isEdit ? "Update category details." : "Add a new category."}
-      size="md"
+      size="lg"
       footer={
         <SubmitButton
           mode={mode}
           createText="Create Category"
-            form="category-form"
+          form="category-form"
           updateText="Update Category"
         />
       }
     >
       <CategoryForm
+        key={category?.id ?? "new-category"}
         mode={mode}
         category={category}
         categories={categories}

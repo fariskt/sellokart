@@ -1,10 +1,29 @@
-import * as React from "react";
+import { CouponsPageClient } from "@/features/coupons/components/CouponsPageClient";
+import { getCouponsPaginated } from "@/features/coupons/lib/coupons.action";
 
-export default function Page() {
+interface CouponsPageProps {
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    status?: string;
+    discountType?: string;
+  }>;
+}
+
+export default async function CouponsPage({ searchParams }: CouponsPageProps) {
+  const params = await searchParams;
+
+  const couponsData = await getCouponsPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+    status: params.status,
+    discountType: params.discountType,
+  });
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Coupons</h1>
-      <p className="text-muted-foreground">This is the placeholder for coupons/page.tsx.</p>
+      <CouponsPageClient initialData={couponsData} />
     </div>
   );
 }

@@ -1,10 +1,33 @@
-import * as React from "react";
+import { PaymentsPageClient } from "@/features/payments/components/PaymentsPageClient";
+import { getPaymentsPaginated } from "@/features/payments/lib/payments.action";
 
-export default function Page() {
+interface PaymentsPageProps {
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    status?: string;
+    dateRange?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
+}
+
+export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
+  const params = await searchParams;
+
+  const paymentsData = await getPaymentsPaginated({
+    page: Number(params.page ?? 1),
+    limit: 10,
+    search: params.search,
+    status: params.status,
+    dateRange: params.dateRange,
+    startDate: params.startDate,
+    endDate: params.endDate,
+  });
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Payments</h1>
-      <p className="text-muted-foreground">This is the placeholder for payments/page.tsx.</p>
+      <PaymentsPageClient initialData={paymentsData} />
     </div>
   );
 }

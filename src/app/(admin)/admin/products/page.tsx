@@ -12,6 +12,12 @@ interface ProductsPageProps {
   }>;
 }
 
+const productStatuses = ["draft", "active", "archived"] as const;
+
+function getProductStatus(status?: string) {
+  return productStatuses.find((item) => item === status);
+}
+
 export default async function ProductsPage({
   searchParams,
 }: ProductsPageProps) {
@@ -22,7 +28,7 @@ export default async function ProductsPage({
     limit: 10,
     search: params.search,
     categoryId: params.category,
-    status: params.status,
+    status: getProductStatus(params.status),
     sort: params.sort,
   });
 
