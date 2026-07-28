@@ -31,7 +31,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
     setMounted(true);
   }, []);
 
-  const isTransparent = pathname === "/" && !hasScrolled;
+  const isTransparent = false; // Always solid for minimalist scandinavian top bar
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,18 +76,14 @@ export function NavbarClient({ user }: NavbarClientProps) {
   ];
 
   return (
-    <nav className={cn(
-      "fixed top-0 left-0 right-0 z-50 w-full select-none transition-all duration-300",
-      !isTransparent 
-        ? "border-b border-border bg-background/85 backdrop-blur-md shadow-xs" 
-        : "bg-transparent"
-    )}>
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full select-none transition-all duration-300 border-b border-border bg-background/90 backdrop-blur-md shadow-2xs">
       <div className="container-page h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-black tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-            SELLOKART
+        <Link href="/" className="flex items-center gap-0.5">
+          <span className="text-xl font-extrabold tracking-tight text-brand-dark lowercase">
+            sellokart
           </span>
+          <span className="w-2.5 h-2.5 rounded-full bg-brand-yellow inline-block mt-1" />
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -96,12 +92,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
             <Link
               key={link.name}
               href={link.href}
-              className={cn(
-                "text-sm font-semibold transition-colors duration-200",
-                !isTransparent 
-                  ? "text-muted-foreground hover:text-primary" 
-                  : "text-white/80 hover:text-white"
-              )}
+              className="text-sm font-bold text-brand-muted hover:text-brand-dark transition-colors duration-200"
             >
               {link.name}
             </Link>
@@ -117,33 +108,20 @@ export function NavbarClient({ user }: NavbarClientProps) {
               placeholder="Search..."
               value={navSearch}
               onChange={(e) => setNavSearch(e.target.value)}
-              className={cn(
-                "w-full h-full pl-8 pr-3 text-xs rounded-xl border bg-transparent focus:outline-none transition-all duration-300",
-                !isTransparent
-                  ? "border-border text-foreground focus:ring-1 focus:ring-primary focus:bg-white"
-                  : "border-border-dark text-white placeholder-white/50 focus:ring-1 focus:ring-white focus:bg-white/10"
-              )}
+              className="w-full h-full pl-8 pr-3 text-xs rounded-full border border-border bg-transparent text-brand-dark focus:outline-hidden transition-all duration-300 focus:border-brand-dark"
             />
-            <Search className={cn(
-              "absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none",
-              !isTransparent ? "text-muted-foreground" : "text-white/60"
-            )} />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none text-brand-muted" />
           </form>
 
           {/* Cart Icon Link */}
           <Link
             href="/cart"
-            className={cn(
-              "relative h-9 w-9 rounded-xl border border-transparent flex items-center justify-center transition-all duration-300 cursor-pointer",
-              !isTransparent
-                ? "hover:bg-muted/50 hover:border-border text-foreground"
-                : "hover:bg-white/10 hover:border-border-dark text-white"
-            )}
+            className="relative h-9 w-9 rounded-full border border-border flex items-center justify-center transition-all duration-300 cursor-pointer hover:bg-muted text-brand-dark"
             aria-label="View Shopping Cart"
           >
             <ShoppingCart className="w-4 h-4" />
             {mounted && cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center border border-white shadow-xs animate-in zoom-in">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-yellow text-brand-yellow-foreground text-[9px] font-bold flex items-center justify-center border border-background shadow-xs animate-in zoom-in">
                 {cartItemCount}
               </span>
             )}
@@ -155,12 +133,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
               <button
                 onClick={toggleDropdown}
                 type="button"
-                className={cn(
-                  "flex items-center space-x-2 h-9 pl-1.5 pr-3 rounded-full border border-transparent transition-all cursor-pointer",
-                  !isTransparent
-                    ? "hover:bg-muted/50 hover:border-border text-foreground"
-                    : "hover:bg-white/10 hover:border-border-dark text-white"
-                )}
+                className="flex items-center space-x-2 h-9 pl-1.5 pr-3 rounded-full border border-border transition-all cursor-pointer hover:bg-muted text-brand-dark"
               >
                 {user.user_metadata?.avatar_url ? (
                   <img 
@@ -240,18 +213,13 @@ export function NavbarClient({ user }: NavbarClientProps) {
             <>
               <Link
                 href="/login"
-                className={cn(
-                  "text-sm font-semibold transition-colors duration-200",
-                  !isTransparent 
-                    ? "text-muted-foreground hover:text-primary" 
-                    : "text-white/80 hover:text-white"
-                )}
+                className="text-sm font-bold text-brand-muted hover:text-brand-dark transition-colors duration-200"
               >
                 Sign In
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center h-9 px-4 rounded-xl font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary-hover button-shadow hover:translate-y-[-1px] active:translate-y-[1px] transition-all cursor-pointer"
+                className="inline-flex items-center justify-center h-9 px-5 rounded-full font-bold text-sm bg-brand-yellow text-brand-yellow-foreground hover:bg-brand-yellow-hover transition-all cursor-pointer"
               >
                 Get Started
               </Link>
@@ -264,17 +232,12 @@ export function NavbarClient({ user }: NavbarClientProps) {
           {/* Cart Icon Link */}
           <Link
             href="/cart"
-            className={cn(
-              "relative p-2 rounded-xl transition-all duration-300 cursor-pointer",
-              !isTransparent
-                ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                : "text-white/80 hover:text-white hover:bg-white/10"
-            )}
+            className="relative p-2 rounded-full hover:bg-muted text-brand-muted hover:text-brand-dark transition-all duration-300 cursor-pointer"
             aria-label="View Shopping Cart"
           >
             <ShoppingCart className="w-5 h-5" />
             {mounted && cartItemCount > 0 && (
-              <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center border border-white shadow-xs">
+              <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-brand-yellow text-brand-yellow-foreground text-[9px] font-bold flex items-center justify-center border border-background shadow-xs">
                 {cartItemCount}
               </span>
             )}
@@ -283,12 +246,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
           <button
             onClick={toggleMenu}
             type="button"
-            className={cn(
-              "p-1.5 rounded-lg transition-colors cursor-pointer",
-              !isTransparent
-                ? "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                : "text-white/80 hover:text-white hover:bg-white/10"
-            )}
+            className="p-1.5 rounded-full hover:bg-muted text-brand-muted hover:text-brand-dark transition-colors cursor-pointer"
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -304,7 +262,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden border-t border-border bg-white overflow-hidden shadow-lg"
+            className="md:hidden border-t border-border bg-background overflow-hidden shadow-lg"
           >
             <div className="container-page py-4 flex flex-col space-y-4">
               {/* Mobile Search Form */}
@@ -314,9 +272,9 @@ export function NavbarClient({ user }: NavbarClientProps) {
                   placeholder="Search products..."
                   value={navSearch}
                   onChange={(e) => setNavSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-full bg-background text-brand-dark focus:outline-hidden focus:border-brand-dark"
                 />
-                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Search className="absolute left-3 top-3 w-4 h-4 text-brand-muted pointer-events-none" />
               </form>
 
               {navLinks.map((link) => (
@@ -324,7 +282,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="text-base font-semibold text-muted-foreground hover:text-primary transition-colors py-1.5 border-b border-border/30"
+                  className="text-base font-bold text-brand-muted hover:text-brand-dark transition-colors py-1.5 border-b border-border/30"
                 >
                   {link.name}
                 </Link>
@@ -334,13 +292,13 @@ export function NavbarClient({ user }: NavbarClientProps) {
                 {user ? (
                   <>
                     <div className="px-1.5 py-1">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Signed in as</p>
-                      <p className="text-sm font-bold text-foreground truncate mt-0.5">{user.email}</p>
+                      <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Signed in as</p>
+                      <p className="text-sm font-bold text-brand-dark truncate mt-0.5">{user.email}</p>
                     </div>
                     <button
                       onClick={handleSignOut}
                       type="button"
-                      className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-semibold bg-destructive/10 text-destructive hover:bg-destructive/15 transition-all cursor-pointer"
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-full text-sm font-bold bg-destructive/10 text-destructive hover:bg-destructive/15 transition-all cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Sign Out</span>
@@ -351,14 +309,14 @@ export function NavbarClient({ user }: NavbarClientProps) {
                     <Link
                       href="/login"
                       onClick={() => setIsOpen(false)}
-                      className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-muted-foreground hover:text-primary border border-border bg-background hover:bg-muted/30 transition-all"
+                      className="w-full text-center py-2.5 rounded-full text-sm font-bold text-brand-muted hover:text-brand-dark border border-border bg-background hover:bg-muted transition-all"
                     >
                       Sign In
                     </Link>
                     <Link
                       href="/register"
                       onClick={() => setIsOpen(false)}
-                      className="w-full text-center py-2.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary-hover button-shadow transition-all"
+                      className="w-full text-center py-2.5 rounded-full text-sm font-bold bg-brand-yellow text-brand-yellow-foreground hover:bg-brand-yellow-hover transition-all"
                     >
                       Get Started
                     </Link>

@@ -42,6 +42,13 @@
   --sidebar-foreground: #0f172a;
   --sidebar-border: #e2e8f0;
 
+  --brand-yellow: #f5c433;
+  --brand-yellow-hover: #e5b322;
+  --brand-yellow-foreground: #111111;
+  --brand-blue-bg: #e5ecee;
+  --brand-dark: #111111;
+  --brand-muted: #71717a;
+
   --hero-gradient:
     linear-gradient(
       135deg,
@@ -49,6 +56,23 @@
       #ffffff 50%,
       #dbeafe 100%
     );
+
+  /* Landing page design tokens */
+  --landing-primary: #1a3ff0;
+  --landing-primary-hover: #0d2cc9;
+  --landing-primary-light: #e8eeff;
+  --landing-primary-muted: #6b7bb8;
+  --landing-dark: #0a0f2e;
+  --landing-dark-muted: #5578c8;
+  --landing-accent: #c8d4ff;
+  --landing-accent-light: #f0f4ff;
+  --landing-accent-glow: #6b9fff;
+  --landing-featured-gradient-start: #07102b;
+  --landing-featured-gradient-mid: #1025a0;
+  --landing-featured-gradient-end: #08123a;
+  --landing-story-gradient-mid: #0c1d8a;
+  --landing-hero-bg: linear-gradient(135deg, #f8faff 0%, #edf3ff 40%, #dce9ff 70%, #f0f6ff 100%);
+  --font-display: var(--font-jakarta);
 }
 
 /* ========================================
@@ -57,6 +81,14 @@
 
 @theme {
   --font-sans: var(--font-jakarta), var(--font-inter), sans-serif;
+  --font-serif: var(--font-serif), Georgia, serif;
+
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-yellow-hover: var(--brand-yellow-hover);
+  --color-brand-yellow-foreground: var(--brand-yellow-foreground);
+  --color-brand-blue-bg: var(--brand-blue-bg);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-muted: var(--brand-muted);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -94,6 +126,22 @@
   --color-sidebar-border: var(--sidebar-border);
 
   --radius-lg: var(--radius);
+
+  --color-landing-primary: var(--landing-primary);
+  --color-landing-primary-hover: var(--landing-primary-hover);
+  --color-landing-primary-light: var(--landing-primary-light);
+  --color-landing-primary-muted: var(--landing-primary-muted);
+  --color-landing-dark: var(--landing-dark);
+  --color-landing-dark-muted: var(--landing-dark-muted);
+  --color-landing-accent: var(--landing-accent);
+  --color-landing-accent-light: var(--landing-accent-light);
+  --color-landing-accent-glow: var(--landing-accent-glow);
+  --color-landing-featured-start: var(--landing-featured-gradient-start);
+  --color-landing-featured-mid: var(--landing-featured-gradient-mid);
+  --color-landing-featured-end: var(--landing-featured-gradient-end);
+  --color-landing-story-mid: var(--landing-story-gradient-mid);
+
+  --font-display: var(--font-display);
 }
 
 /* ========================================
@@ -165,6 +213,10 @@ body {
 
 @utility hero-bg {
   background: var(--hero-gradient);
+}
+
+@utility bg-landing-hero-bg {
+  background: var(--landing-hero-bg);
 }
 
 /* ========================================
