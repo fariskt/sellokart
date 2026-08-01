@@ -1,5 +1,5 @@
 import { CategoriesPageClient } from "@/features/products/components/CategoriesPageClient";
-import { getCategoriesPaginated } from "@/features/products/lib/categories.action";
+import { getCategoriesPaginated, getCategories } from "@/features/products/lib/categories.action";
 
 interface CategoriesPageProps {
   searchParams: Promise<{
@@ -19,12 +19,12 @@ export default async function CategoriesPage({
     search: params.search,
   });
 
-  console.log("categories", categories);
-  
+  const allCategories = await getCategories();
 
   return (
     <CategoriesPageClient
       initialData={categories}
+      categories={allCategories}
       filters={{
         search: params.search ?? "",
       }}

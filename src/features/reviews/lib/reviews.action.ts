@@ -14,8 +14,7 @@ import {
 // ─── Zod Schemas ─────────────────────────────────────────────────────────────
 
 const reviewStatusSchema = z.enum(["pending", "approved", "rejected"], {
-  required_error: "Status is required",
-  invalid_type_error: "Invalid review status",
+  error: "Status is required",
 });
 
 const replySchema = z.object({
@@ -256,7 +255,7 @@ export async function approveReview(reviewId: string) {
     .select("products:product_id(name)")
     .eq("id", reviewId)
     .single();
-  const entityName = (rev?.products as any)?.name ? `Review for ${(rev.products as any).name}` : "Product Review";
+  const entityName = (rev?.products as any)?.name ? `Review for ${(rev?.products as any).name}` : "Product Review";
 
   const { error } = await supabase
     .from("reviews")
@@ -300,7 +299,7 @@ export async function rejectReview(reviewId: string) {
     .select("products:product_id(name)")
     .eq("id", reviewId)
     .single();
-  const entityName = (rev?.products as any)?.name ? `Review for ${(rev.products as any).name}` : "Product Review";
+  const entityName = (rev?.products as any)?.name ? `Review for ${(rev?.products as any).name}` : "Product Review";
 
   const { error } = await supabase
     .from("reviews")
@@ -352,7 +351,7 @@ export async function replyToReview(reviewId: string, reply: string) {
     .select("products:product_id(name)")
     .eq("id", reviewId)
     .single();
-  const entityName = (rev?.products as any)?.name ? `Review for ${(rev.products as any).name}` : "Product Review";
+  const entityName = (rev?.products as any)?.name ? `Review for ${(rev?.products as any).name}` : "Product Review";
 
   const { error } = await supabase
     .from("reviews")
@@ -396,7 +395,7 @@ export async function deleteReview(reviewId: string) {
     .select("products:product_id(name)")
     .eq("id", reviewId)
     .single();
-  const entityName = (rev?.products as any)?.name ? `Review for ${(rev.products as any).name}` : "Product Review";
+  const entityName = (rev?.products as any)?.name ? `Review for ${(rev?.products as any).name}` : "Product Review";
 
   const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
 

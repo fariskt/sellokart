@@ -23,7 +23,7 @@ const adjustmentSchema = z.object({
   type: z.enum(["restock", "adjustment", "damaged", "return"]),
   direction: z.enum(["add", "remove"]).optional(),
   quantity: z
-    .number({ invalid_type_error: "Quantity must be a number" })
+    .number({ error: "Quantity must be a number" })
     .int("Must be a whole number")
     .positive("Quantity must be greater than 0"),
   notes: z.string().max(500).optional(),

@@ -15,7 +15,7 @@ import { createNotification, getUserByEmail } from "../lib/notifications.action"
 const notificationFormSchema = z.object({
   email: z.string().email("Invalid email address").min(1, "Recipient email is required"),
   type: z.enum(["order", "payment", "shipment", "return", "coupon", "system"] as const, {
-    required_error: "Notification type is required",
+    error: "Notification type is required",
   }),
   title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
   message: z.string().min(1, "Message is required").max(1000, "Message cannot exceed 1000 characters"),

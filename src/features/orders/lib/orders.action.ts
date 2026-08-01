@@ -14,16 +14,14 @@ import {
 const orderStatusSchema = z.enum(
   ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"],
   {
-    required_error: "Order status is required",
-    invalid_type_error: "Invalid order status value",
+    error: "Order status is required",
   }
 );
 
 const paymentStatusSchema = z.enum(
   ["pending", "paid", "failed", "refunded"],
   {
-    required_error: "Payment status is required",
-    invalid_type_error: "Invalid payment status value",
+    error: "Payment status is required",
   }
 );
 

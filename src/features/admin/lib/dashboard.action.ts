@@ -566,7 +566,7 @@ export async function getCouponsAnalytics(
 
   const couponCounts: Record<string, number> = {};
   for (const u of usages ?? []) {
-    const code = u.coupons?.code || "UNKNOWN";
+    const code = (u.coupons as any)?.code || "UNKNOWN";
     couponCounts[code] = (couponCounts[code] || 0) + 1;
   }
 

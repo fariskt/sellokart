@@ -86,7 +86,7 @@ export function CouponDialog({
     reset,
     formState: { errors },
   } = useForm<CouponFormData>({
-    resolver: zodResolver(couponFormSchema),
+    resolver: zodResolver(couponFormSchema) as any,
     defaultValues: {
       code: "",
       description: "",

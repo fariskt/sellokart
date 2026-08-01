@@ -15,7 +15,7 @@ interface SelectOption {
 }
 
 interface AppSelectProps {
-  name: string;
+  name?: string;
   value?: string;
   defaultValue?: string;
 

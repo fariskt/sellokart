@@ -17,7 +17,7 @@ import { sendBulkNotification, getCustomersForBulkSelect } from "../lib/notifica
 const bulkNotificationFormSchema = z.object({
   recipient: z.enum(["all", "selected"] as const),
   type: z.enum(["order", "payment", "shipment", "return", "coupon", "system"] as const, {
-    required_error: "Notification type is required",
+    error: "Notification type is required",
   }),
   title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
   message: z.string().min(1, "Message is required").max(1000, "Message cannot exceed 1000 characters"),
@@ -252,8 +252,8 @@ export function BulkNotificationDialog({
                         <Checkbox
                           id={`customer-${customer.id}`}
                           checked={isChecked}
-                          onCheckedChange={(val) => handleSelectUser(customer.id, !!val)}
-                          onClick={(e) => e.stopPropagation()}
+                          onCheckedChange={(val: any) => handleSelectUser(customer.id, !!val)}
+                          onClick={(e: any) => e.stopPropagation()}
                         />
                         <div className="flex flex-col overflow-hidden">
                           <span className="text-xs font-semibold truncate leading-tight">

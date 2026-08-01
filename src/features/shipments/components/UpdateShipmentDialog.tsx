@@ -18,7 +18,7 @@ const updateShipmentSchema = z.object({
   shipment_status: z.enum([
     "pending", "packed", "shipped", "in_transit",
     "out_for_delivery", "delivered", "returned", "cancelled",
-  ], { required_error: "Shipment status is required" }),
+  ], { error: "Shipment status is required" }),
   estimated_delivery: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
 });

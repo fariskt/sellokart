@@ -52,7 +52,7 @@ function getCategoryInput(formData: FormData) {
   });
 }
 
-function validationError(message: string) {
+function validationError(message: string): { success: false; message: string } {
   return {
     success: false,
     message,
@@ -388,7 +388,9 @@ export async function deleteCategory(categoryId: string) {
   };
 }
 
-export async function uploadCategoryImage(image: File) {
+export async function uploadCategoryImage(image: File): Promise<
+  { success: false; message: string } | { success: true; imageUrl: string; imagePath: string }
+> {
   const supabase = await createClient();
   const extension = image.name.split(".").pop();
   const filePath = `${crypto.randomUUID()}.${extension}`;
@@ -502,7 +504,7 @@ export async function getCategoriesPaginated({
     allCategories?.filter((category) => category.parent_id).length ?? 0;
 
   return {
-    data: (data ?? []) as Category[],
+    data: (data ?? []) as unknown as Category[],
     stats: {
       total,
       rootCategories,

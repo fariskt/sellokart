@@ -523,6 +523,7 @@ export async function deleteProduct(productId: string) {
 }
 
 export async function getProducts() {
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("products")
@@ -571,7 +572,7 @@ product_variants (
     throw new Error(error.message);
   }
 
-  return data?.map((product) => ({
+  return data?.map((product: any) => ({
     ...product,
     product_images:
       product.product_images?.sort(

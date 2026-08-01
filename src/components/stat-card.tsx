@@ -19,7 +19,7 @@ export function StatCard({
           {label}
         </p>
 
-        <Title level="h3">
+        <Title as="h3">
           {value}
         </Title>
 

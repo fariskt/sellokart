@@ -19,7 +19,7 @@ const notificationInputSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
   message: z.string().min(1, "Message is required").max(1000, "Message cannot exceed 1000 characters"),
   type: z.enum(["order", "payment", "shipment", "return", "coupon", "system"] as const, {
-    required_error: "Notification type is required",
+    error: "Notification type is required",
   }),
   action_url: z.string().url("Invalid URL format").or(z.string().startsWith("/")).nullable().optional(),
 });
@@ -30,7 +30,7 @@ const bulkNotificationInputSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
   message: z.string().min(1, "Message is required").max(1000, "Message cannot exceed 1000 characters"),
   type: z.enum(["order", "payment", "shipment", "return", "coupon", "system"] as const, {
-    required_error: "Notification type is required",
+    error: "Notification type is required",
   }),
   action_url: z.string().url("Invalid URL format").or(z.string().startsWith("/")).nullable().optional(),
 });

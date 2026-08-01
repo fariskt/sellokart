@@ -95,7 +95,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
               {card.subStats.map((sub) => (
                 <div key={sub.label} className="text-[10px] flex items-center gap-1 font-medium">
                   <span className="text-muted-foreground">{sub.label}:</span>
-                  <span className={sub.highlight ? "text-destructive font-bold" : "text-foreground font-semibold"}>
+                  <span className={(sub as any).highlight ? "text-destructive font-bold" : "text-foreground font-semibold"}>
                     {sub.value}
                   </span>
                 </div>

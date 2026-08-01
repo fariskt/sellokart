@@ -25,7 +25,7 @@ const updateShipmentSchema = z.object({
       "returned",
       "cancelled",
     ],
-    { required_error: "Shipment status is required" }
+    { error: "Shipment status is required" }
   ),
   estimated_delivery: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),

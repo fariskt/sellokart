@@ -20,7 +20,7 @@ const couponInputSchema = z
       .min(1, "Coupon code is required")
       .transform((val) => val.trim().toUpperCase()),
     discount_type: z.enum(["percentage", "fixed"], {
-      required_error: "Discount type is required",
+      error: "Discount type is required",
     }),
     discount_value: z.number().gt(0, "Discount value must be greater than 0"),
     minimum_order_amount: z

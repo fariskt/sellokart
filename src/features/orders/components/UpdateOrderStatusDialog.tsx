@@ -16,13 +16,13 @@ const updateStatusSchema = z.object({
   status: z.enum(
     ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"],
     {
-      required_error: "Order status is required",
+      error: "Order status is required",
     }
   ),
   payment_status: z.enum(
     ["pending", "paid", "failed", "refunded"],
     {
-      required_error: "Payment status is required",
+      error: "Payment status is required",
     }
   ),
 });

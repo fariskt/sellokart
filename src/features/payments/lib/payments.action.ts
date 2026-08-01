@@ -6,8 +6,7 @@ import { GetPaymentsParams, Payment, PaymentStatus } from "./types";
 
 // Zod validation schemas
 const paymentStatusSchema = z.enum(["pending", "paid", "failed", "refunded"], {
-  required_error: "Payment status is required",
-  invalid_type_error: "Invalid payment status value",
+  error: "Payment status is required",
 });
 
 const amountSchema = z.number().min(0, "Amount must be 0 or greater");
