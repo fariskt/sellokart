@@ -3,14 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Pagination as UiPagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
@@ -32,51 +25,54 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
-    <UiPagination className="py-4 select-none">
-      <PaginationContent>
-        {/* Prev Page Button */}
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handlePageChange(currentPage - 1);
-            }}
-            className={cn(currentPage === 1 && "pointer-events-none opacity-50")}
-          />
-        </PaginationItem>
+    <div className="py-8 flex items-center justify-center gap-2 select-none font-display">
+      {/* Prev Page Button */}
+      <button
+        type="button"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={cn(
+          "w-10 h-10 rounded-full border border-landing-primary/20 bg-white/90 flex items-center justify-center text-landing-dark transition-all cursor-pointer hover:border-landing-primary hover:text-landing-primary shadow-xs",
+          currentPage === 1 && "pointer-events-none opacity-40",
+        )}
+        aria-label="Previous Page"
+      >
+        <ChevronLeft size={16} />
+      </button>
 
-        {/* Page Links */}
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-          const isCurrent = page === currentPage;
-          return (
-            <PaginationItem key={page}>
-              <PaginationLink
-                href="#"
-                isActive={isCurrent}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(page);
-                }}
-              >
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          );
-        })}
+      {/* Page Links */}
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+        const isCurrent = page === currentPage;
+        return (
+          <button
+            type="button"
+            key={page}
+            onClick={() => handlePageChange(page)}
+            className={cn(
+              "w-10 h-10 rounded-full text-xs font-black transition-all cursor-pointer font-display",
+              isCurrent
+                ? "bg-landing-primary text-white shadow-md shadow-landing-primary/30"
+                : "border border-landing-primary/15 bg-white/90 text-landing-dark hover:border-landing-primary hover:text-landing-primary shadow-xs",
+            )}
+          >
+            {page}
+          </button>
+        );
+      })}
 
-        {/* Next Page Button */}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handlePageChange(currentPage + 1);
-            }}
-            className={cn(currentPage === totalPages && "pointer-events-none opacity-50")}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </UiPagination>
+      {/* Next Page Button */}
+      <button
+        type="button"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={cn(
+          "w-10 h-10 rounded-full border border-landing-primary/20 bg-white/90 flex items-center justify-center text-landing-dark transition-all cursor-pointer hover:border-landing-primary hover:text-landing-primary shadow-xs",
+          currentPage === totalPages && "pointer-events-none opacity-40",
+        )}
+        aria-label="Next Page"
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
   );
 }

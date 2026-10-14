@@ -3,6 +3,9 @@
 import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
+import Link from "next/link";
+import { useLandingProducts } from "@/features/products/hooks/useLandingProducts";
+import { formatLandingProduct } from "@/features/products/lib/formatLandingProduct";
 
 export function HeroSection() {
   const heroRef = useRef<HTMLElement>(null);
@@ -10,6 +13,24 @@ export function HeroSection() {
   const layer2 = useRef<HTMLDivElement>(null);
   const layer3 = useRef<HTMLDivElement>(null);
   const layer4 = useRef<HTMLDivElement>(null);
+
+  const { data: rawProducts } = useLandingProducts();
+  const heroProduct =
+    rawProducts && rawProducts.length > 0
+      ? formatLandingProduct(rawProducts[0])
+      : null;
+
+  const heroImage =
+    heroProduct?.image ||
+    "https://www.aeropostale.com/dw/image/v2/BBSG_PRD/on/demandware.static/-/Sites-master-catalog-aeropostale/default/dw317ad9fd/60219350_204_main.jpg?sw=640&sh=780&sm=fit&sfrm=jpg";
+
+  const heroName = heroProduct?.name || "Aero Cloud Hoodie";
+  const heroPrice = heroProduct?.salePrice ?? heroProduct?.price ?? 189;
+  const heroHref = heroProduct
+    ? heroProduct.slug
+      ? `/products/${heroProduct.slug}`
+      : `/products/${heroProduct.id}`
+    : "/products";
 
   useEffect(() => {
     let rafId: number;
@@ -20,10 +41,14 @@ export function HeroSection() {
         const vh = window.innerHeight;
         const x = e.clientX / vw - 0.5;
         const y = e.clientY / vh - 0.5;
-        if (layer1.current) layer1.current.style.transform = `translate(${x * 28}px, ${y * 18}px) rotate(-3deg)`;
-        if (layer2.current) layer2.current.style.transform = `translate(${x * 48}px, ${y * 32}px) rotate(12deg)`;
-        if (layer3.current) layer3.current.style.transform = `translate(${x * -32}px, ${y * -22}px) rotate(8deg)`;
-        if (layer4.current) layer4.current.style.transform = `translate(${x * 38}px, ${y * 26}px) rotate(-15deg)`;
+        if (layer1.current)
+          layer1.current.style.transform = `translate(${x * 28}px, ${y * 18}px) rotate(-3deg)`;
+        if (layer2.current)
+          layer2.current.style.transform = `translate(${x * 48}px, ${y * 32}px) rotate(12deg)`;
+        if (layer3.current)
+          layer3.current.style.transform = `translate(${x * -32}px, ${y * -22}px) rotate(8deg)`;
+        if (layer4.current)
+          layer4.current.style.transform = `translate(${x * 38}px, ${y * 26}px) rotate(-15deg)`;
       });
     };
     window.addEventListener("mousemove", handleMove);
@@ -45,10 +70,11 @@ export function HeroSection() {
           width: 800,
           height: 800,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(26,63,240,0.1) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(26,63,240,0.1) 0%, transparent 70%)",
           top: "5%",
           right: "15%",
-          transform: "translate(0,0)"
+          transform: "translate(0,0)",
         }}
       />
       <div
@@ -57,9 +83,10 @@ export function HeroSection() {
           width: 400,
           height: 400,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(26,63,240,0.07) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(26,63,240,0.07) 0%, transparent 70%)",
           bottom: "10%",
-          left: "30%"
+          left: "30%",
         }}
       />
 
@@ -67,16 +94,16 @@ export function HeroSection() {
       <div
         className="absolute inset-0 opacity-[0.025] pointer-events-none"
         style={{
-          backgroundImage: "linear-gradient(var(--landing-dark) 1px, transparent 1px), linear-gradient(90deg, var(--landing-dark) 1px, transparent 1px)",
-          backgroundSize: "64px 64px"
+          backgroundImage:
+            "linear-gradient(var(--landing-dark) 1px, transparent 1px), linear-gradient(90deg, var(--landing-dark) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
         }}
       />
 
       <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-12 w-full">
         <div className="grid lg:grid-cols-2 items-center min-h-screen gap-8 lg:gap-0">
-
           {/* Left — text */}
-          <div className="flex flex-col justify-center py-32 lg:py-0 lg:pr-12">
+          <div className="flex flex-col justify-center lg:py-0 lg:pr-12">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -95,11 +122,13 @@ export function HeroSection() {
               transition={{ duration: 0.65, delay: 0.08 }}
               className="leading-[0.88] tracking-[-0.03em] mb-8 text-landing-dark font-display font-black"
               style={{
-                fontSize: "clamp(3.8rem, 7.5vw, 7.5rem)"
+                fontSize: "clamp(3.8rem, 7.5vw, 7.5rem)",
               }}
             >
-              WEAR<br />
-              <span className="text-landing-primary">WHAT'S</span><br />
+              WEAR
+              <br />
+              <span className="text-landing-primary">WHAT&apos;S</span>
+              <br />
               NEXT.
             </motion.h1>
 
@@ -109,7 +138,8 @@ export function HeroSection() {
               transition={{ duration: 0.55, delay: 0.2 }}
               className="text-[15px] leading-relaxed max-w-sm mb-10 text-landing-primary-muted"
             >
-              Precision-crafted essentials and statement pieces for those who move first. Premium materials. Uncompromising detail.
+              Precision-crafted essentials and statement pieces for those who
+              move first. Premium materials. Uncompromising detail.
             </motion.p>
 
             <motion.div
@@ -118,25 +148,66 @@ export function HeroSection() {
               transition={{ duration: 0.55, delay: 0.3 }}
               className="flex flex-wrap gap-3"
             >
-              <button className="px-7 py-3.5 text-[13px] font-black tracking-[0.12em] uppercase rounded-full transition-all cursor-pointer bg-landing-primary hover:bg-landing-primary-hover text-white font-display">
+              <Link
+                href="/products"
+                className="px-7 py-3.5 text-[13px] font-black tracking-[0.12em] uppercase rounded-full transition-all cursor-pointer bg-landing-primary hover:bg-landing-primary-hover text-white font-display"
+              >
                 Shop New Collection
-              </button>
-              <button className="px-7 py-3.5 text-[13px] font-black tracking-[0.12em] uppercase rounded-full border-2 transition-all cursor-pointer border-landing-dark text-landing-dark font-display hover:bg-landing-dark hover:text-white">
+              </Link>
+              <Link
+                href="/categories"
+                className="px-7 py-3.5 text-[13px] font-black tracking-[0.12em] uppercase rounded-full border-2 transition-all cursor-pointer border-landing-dark text-landing-dark font-display hover:bg-landing-dark hover:text-white"
+              >
                 Explore Collections
-              </button>
+              </Link>
             </motion.div>
+
+            {/* Mobile Hero Visual (< lg) */}
+            <div className="lg:hidden mt-10 mb-2 flex justify-center">
+              <div className="relative w-full max-w-[320px]">
+                <Link href={heroHref} className="block relative group">
+                  <div className="w-full h-[360px] rounded-3xl overflow-hidden shadow-2xl shadow-landing-primary/20 bg-landing-primary-light">
+                    <img
+                      src={heroImage}
+                      alt={heroName}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="absolute top-3 right-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-landing-primary text-white font-display tracking-[0.15em] shadow-md">
+                    NEW DROP
+                  </div>
+                  <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-lg border border-landing-primary/10 flex items-center justify-between">
+                    <div className="min-w-0 pr-2">
+                      <div className="text-[11px] font-medium text-landing-primary-muted">
+                        Just dropped
+                      </div>
+                      <div className="text-sm font-black text-landing-dark font-display truncate">
+                        {heroName}
+                      </div>
+                    </div>
+                    <div className="text-base font-black text-landing-primary font-display shrink-0">
+                      ${heroPrice}
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            </div>
 
             {/* Stats bar */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.55, delay: 0.45 }}
-              className="flex gap-10 mt-14 pt-10"
+              className="flex flex-wrap sm:flex-nowrap gap-6 sm:gap-10 mt-10 lg:mt-14 pt-8 lg:pt-10"
               style={{ borderTop: "1px solid rgba(10,15,46,0.1)" }}
             >
-              {[["180+", "Premium Styles"], ["50K+", "Happy Customers"], ["4.9★", "Average Rating"]].map(([val, label]) => (
+              {[
+                ["180+", "Premium Styles"],
+                ["50K+", "Happy Customers"],
+                ["4.9★", "Average Rating"],
+              ].map(([val, label]) => (
                 <div key={label}>
-                  <div className="text-[22px] font-black tracking-tight text-landing-dark font-display">
+                  <div className="text-[20px] sm:text-[22px] font-black tracking-tight text-landing-dark font-display">
                     {val}
                   </div>
                   <div className="text-[11px] font-medium mt-0.5 text-landing-primary-muted">
@@ -152,7 +223,10 @@ export function HeroSection() {
             {/* Studio light */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse 75% 75% at 55% 45%, rgba(26,63,240,0.1) 0%, transparent 70%)" }}
+              style={{
+                background:
+                  "radial-gradient(ellipse 75% 75% at 55% 45%, rgba(26,63,240,0.1) 0%, transparent 70%)",
+              }}
             />
 
             {/* Ground shadow */}
@@ -161,67 +235,179 @@ export function HeroSection() {
               style={{
                 width: 300,
                 height: 50,
-                background: "radial-gradient(ellipse, rgba(26,63,240,0.18) 0%, transparent 70%)",
+                background:
+                  "radial-gradient(ellipse, rgba(26,63,240,0.18) 0%, transparent 70%)",
                 borderRadius: "50%",
                 bottom: "8%",
                 left: "50%",
-                transform: "translateX(-50%)"
+                transform: "translateX(-50%)",
               }}
             />
 
-            {/* Hoodie — main product */}
-            <div ref={layer1} className="absolute" style={{ top: "6%", left: "50%", marginLeft: -160, transition: "transform 0.12s ease-out", zIndex: 3 }}>
-              <div style={{ width: 320, height: 390, borderRadius: 28, overflow: "hidden", boxShadow: "0 32px 80px rgba(26,63,240,0.28), 0 12px 32px rgba(0,0,0,0.12)" }}>
-                <img src="https://www.aeropostale.com/dw/image/v2/BBSG_PRD/on/demandware.static/-/Sites-master-catalog-aeropostale/default/dw317ad9fd/60219350_204_main.jpg?sw=640&sh=780&sm=fit&sfrm=jpg" alt="Aero Cloud Hoodie" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute -top-3 -right-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-landing-primary text-white font-display tracking-[0.15em]">
-                NEW DROP
-              </div>
+            {/* Main product */}
+            <div
+              ref={layer1}
+              className="absolute"
+              style={{
+                top: "6%",
+                left: "50%",
+                marginLeft: -160,
+                transition: "transform 0.12s ease-out",
+                zIndex: 3,
+              }}
+            >
+              <Link href={heroHref}>
+                <div
+                  style={{
+                    width: 320,
+                    height: 390,
+                    borderRadius: 28,
+                    overflow: "hidden",
+                    boxShadow:
+                      "0 32px 80px rgba(26,63,240,0.28), 0 12px 32px rgba(0,0,0,0.12)",
+                  }}
+                >
+                  <img
+                    src={heroImage}
+                    alt={heroName}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
+                <div className="absolute -top-3 -right-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-landing-primary text-white font-display tracking-[0.15em] shadow-md">
+                  NEW DROP
+                </div>
+              </Link>
             </div>
 
             {/* Sneaker */}
-            <div ref={layer2} className="absolute" style={{ bottom: "10%", right: "2%", transition: "transform 0.16s ease-out", zIndex: 4 }}>
-              <div style={{ width: 210, height: 148, borderRadius: 22, overflow: "hidden", boxShadow: "0 20px 60px rgba(26,63,240,0.22), 0 8px 24px rgba(0,0,0,0.1)" }}>
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=420&h=296&fit=crop&auto=format" alt="Sneaker" className="w-full h-full object-cover" />
+            <div
+              ref={layer2}
+              className="absolute"
+              style={{
+                bottom: "10%",
+                right: "2%",
+                transition: "transform 0.16s ease-out",
+                zIndex: 4,
+              }}
+            >
+              <div
+                style={{
+                  width: 210,
+                  height: 148,
+                  borderRadius: 22,
+                  overflow: "hidden",
+                  boxShadow:
+                    "0 20px 60px rgba(26,63,240,0.22), 0 8px 24px rgba(0,0,0,0.1)",
+                }}
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=420&h=296&fit=crop&auto=format"
+                  alt="Sneaker"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
             {/* Cap */}
-            <div ref={layer3} className="absolute" style={{ top: "10%", left: "2%", transition: "transform 0.13s ease-out", zIndex: 2 }}>
-              <div style={{ width: 148, height: 148, borderRadius: 22, overflow: "hidden", boxShadow: "0 16px 48px rgba(10,15,46,0.14)" }}>
-                <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=296&h=296&fit=crop&auto=format" alt="Cap" className="w-full h-full object-cover" />
+            <div
+              ref={layer3}
+              className="absolute"
+              style={{
+                top: "10%",
+                left: "2%",
+                transition: "transform 0.13s ease-out",
+                zIndex: 2,
+              }}
+            >
+              <div
+                style={{
+                  width: 148,
+                  height: 148,
+                  borderRadius: 22,
+                  overflow: "hidden",
+                  boxShadow: "0 16px 48px rgba(10,15,46,0.14)",
+                }}
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=296&h=296&fit=crop&auto=format"
+                  alt="Cap"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
             {/* Watch */}
-            <div ref={layer4} className="absolute" style={{ bottom: "22%", left: "6%", transition: "transform 0.18s ease-out", zIndex: 2 }}>
-              <div style={{ width: 112, height: 112, borderRadius: 18, overflow: "hidden", boxShadow: "0 12px 32px rgba(26,63,240,0.2)" }}>
-                <img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=224&h=224&fit=crop&auto=format" alt="Watch" className="w-full h-full object-cover" />
+            <div
+              ref={layer4}
+              className="absolute"
+              style={{
+                bottom: "22%",
+                left: "6%",
+                transition: "transform 0.18s ease-out",
+                zIndex: 2,
+              }}
+            >
+              <div
+                style={{
+                  width: 112,
+                  height: 112,
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  boxShadow: "0 12px 32px rgba(26,63,240,0.2)",
+                }}
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=224&h=224&fit=crop&auto=format"
+                  alt="Watch"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
             {/* Floating price card */}
             <motion.div
               animate={{ y: [0, -9, 0] }}
-              transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}
+              transition={{
+                repeat: Infinity,
+                duration: 3.2,
+                ease: "easeInOut",
+              }}
               className="absolute"
               style={{ top: "43%", right: "0%" }}
             >
-              <div style={{ background: "#fff", borderRadius: 20, padding: "14px 18px", boxShadow: "0 20px 60px rgba(26,63,240,0.18)", border: "1px solid rgba(26,63,240,0.1)" }}>
-                <div className="text-[11px] font-medium text-landing-primary-muted">Just dropped</div>
-                <div className="text-sm font-black mt-0.5 text-landing-dark font-display">
-                  Aero Cloud Hoodie
+              <Link href={heroHref}>
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 20,
+                    padding: "14px 18px",
+                    boxShadow: "0 20px 60px rgba(26,63,240,0.18)",
+                    border: "1px solid rgba(26,63,240,0.1)",
+                    maxWidth: 200,
+                  }}
+                >
+                  <div className="text-[11px] font-medium text-landing-primary-muted">
+                    Just dropped
+                  </div>
+                  <div className="text-sm font-black mt-0.5 text-landing-dark font-display truncate">
+                    {heroName}
+                  </div>
+                  <div className="text-base font-black text-landing-primary font-display">
+                    ${heroPrice}
+                  </div>
                 </div>
-                <div className="text-base font-black text-landing-primary font-display">
-                  $189
-                </div>
-              </div>
+              </Link>
             </motion.div>
 
             {/* Floating rating pill */}
             <motion.div
               animate={{ y: [0, 7, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 1.2 }}
+              transition={{
+                repeat: Infinity,
+                duration: 4,
+                ease: "easeInOut",
+                delay: 1.2,
+              }}
               className="absolute"
               style={{ bottom: "30%", right: "25%" }}
             >
@@ -236,7 +422,9 @@ export function HeroSection() {
                     />
                   ))}
                 </div>
-                <div className="text-[11px] font-bold text-white">50K+ Reviews</div>
+                <div className="text-[11px] font-bold text-white">
+                  50K+ Reviews
+                </div>
               </div>
             </motion.div>
           </div>

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface WishlistItem {
-  id: number;
+  id: number | string;
   name: string;
   price: number;
   image: string;
@@ -11,9 +11,9 @@ export interface WishlistItem {
 interface WishlistState {
   items: WishlistItem[];
   addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: number) => void;
+  removeFromWishlist: (id: number | string) => void;
   toggleWishlist: (item: WishlistItem) => void;
-  isInWishlist: (id: number) => boolean;
+  isInWishlist: (id: number | string) => boolean;
 }
 
 export const useWishlistStore = create<WishlistState>()(
@@ -27,7 +27,7 @@ export const useWishlistStore = create<WishlistState>()(
         }),
       removeFromWishlist: (id) =>
         set((state) => ({
-          items: state.items.filter((i) => i.id !== id)
+          items: state.items.filter((i) => i.id !== id),
         })),
       toggleWishlist: (item) => {
         const isIn = get().items.some((i) => i.id === item.id);
@@ -37,10 +37,10 @@ export const useWishlistStore = create<WishlistState>()(
           get().addToWishlist(item);
         }
       },
-      isInWishlist: (id) => get().items.some((i) => i.id === id)
+      isInWishlist: (id) => get().items.some((i) => i.id === id),
     }),
     {
-      name: "sellokart-wishlist-storage"
-    }
-  )
+      name: "sellokart-wishlist-storage",
+    },
+  ),
 );

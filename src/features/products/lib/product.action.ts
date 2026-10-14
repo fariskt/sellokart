@@ -558,8 +558,7 @@ product_variants (
   product_variant_attributes (
     id,
     attribute_name,
-    attribute_value,
-    created_at
+    attribute_value
   )
 )
     `,
@@ -580,6 +579,190 @@ product_variants (
           a.sort_order - b.sort_order,
       ) ?? [],
   }));
+}
+
+export async function getLandingProducts() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `
+      *,
+      categories (
+        id,
+        name
+      ),
+      product_images (
+        id,
+        image_url,
+        image_path,
+        is_primary,
+        sort_order
+      ),
+      product_attributes (
+        id,
+        attribute_name,
+        attribute_value
+      ),
+      product_variants (
+        id,
+        name,
+        sku,
+        price,
+        sale_price,
+        stock,
+        product_variant_attributes (
+          id,
+          attribute_name,
+          attribute_value
+        )
+      )
+    `,
+    )
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const activeProducts =
+    data?.filter((product: any) => product.status === "active") ?? [];
+  const sourceProducts =
+    activeProducts.length > 0
+      ? activeProducts
+      : (data?.filter((product: any) => product.status !== "archived") ?? []);
+
+  return sourceProducts.map((product: any) => ({
+    ...product,
+    product_images:
+      product.product_images?.sort(
+        (a: SortableProductImage, b: SortableProductImage) =>
+          a.sort_order - b.sort_order,
+      ) ?? [],
+  }));
+}
+
+export async function getProductBySlugOrId(slugOrId: string) {
+  const supabase = await createClient();
+
+  const isUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      slugOrId,
+    );
+
+  let query = supabase
+    .from("products")
+    .select(
+      `
+      *,
+      categories (
+        id,
+        name
+      ),
+      product_images (
+        id,
+        image_url,
+        image_path,
+        is_primary,
+        sort_order
+      ),
+      product_attributes (
+        id,
+        attribute_name,
+        attribute_value
+      ),
+      product_variants (
+        id,
+        name,
+        sku,
+        price,
+        sale_price,
+        stock,
+        product_variant_attributes (
+          id,
+          attribute_name,
+          attribute_value
+        )
+      )
+    `,
+    );
+
+  if (isUuid) {
+    query = query.or(`id.eq.${slugOrId},slug.eq.${slugOrId}`);
+  } else {
+    query = query.eq("slug", slugOrId);
+  }
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error || !data) {
+    // If not found by slug, also attempt searching by id if possible
+    if (!isUuid) {
+      const { data: byId } = await supabase
+        .from("products")
+        .select(
+          `
+          *,
+          categories (
+            id,
+            name
+          ),
+          product_images (
+            id,
+            image_url,
+            image_path,
+            is_primary,
+            sort_order
+          ),
+          product_attributes (
+            id,
+            attribute_name,
+            attribute_value
+          ),
+          product_variants (
+            id,
+            name,
+            sku,
+            price,
+            sale_price,
+            stock,
+            product_variant_attributes (
+              id,
+              attribute_name,
+              attribute_value
+            )
+          )
+        `,
+        )
+        .ilike("name", `%${slugOrId.replace(/-/g, " ")}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (byId) {
+        return {
+          ...byId,
+          product_images:
+            byId.product_images?.sort(
+              (a: SortableProductImage, b: SortableProductImage) =>
+                a.sort_order - b.sort_order,
+            ) ?? [],
+        };
+      }
+    }
+    return null;
+  }
+
+  return {
+    ...data,
+    product_images:
+      data.product_images?.sort(
+        (a: SortableProductImage, b: SortableProductImage) =>
+          a.sort_order - b.sort_order,
+      ) ?? [],
+  };
 }
 
 export async function toggleFeatured(productId: string, featured: boolean) {
@@ -713,8 +896,7 @@ export async function getProductsPaginated({
       product_variant_attributes (
         id,
         attribute_name,
-        attribute_value,
-        created_at
+        attribute_value
       )
     )
   `,
@@ -804,8 +986,7 @@ export async function getProductDetails(productId: string) {
         product_variant_attributes (
           id,
           attribute_name,
-          attribute_value,
-          created_at
+          attribute_value
         )
       )
     `,

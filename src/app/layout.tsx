@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { QueryProvider } from "@/providers/query-provider";
 
 export const inter = Inter({
   subsets: ["latin"],
@@ -34,9 +35,11 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jakarta.variable} ${playfair.variable}`}>
       <Toaster position="top-right"/>
       <body className="min-h-screen flex flex-col">
-        <div className="flex-1 flex flex-col w-full">
-          {children}
-        </div>
+        <QueryProvider>
+          <div className="flex-1 flex flex-col w-full">
+            {children}
+          </div>
+        </QueryProvider>
       </body>
     </html>
   );

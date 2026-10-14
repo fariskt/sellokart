@@ -10,7 +10,7 @@ export function Footer() {
             <h3 className="text-2xl font-black tracking-tight text-white font-display">Stay in the Loop</h3>
             <p className="text-[14px] mt-1 text-landing-dark-muted">New drops, exclusive access, early sales. Never miss.</p>
           </div>
-          <div className="flex gap-3 w-full lg:w-auto max-w-md">
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto max-w-md">
             <input
               type="email"
               placeholder="your@email.com"
@@ -60,9 +60,9 @@ export function Footer() {
 
       {/* Bottom */}
       <div className="py-6 px-6 lg:px-12" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <span className="text-[12px] text-landing-dark-muted">© 2026 Sellokart. All rights reserved.</span>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
             {["Privacy Policy", "Terms of Service", "Cookie Settings"].map((link) => (
               <a 
                 key={link} 

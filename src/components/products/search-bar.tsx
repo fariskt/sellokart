@@ -20,33 +20,36 @@ export function SearchBar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (searchTerm.trim() === "") {
       params.delete("search");
     } else {
       params.set("search", searchTerm);
     }
-    
+
     // Reset page to 1 on search change
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
-    <form onSubmit={handleSearchSubmit} className="relative w-full max-w-md select-none">
-      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+    <form
+      onSubmit={handleSearchSubmit}
+      className="relative w-full max-w-md select-none font-display"
+    >
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-landing-primary">
         <Search className="w-4 h-4" />
       </div>
       <input
         type="text"
-        placeholder="Search products..."
+        placeholder="Search collection..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full pl-11 pr-24 py-2.5 text-sm border border-border rounded-xl bg-white text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all"
+        className="w-full pl-11 pr-28 py-3 text-xs font-bold rounded-full bg-white/95 border border-landing-primary/20 text-landing-dark placeholder:text-landing-primary-muted/70 focus:outline-none focus:ring-2 focus:ring-landing-primary/20 focus:border-landing-primary transition-all shadow-xs"
       />
       <button
         type="submit"
-        className="absolute right-1.5 top-1.5 bottom-1.5 px-4 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-colors cursor-pointer"
+        className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-full bg-landing-primary hover:bg-landing-primary-hover text-white text-[10px] font-black tracking-[0.12em] uppercase transition-all cursor-pointer shadow-sm active:scale-95"
       >
         Search
       </button>
