@@ -95,11 +95,11 @@ export default function CartPage() {
     setCouponCode("");
   };
 
-  const incrementQty = (id: number, currentQty: number) => {
+  const incrementQty = (id: number | string, currentQty: number) => {
     updateQuantity(id, currentQty + 1);
   };
 
-  const decrementQty = (id: number, currentQty: number) => {
+  const decrementQty = (id: number | string, currentQty: number) => {
     if (currentQty > 1) {
       updateQuantity(id, currentQty - 1);
     } else {

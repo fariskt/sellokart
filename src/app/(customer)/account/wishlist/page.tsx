@@ -44,7 +44,7 @@ export default function WishlistPage() {
       .replace(/\s+/g, "-");
   };
 
-  const handleRemoveItem = (id: number, name: string) => {
+  const handleRemoveItem = (id: number | string, name: string) => {
     removeFromWishlist(id);
     console.log(`Analytics: Wishlist Item Removed - ID: ${id}, Name: ${name}`);
     
@@ -142,7 +142,10 @@ export default function WishlistPage() {
             <AnimatePresence mode="popLayout" initial={false}>
               {paginatedItems.map((item) => {
                 // Hardcode stock for mockup aesthetic values
-                const stockStatus = item.id % 3 === 0 ? "Only 2 left" : "In Stock";
+                const stockStatus =
+                  String(item.id).charCodeAt(0) % 3 === 0
+                    ? "Only 2 left"
+                    : "In Stock";
                 
                 return (
                   <motion.div
