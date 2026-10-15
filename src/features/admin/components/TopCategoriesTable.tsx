@@ -60,7 +60,7 @@ export function TopCategoriesTable({ categories }: TopCategoriesTableProps) {
                     <TableCell className="text-center font-bold text-xs">
                       {c.products_sold}
                     </TableCell>
-                    <TableCell className="text-right font-black text-xs text-foreground">
+                    <TableCell className="text-right  text-xs text-foreground">
                       {formatCurrency(c.revenue)}
                     </TableCell>
                   </TableRow>

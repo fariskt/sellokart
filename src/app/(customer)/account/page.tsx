@@ -1,13 +1,13 @@
 import * as React from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { 
-  ShoppingBag, 
-  Heart, 
-  Bell, 
-  Calendar, 
-  ChevronRight, 
-  User as UserIcon, 
+import {
+  ShoppingBag,
+  Heart,
+  Bell,
+  Calendar,
+  ChevronRight,
+  User as UserIcon,
   ShieldAlert,
   ArrowRight
 } from "lucide-react";
@@ -142,13 +142,13 @@ export default async function AccountDashboard() {
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Orders Count Card */}
-        <Link 
+        <Link
           href="/account/orders"
           className="border border-border rounded-2xl bg-white p-6 shadow-xs flex items-center justify-between group hover:border-primary/50 transition-all cursor-pointer"
         >
           <div className="space-y-1">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Orders Placed</span>
-            <span className="text-3xl font-black text-foreground">{ordersCount}</span>
+            <span className="text-3xl  text-foreground">{ordersCount}</span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 transition-transform group-hover:scale-110">
             <ShoppingBag className="w-6 h-6" />
@@ -156,13 +156,13 @@ export default async function AccountDashboard() {
         </Link>
 
         {/* Wishlist Count Card */}
-        <Link 
+        <Link
           href="/wishlist"
           className="border border-border rounded-2xl bg-white p-6 shadow-xs flex items-center justify-between group hover:border-primary/50 transition-all cursor-pointer"
         >
           <div className="space-y-1">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Wishlist Items</span>
-            <span className="text-3xl font-black text-foreground">{wishlistCount}</span>
+            <span className="text-3xl  text-foreground">{wishlistCount}</span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-600 transition-transform group-hover:scale-110">
             <Heart className="w-6 h-6" />
@@ -173,7 +173,7 @@ export default async function AccountDashboard() {
         <div className="border border-border rounded-2xl bg-white p-6 shadow-xs flex items-center justify-between group">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Unread Alerts</span>
-            <span className="text-3xl font-black text-foreground">{notificationsCount}</span>
+            <span className="text-3xl  text-foreground">{notificationsCount}</span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600">
             <Bell className="w-6 h-6" />
@@ -187,7 +187,7 @@ export default async function AccountDashboard() {
         <div className="lg:col-span-2 border border-border rounded-2xl bg-white overflow-hidden shadow-xs">
           <div className="px-6 py-5 border-b border-border/60 flex items-center justify-between">
             <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Recent Orders</h3>
-            <Link 
+            <Link
               href="/account/orders"
               className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
             >
@@ -236,7 +236,7 @@ export default async function AccountDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link 
+                        <Link
                           href={`/account/orders/${ord.id}`}
                           className="text-xs font-bold text-primary hover:underline cursor-pointer"
                         >

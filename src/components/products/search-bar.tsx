@@ -49,7 +49,7 @@ export function SearchBar() {
       />
       <button
         type="submit"
-        className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-full bg-landing-primary hover:bg-landing-primary-hover text-white text-[10px] font-black tracking-[0.12em] uppercase transition-all cursor-pointer shadow-sm active:scale-95"
+        className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-full bg-landing-primary hover:bg-landing-primary-hover text-white text-[10px]  tracking-[0.12em] uppercase transition-all cursor-pointer shadow-sm active:scale-95"
       >
         Search
       </button>

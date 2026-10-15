@@ -103,7 +103,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                     <span className="text-[10px] text-muted-foreground">{o.customer_email}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-right font-black text-xs text-foreground">
+                <TableCell className="text-right  text-xs text-foreground">
                   {formatCurrency(o.total)}
                 </TableCell>
                 <TableCell>{getStatusBadge(o.status)}</TableCell>

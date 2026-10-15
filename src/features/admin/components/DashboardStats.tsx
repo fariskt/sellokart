@@ -86,7 +86,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
                   <Icon className="w-4 h-4 shrink-0" />
                 </div>
               </div>
-              <p className="mt-2 text-2xl font-black tracking-tight text-foreground">
+              <p className="mt-2 text-2xl  tracking-tight text-foreground">
                 {card.value}
               </p>
             </div>

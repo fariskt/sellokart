@@ -58,7 +58,7 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
                 <TableCell className="text-center font-bold text-xs">
                   {p.units_sold}
                 </TableCell>
-                <TableCell className="text-right font-black text-xs text-foreground">
+                <TableCell className="text-right  text-xs text-foreground">
                   {formatCurrency(p.revenue)}
                 </TableCell>
               </TableRow>

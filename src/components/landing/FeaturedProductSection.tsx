@@ -49,7 +49,7 @@ export function FeaturedProductSection() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-landing-dark font-display leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl  tracking-tight text-landing-dark font-display leading-tight">
             Featured Products
           </h2>
         </div>

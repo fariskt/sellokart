@@ -46,7 +46,7 @@ export function CouponsAnalytics({ data }: CouponsAnalyticsProps) {
             >
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-wider opacity-80">{card.label}</p>
-                <p className="text-lg font-black mt-1 text-foreground">{card.value}</p>
+                <p className="text-lg  mt-1 text-foreground">{card.value}</p>
               </div>
               <Icon className="w-5 h-5 shrink-0 opacity-80" />
             </div>
@@ -79,7 +79,7 @@ export function CouponsAnalytics({ data }: CouponsAnalyticsProps) {
                   <TableCell className="font-mono font-bold text-xs text-foreground uppercase">
                     {c.code}
                   </TableCell>
-                  <TableCell className="text-right font-black text-xs text-primary">
+                  <TableCell className="text-right  text-xs text-primary">
                     {c.usage_count}
                   </TableCell>
                 </TableRow>

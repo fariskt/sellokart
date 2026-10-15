@@ -29,7 +29,7 @@ export function SortDropdown() {
     <div className="flex items-center space-x-2.5 select-none font-display">
       <label
         htmlFor="sort-select"
-        className="text-[11px] font-black tracking-[0.1em] uppercase text-landing-primary-muted whitespace-nowrap"
+        className="text-[11px]  tracking-[0.1em] uppercase text-landing-primary-muted whitespace-nowrap"
       >
         Sort by:
       </label>

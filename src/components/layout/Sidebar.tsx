@@ -22,11 +22,11 @@ export function Sidebar() {
   }, []);
 
   // Determine which navigation to use based on url path
-  const navigationGroups = isAdmin 
-    ? adminNavigation 
-    : isCustomer 
-    ? customerNavigation 
-    : [];
+  const navigationGroups = isAdmin
+    ? adminNavigation
+    : isCustomer
+      ? customerNavigation
+      : [];
 
   // If we're not on admin or customer pages, don't show the sidebar
   if (navigationGroups.length === 0) {
@@ -38,7 +38,7 @@ export function Sidebar() {
   const isExpanded = !collapsed || hovered;
 
   return (
-    <aside 
+    <aside
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
@@ -54,7 +54,7 @@ export function Sidebar() {
         )}>
           {isExpanded && (
             <Link href="/" className="flex items-center space-x-2 animate-in fade-in duration-200">
-              <span className="text-base font-black tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
+              <span className="text-base  tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
                 SELLOKART
               </span>
             </Link>
@@ -86,7 +86,7 @@ export function Sidebar() {
               ) : (
                 <div className="h-[1px] bg-sidebar-border/40 mx-2 my-3" />
               )}
-              
+
               <ul className="space-y-1">
                 {group.items.map((item) => {
                   const Icon = item.icon;

@@ -3,13 +3,13 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { 
-  Star, 
-  Edit2, 
-  Trash2, 
-  Loader2, 
-  AlertCircle, 
-  CheckCircle2, 
+import {
+  Star,
+  Edit2,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
   Calendar,
   MessageSquare,
   Sparkles
@@ -28,16 +28,16 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ReviewsPage() {
   const router = useRouter();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSandbox, setIsSandbox] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   // Reviews data logs
   const [reviews, setReviews] = useState<any[]>([]);
-  
+
   // Edit state
   const [editingReview, setEditingReview] = useState<any | null>(null);
   const [editRating, setEditRating] = useState(5);
@@ -101,7 +101,7 @@ export default function ReviewsPage() {
 
     try {
       const supabase = createClient();
-      
+
       const { error: updateError } = await supabase
         .from("reviews")
         .update({
@@ -136,7 +136,7 @@ export default function ReviewsPage() {
 
     try {
       const supabase = createClient();
-      
+
       const { error: deleteError } = await supabase
         .from("reviews")
         .delete()
@@ -225,8 +225,8 @@ export default function ReviewsPage() {
         <div className="grid grid-cols-1 gap-4">
           <AnimatePresence initial={false}>
             {reviews.map((rev) => (
-              <motion.div 
-                key={rev.id} 
+              <motion.div
+                key={rev.id}
                 initial={{ opacity: 1 }}
                 exit={{ opacity: 0, height: 0 }}
                 className="border border-border rounded-2xl bg-white p-5 shadow-xs flex flex-col sm:flex-row items-start justify-between gap-4 overflow-hidden"
@@ -240,32 +240,32 @@ export default function ReviewsPage() {
                       className="max-h-full max-w-full object-contain"
                     />
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <h4 className="font-bold text-foreground text-sm leading-snug">
                       {rev.product_name}
                     </h4>
-                    
+
                     {/* Stars */}
                     <div className="flex items-center gap-0.5">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
+                        <Star
+                          key={i}
                           className={cn(
                             "w-3.5 h-3.5",
                             i < rev.rating ? "text-amber-500 fill-amber-500" : "text-border"
-                          )} 
+                          )}
                         />
                       ))}
                     </div>
-                    
+
                     {rev.comment && (
                       <p className="text-xs text-muted-foreground leading-relaxed italic bg-muted/10 border-l-2 border-primary/20 pl-3 py-1 mt-1 flex items-start gap-1">
                         <MessageSquare className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary/40" />
                         <span>"{rev.comment}"</span>
                       </p>
                     )}
-                    
+
                     <div className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       Reviewed on {formatDate(rev.created_at)}
@@ -282,7 +282,7 @@ export default function ReviewsPage() {
                     <Edit2 className="w-3.5 h-3.5" />
                     <span>Edit</span>
                   </button>
-                  
+
                   <button
                     onClick={() => handleDeleteReview(rev.id)}
                     className="p-2 border border-border hover:border-destructive/50 hover:bg-destructive/5 text-muted-foreground hover:text-destructive rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
@@ -302,11 +302,11 @@ export default function ReviewsPage() {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-lg p-0 border-none overflow-hidden bg-white shadow-xl rounded-2xl">
           <DialogHeader className="p-6 pb-4 border-b border-border/60">
-            <DialogTitle className="text-lg font-black tracking-tight text-foreground">
+            <DialogTitle className="text-lg  tracking-tight text-foreground">
               Modify Review
             </DialogTitle>
           </DialogHeader>
-          
+
           <form onSubmit={handleUpdateReview} className="p-6 space-y-5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-muted/30 rounded-xl border border-border/40 p-2 flex items-center justify-center shrink-0">
@@ -336,11 +336,11 @@ export default function ReviewsPage() {
                     className="p-1 cursor-pointer transition-transform hover:scale-110 active:scale-95"
                     aria-label={`Rate ${starValue} Stars`}
                   >
-                    <Star 
+                    <Star
                       className={cn(
                         "w-7 h-7",
                         starValue <= editRating ? "text-amber-500 fill-amber-500" : "text-border"
-                      )} 
+                      )}
                     />
                   </button>
                 ))}
@@ -373,7 +373,7 @@ export default function ReviewsPage() {
               >
                 Cancel
               </Button>
-              
+
               <Button
                 type="submit"
                 disabled={saving}

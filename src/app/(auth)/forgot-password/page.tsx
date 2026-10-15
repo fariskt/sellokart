@@ -4,11 +4,9 @@ import * as React from "react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { Title } from "@/components/ui/title";
 import Link from "next/link";
-import { ArrowRight, Mail, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { ArrowRight, ArrowLeft, Mail, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -42,119 +40,150 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="w-full min-h-screen hero-bg flex items-center justify-center p-4 relative overflow-hidden select-none">
-      {/* Top Left Logo */}
-      <div className="absolute top-6 left-6 z-20">
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-black tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-            SELLOKART
-          </span>
+    <main className="w-full min-h-screen bg-landing-hero-bg flex flex-col justify-between p-4 sm:p-6 relative overflow-hidden select-none">
+      {/* Background Decorative Landing Glows */}
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-landing-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-landing-accent-glow/15 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Top Header Navigation */}
+      <header className="w-full max-w-[1400px] mx-auto flex items-center justify-between py-2 sm:py-4 z-20">
+        <Link href="/" className="inline-flex items-center transition-transform hover:scale-105 duration-200">
+          <Image
+            src="/logo4.png"
+            alt="Sellokart"
+            width={150}
+            height={38}
+            className="h-8 sm:h-9 w-auto object-contain"
+            priority
+          />
         </Link>
-      </div>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-landing-primary/15 bg-white/70 hover:bg-white text-xs font-bold text-landing-dark hover:text-landing-primary transition-all font-display shadow-xs backdrop-blur-md cursor-pointer"
+        >
+          <ArrowLeft size={14} />
+          <span className="hidden sm:inline">Back to Sign In</span>
+          <span className="sm:hidden">Sign In</span>
+        </Link>
+      </header>
 
-      {/* Background Decorative Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] max-w-[400px] bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] max-w-[400px] bg-accent/20 rounded-full blur-3xl animate-pulse" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="w-full max-w-md bg-white border border-border rounded-2xl card-shadow p-8 z-10 backdrop-blur-md relative"
-      >
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-3">
-            <span className="text-2xl font-black tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-              SELLOKART
-            </span>
-          </Link>
-          <Title as="h1" size="md" align="center" variant="default" className="font-extrabold">
-            Reset Password
-          </Title>
-          <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">
-            Enter your account email address, and we will email you a link to reset your password.
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20 rounded-lg flex items-start space-x-2"
-            >
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </motion.div>
-          )}
-
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 text-xs font-medium bg-success/10 text-success border border-success/20 rounded-lg flex items-start space-x-2"
-            >
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{success}</span>
-            </motion.div>
-          )}
-
-          {/* Email input */}
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-              Email Address
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-                <Mail className="w-4 h-4" />
-              </div>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isPending}
-                className="h-10 pl-10 border border-border"
-              />
+      {/* Card Content */}
+      <div className="w-full flex-1 flex items-center justify-center py-6 sm:py-10 z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="w-full max-w-md bg-white/85 backdrop-blur-xl border border-landing-primary/10 rounded-[28px] sm:rounded-[32px] p-7 sm:p-9 shadow-xl shadow-landing-primary/5 relative"
+        >
+          {/* Header */}
+          <div className="text-center mb-7">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-landing-primary-light border border-landing-primary/15 text-landing-primary text-[11px] font-bold uppercase tracking-wider font-display mb-3">
+              <Sparkles size={12} className="shrink-0" />
+              <span>Password Recovery</span>
             </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-landing-dark font-display tracking-tight leading-tight">
+              Reset Password
+            </h1>
+            <p className="text-xs sm:text-sm text-landing-primary-muted font-display mt-2 font-medium">
+              Enter your email address to receive password reset instructions.
+            </p>
           </div>
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="w-full h-11 font-bold button-shadow hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                <span>Sending link...</span>
-              </>
-            ) : (
-              <>
-                <span>Send Reset Link</span>
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3.5 text-xs font-semibold bg-red-50 text-red-600 border border-red-200 rounded-2xl font-display flex items-start gap-2"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </motion.div>
             )}
-          </Button>
-        </form>
 
-        {/* Footer */}
-        <div className="mt-6 text-center border-t border-border pt-5 flex justify-between text-sm">
-          <Link href="/login" className="font-semibold text-primary hover:underline">
-            Back to Sign In
-          </Link>
-          <Link href="/register" className="font-semibold text-muted-foreground hover:text-foreground">
-            Create Account
-          </Link>
-        </div>
-      </motion.div>
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3.5 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 rounded-2xl font-display flex items-start gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{success}</span>
+              </motion.div>
+            )}
+
+            {/* Email input */}
+            <div className="space-y-1.5 group">
+              <label
+                htmlFor="email"
+                className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-landing-dark font-display"
+              >
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-landing-primary transition-colors">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isPending}
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-landing-primary/15 bg-white/80 hover:bg-white focus:bg-white text-sm text-landing-dark placeholder:text-slate-400 focus:outline-none focus:border-landing-primary focus:ring-4 focus:ring-landing-primary/10 transition-all font-medium disabled:opacity-50"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full mt-2 inline-flex items-center justify-center py-3.5 px-6 rounded-full font-display font-bold uppercase tracking-wider text-xs bg-landing-dark text-white hover:bg-landing-primary transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <span>Sending link...</span>
+                </>
+              ) : (
+                <>
+                  <span>Send Reset Link</span>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-7 text-center border-t border-landing-primary/10 pt-5 flex items-center justify-between text-xs font-display">
+            <Link
+              href="/login"
+              className="font-bold text-landing-primary hover:text-landing-primary-hover transition-colors"
+            >
+              Back to Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="font-bold text-slate-600 hover:text-landing-dark transition-colors"
+            >
+              Create Account
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Subtle Bottom Footer */}
+      <footer className="w-full max-w-[1400px] mx-auto text-center py-3 z-20">
+        <p className="text-[11px] text-landing-primary-muted font-display">
+          © {new Date().getFullYear()} Sellokart. Precision-crafted shopping experience.
+        </p>
+      </footer>
     </main>
   );
 }

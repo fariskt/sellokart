@@ -73,7 +73,7 @@ export function HeroSection() {
                 transition={{ duration: 0.4 }}
                 className="inline-flex items-center gap-2 mb-6"
               >
-                <span className="px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-[11px] font-black tracking-[0.2em] uppercase font-display flex items-center gap-1.5 shadow-xs">
+                <span className="px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-[11px]  tracking-[0.2em] uppercase font-display flex items-center gap-1.5 shadow-xs">
                   {current.eyebrow}
                 </span>
               </motion.div>
@@ -84,7 +84,7 @@ export function HeroSection() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.05 }}
-                className="text-4xl sm:text-6xl lg:text-[76px] font-black tracking-tight leading-[0.95] text-white font-display mb-6 drop-shadow-sm"
+                className="text-4xl sm:text-6xl lg:text-[76px]  tracking-tight leading-[0.95] text-white font-display mb-6 drop-shadow-sm"
               >
                 {current.titleLine1}
                 <br />

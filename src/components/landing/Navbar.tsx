@@ -261,7 +261,7 @@ export function Navbar() {
                   {!query ? (
                     <div className="p-4 space-y-4">
                       <div className="pt-3">
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-landing-primary-muted font-display mb-2">
+                        <div className="text-[10px]  uppercase tracking-[0.2em] text-landing-primary-muted font-display mb-2">
                           Trending Drops
                         </div>
                         <div className="space-y-1">
@@ -304,7 +304,7 @@ export function Navbar() {
                   ) : searchResults.length > 0 ? (
                     /* When Matching Products are Found */
                     <div className="p-3">
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-landing-primary-muted font-display px-2 py-1 mb-1">
+                      <div className="text-[10px]  uppercase tracking-[0.2em] text-landing-primary-muted font-display px-2 py-1 mb-1">
                         Products ({searchResults.length})
                       </div>
                       <div className="space-y-1">
@@ -405,7 +405,7 @@ export function Navbar() {
             >
               <ShoppingBag size={18} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-landing-primary text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-landing-primary text-white text-[9px]  rounded-full flex items-center justify-center shadow-xs">
                   {cartCount}
                 </span>
               )}

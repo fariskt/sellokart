@@ -107,27 +107,17 @@ export default async function ProductsPage({
   );
 
   return (
-    <div className="bg-landing-hero-bg min-h-screen pt-24 pb-28 select-none font-display">
+    <div className="bg-landing-hero-bg min-h-screen pt-24 pb-28">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
         {/* Title & Search Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-landing-primary/10 mb-10">
           <div>
-            <div className="inline-flex items-center gap-3 mb-3">
-              <span className="w-6 h-px bg-landing-primary" />
-              <span className="text-[11px] font-black tracking-[0.28em] uppercase text-landing-primary font-display">
-                The Full Catalog
-              </span>
-            </div>
             <h1
-              className="leading-none tracking-tight font-black text-landing-dark font-display"
+              className="leading-none tracking-tight  text-landing-dark font-display"
               style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.8rem)" }}
             >
               Our Products
             </h1>
-            <p className="text-[15px] leading-relaxed max-w-xl mt-3 text-landing-primary-muted font-display">
-              Precision-crafted essentials and statement pieces curated for your
-              everyday style.
-            </p>
           </div>
           <SearchBar />
         </div>
@@ -166,7 +156,7 @@ export default async function ProductsPage({
               </div>
             ) : (
               <div className="text-center py-20 bg-white/70 backdrop-blur-md border border-dashed border-landing-primary/20 rounded-3xl p-8">
-                <span className="text-xl font-black text-landing-dark block mb-2 font-display">
+                <span className="text-xl  text-landing-dark block mb-2 font-display">
                   No products found
                 </span>
                 <span className="text-sm font-medium text-landing-primary-muted font-display">

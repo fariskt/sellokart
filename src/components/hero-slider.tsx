@@ -242,7 +242,7 @@ export function HeroSlider() {
                   as="h1"
                   size="2xl"
                   className={cn(
-                    "leading-[1.05] font-black tracking-tighter",
+                    "leading-[1.05]  tracking-tighter",
                     currentSlide.theme === "tech"
                       ? "bg-linear-to-r from-blue-400 via-indigo-200 to-white bg-clip-text text-transparent"
                       : currentSlide.theme === "fashion"

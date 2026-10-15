@@ -3,16 +3,16 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  CreditCard, 
-  Truck, 
-  Check, 
-  Package, 
-  Download, 
-  MapPin, 
-  Clock, 
+import {
+  ArrowLeft,
+  Calendar,
+  CreditCard,
+  Truck,
+  Check,
+  Package,
+  Download,
+  MapPin,
+  Clock,
   AlertTriangle,
   Play,
   RotateCcw,
@@ -96,7 +96,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
           const totalAmount = orderId === "ORD-9283" ? 11999 : orderId === "ORD-8742" ? 3999 : 14999;
           const status = orderId === "ORD-9283" ? "processing" : orderId === "ORD-8742" ? "shipped" : "delivered";
           const payMethod = orderId === "ORD-9283" ? "UPI" : orderId === "ORD-8742" ? "Card" : "NetBanking";
-          
+
           setSimStatus(status);
           setOrder({
             id: orderId,
@@ -151,7 +151,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
 
     const stages = ["pending", "processing", "shipped", "delivered"];
     const currentIndex = stages.indexOf(simStatus);
-    
+
     if (currentIndex === stages.length - 1) {
       setSimAutoplay(false);
       return;
@@ -245,7 +245,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
               <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
               <span>Back to Orders</span>
             </Link>
-            
+
             <Button
               onClick={printInvoice}
               variant="outline"
@@ -281,7 +281,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
               Simulate order shipping stages to preview real-time timeline modifications.
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setSimAutoplay(!simAutoplay)}
@@ -330,11 +330,11 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
                 {idx < 3 && (
                   <div className={cn(
                     "hidden sm:block absolute top-5 left-1/2 right-[-50%] h-[2px] z-0 transition-colors duration-500",
-                    getStageState(timelineStages[idx + 1].status) === "completed" 
-                      ? "bg-green-500" 
-                      : getStageState(stage.status) === "completed" 
-                      ? "bg-primary animate-pulse" 
-                      : "bg-border"
+                    getStageState(timelineStages[idx + 1].status) === "completed"
+                      ? "bg-green-500"
+                      : getStageState(stage.status) === "completed"
+                        ? "bg-primary animate-pulse"
+                        : "bg-border"
                   )} />
                 )}
 
@@ -405,7 +405,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
                     </span>
                   </div>
                 </div>
-                
+
                 <span className="font-extrabold text-foreground text-sm">
                   ₹{(item.price * item.quantity).toLocaleString()}
                 </span>
@@ -419,7 +419,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
               <span className="text-muted-foreground">Items Subtotal</span>
               <span className="text-foreground">₹{itemsSubtotal.toLocaleString()}</span>
             </div>
-            
+
             <div className="flex justify-between pt-3 font-semibold">
               <span className="text-muted-foreground">Estimated GST (18%)</span>
               <span className="text-foreground">₹{gst.toLocaleString()}</span>
@@ -438,7 +438,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
 
             <div className="flex justify-between pt-4 text-base font-bold text-foreground">
               <span>Grand Total</span>
-              <span className="text-lg text-primary font-black">₹{grandTotal.toLocaleString()}</span>
+              <span className="text-lg text-primary ">₹{grandTotal.toLocaleString()}</span>
             </div>
           </div>
         </div>

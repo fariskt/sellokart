@@ -62,7 +62,7 @@ export function LowStockTable({ products }: LowStockTableProps) {
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {p.sku || "-"}
                 </TableCell>
-                <TableCell className="text-right font-black text-xs text-foreground">
+                <TableCell className="text-right  text-xs text-foreground">
                   {getStockBadge(p.stock)}
                 </TableCell>
               </TableRow>

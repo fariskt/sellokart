@@ -4,13 +4,13 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  ArrowLeft, 
-  Search, 
-  Menu, 
-  X, 
-  ChevronRight, 
-  Compass, 
+import {
+  ArrowLeft,
+  Search,
+  Menu,
+  X,
+  ChevronRight,
+  Compass,
   Command,
   LayoutDashboard,
   User as UserIcon,
@@ -29,7 +29,7 @@ import { useSidebarStore } from "@/store/sidebar-store";
 export function AuthNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const isAdmin = pathname.startsWith("/admin");
   const isCustomer = pathname.startsWith("/account") || pathname === "/cart" || pathname === "/wishlist" || pathname === "/checkout";
   const hasSidebar = pathname.startsWith("/admin") || pathname.startsWith("/account");
@@ -42,14 +42,14 @@ export function AuthNavbar() {
   const [user, setUser] = useState<User | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
+
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user session client-side and subscribe to updates
   useEffect(() => {
     const supabase = createClient();
-    
+
     // Get initial session
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
@@ -72,11 +72,11 @@ export function AuthNavbar() {
   };
 
   // Active navigation config based on role
-  const activeNavigation = isAdmin 
-    ? adminNavigation 
-    : isCustomer 
-    ? customerNavigation 
-    : [];
+  const activeNavigation = isAdmin
+    ? adminNavigation
+    : isCustomer
+      ? customerNavigation
+      : [];
 
   // Flattened pages for searching
   const searchablePages: { name: string; href: string; category: string }[] = [];
@@ -85,10 +85,10 @@ export function AuthNavbar() {
       searchablePages.push({ name: item.name, href: item.href, category: group.groupName });
       if (item.subItems) {
         item.subItems.forEach(sub => {
-          searchablePages.push({ 
-            name: `${item.name} > ${sub.name}`, 
-            href: sub.href, 
-            category: group.groupName 
+          searchablePages.push({
+            name: `${item.name} > ${sub.name}`,
+            href: sub.href,
+            category: group.groupName
           });
         });
       }
@@ -96,12 +96,12 @@ export function AuthNavbar() {
   });
 
   // Filter search results
-  const filteredResults = searchQuery.trim() === "" 
-    ? [] 
-    : searchablePages.filter(page => 
-        page.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        page.category.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 5);
+  const filteredResults = searchQuery.trim() === ""
+    ? []
+    : searchablePages.filter(page =>
+      page.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      page.category.toLowerCase().includes(searchQuery.toLowerCase())
+    ).slice(0, 5);
 
   // Close search results dropdown on outside click
   useEffect(() => {
@@ -142,12 +142,12 @@ export function AuthNavbar() {
     <>
       <header className={cn(
         "fixed top-0 right-0 z-40 border-b border-border/20 bg-background/50 backdrop-blur-md select-none transition-all duration-300",
-        hasSidebar 
-          ? (isExpanded ? "left-0 md:left-64" : "left-0 md:left-16") 
+        hasSidebar
+          ? (isExpanded ? "left-0 md:left-64" : "left-0 md:left-16")
           : "left-0"
       )}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 gap-4">
-          
+
           {/* Left Side: Mobile Hamburger & Logo */}
           <div className="flex items-center space-x-3 shrink-0">
             {activeNavigation.length > 0 && (
@@ -159,15 +159,15 @@ export function AuthNavbar() {
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            
-            <Link 
-              href="/" 
+
+            <Link
+              href="/"
               className={cn(
                 "items-center space-x-2",
                 hasSidebar ? "flex md:hidden" : "flex"
               )}
             >
-              <span className="text-lg sm:text-xl font-black tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
+              <span className="text-lg sm:text-xl  tracking-tighter bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">
                 SELLOKART
               </span>
             </Link>
@@ -235,8 +235,8 @@ export function AuthNavbar() {
 
           {/* Right Side: Back to Store Link & Profile Dropdown */}
           <div className="shrink-0 flex items-center space-x-4">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-all hover:translate-x-[-2px]"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -254,9 +254,9 @@ export function AuthNavbar() {
                     className="flex items-center space-x-2 p-1 rounded-full border border-transparent hover:bg-muted/50 hover:border-border transition-all cursor-pointer"
                   >
                     {user.user_metadata?.avatar_url ? (
-                      <img 
-                        src={user.user_metadata.avatar_url} 
-                        alt={user.user_metadata?.full_name || "Profile"} 
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt={user.user_metadata?.full_name || "Profile"}
                         className="w-8 h-8 rounded-full object-cover border border-accent/20"
                       />
                     ) : (
@@ -275,7 +275,7 @@ export function AuthNavbar() {
                       <>
                         {/* Backdrop to close */}
                         <div className="fixed inset-0 z-30" onClick={() => setShowDropdown(false)} />
-                        
+
                         <motion.div
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -371,7 +371,7 @@ export function AuthNavbar() {
                       {isAdmin ? "Admin Console" : "Customer Portal"}
                     </span>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsDrawerOpen(false)}
                     className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
                   >
@@ -392,7 +392,7 @@ export function AuthNavbar() {
                     className="w-full h-8 pl-9 pr-4 rounded-xl border border-border bg-muted/20 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all"
                   />
                   {searchQuery && (
-                    <button 
+                    <button
                       onClick={() => setSearchQuery("")}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground/60 hover:text-foreground cursor-pointer"
                     >
@@ -515,9 +515,9 @@ export function AuthNavbar() {
                 <div className="pt-4 border-t border-border/60 px-3 space-y-3 shrink-0">
                   <div className="flex items-center space-x-3">
                     {user.user_metadata?.avatar_url ? (
-                      <img 
-                        src={user.user_metadata.avatar_url} 
-                        alt={user.user_metadata?.full_name || "Profile"} 
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt={user.user_metadata?.full_name || "Profile"}
                         className="w-9 h-9 rounded-full object-cover border border-accent/20"
                       />
                     ) : (

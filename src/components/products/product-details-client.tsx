@@ -71,6 +71,36 @@ export function ProductDetailsClient({
   const [detailsOpen, setDetailsOpen] = React.useState(true);
   const [shippingOpen, setShippingOpen] = React.useState(false);
 
+  // Complete The Look Carousel state
+  const lookScrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  const checkScroll = React.useCallback(() => {
+    if (lookScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = lookScrollRef.current;
+      setCanScrollLeft(scrollLeft > 2);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [relatedProducts, checkScroll]);
+
+  const scrollLook = (direction: "left" | "right") => {
+    if (lookScrollRef.current) {
+      const amount = lookScrollRef.current.clientWidth * 0.75;
+      lookScrollRef.current.scrollBy({
+        left: direction === "left" ? -amount : amount,
+        behavior: "smooth",
+      });
+      setTimeout(checkScroll, 350);
+    }
+  };
+
   // Price calculation
   const currentPrice = product.salePrice ?? product.price;
   const originalPrice = product.salePrice ? product.price : null;
@@ -152,11 +182,11 @@ export function ProductDetailsClient({
           )}
 
           {/* Single Main Image Showcase Box with locked aspect ratio */}
-          <div className="relative flex-1 w-full aspect-[4/5] rounded-3xl bg-[#f7f8f9] border border-slate-100 flex items-center justify-center overflow-hidden group">
+          <div className="relative flex-1 w-full aspect-[4/5] rounded-3xl bg-[#f7f8f9] border border-slate-100 overflow-hidden group">
             <img
               src={activeImage}
               alt={product.name}
-              className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
 
             {/* Mobile Wishlist overlay button on top right of box */}
@@ -456,7 +486,7 @@ export function ProductDetailsClient({
             </div>
 
             <Link
-              href="/contacts"
+              href="/contact"
               className="text-slate-800 hover:text-black font-semibold underline"
             >
               Need Help ?
@@ -465,40 +495,88 @@ export function ProductDetailsClient({
         </div>
 
       </div>
+
+      {/* Complete The Look Section */}
       {relatedProducts && relatedProducts.length > 0 && (
-        <div className="pt-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-display">
-              Complete The Look
-            </h3>
+        <section className="mt-16 sm:mt-24 pt-10 sm:pt-14 border-t border-slate-200/80">
+          <div className="flex items-end justify-between mb-6 sm:mb-8">
+            <div>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 font-display">
+                Complete The Look
+              </h2>
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollLook("left")}
+                disabled={!canScrollLeft}
+                aria-label="Previous products"
+                className={cn(
+                  "w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center transition-all",
+                  canScrollLeft
+                    ? "text-slate-800 hover:border-slate-900 hover:bg-slate-900 hover:text-white cursor-pointer shadow-xs"
+                    : "text-slate-300 border-slate-100 cursor-not-allowed opacity-50"
+                )}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollLook("right")}
+                disabled={!canScrollRight}
+                aria-label="Next products"
+                className={cn(
+                  "w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center transition-all",
+                  canScrollRight
+                    ? "text-slate-800 hover:border-slate-900 hover:bg-slate-900 hover:text-white cursor-pointer shadow-xs"
+                    : "text-slate-300 border-slate-100 cursor-not-allowed opacity-50"
+                )}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {relatedProducts.slice(0, 3).map((item) => {
+          <div
+            ref={lookScrollRef}
+            onScroll={checkScroll}
+            className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-none scroll-smooth snap-x pb-2"
+          >
+            {relatedProducts.map((item) => {
               const href = `/products/${item.slug || item.id}`;
               const itemPrice = item.salePrice ?? item.price;
+
               return (
                 <Link
                   key={item.id}
                   href={href}
-                  className="group flex flex-col justify-between"
+                  className="group shrink-0 w-[calc((100%-12px)/2)] sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)] snap-start flex flex-col"
                 >
-                  <div className="aspect-[4/5] rounded-2xl bg-[#f4f5f6] border border-slate-100 p-2.5 flex items-center justify-center overflow-hidden mb-2">
+                  {/* Image fills the complete container */}
+                  <div className="relative w-full aspect-[4/5] rounded-[18px] bg-[#f4f5f6] border border-slate-100/80 overflow-hidden mb-2.5 group-hover:bg-[#eaecee] transition-colors">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <div className="space-y-0.5">
-                    <div className="text-[11px] font-bold text-slate-900 truncate group-hover:text-landing-primary transition-colors">
+
+                  {/* Product details */}
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold text-slate-900 truncate group-hover:text-landing-primary transition-colors">
                       {item.name}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px]">
-                      <span className="font-bold text-slate-900">₹{itemPrice}</span>
+
+                    <div className="flex items-center gap-1.5 text-xs flex-wrap">
+                      <span className={`font-bold ${item.salePrice ? "text-landing-primary" : "text-slate-900"}`}>
+                        ₹{itemPrice.toLocaleString()}
+                      </span>
+
                       {item.salePrice && (
-                        <span className="text-[10px] text-slate-400 line-through">
-                          ₹{item.price}
+                        <span className="text-[11px] text-slate-400 line-through">
+                          ₹{item.price.toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -507,9 +585,8 @@ export function ProductDetailsClient({
               );
             })}
           </div>
-        </div>
+        </section>
       )}
-
     </div>
   );
 }

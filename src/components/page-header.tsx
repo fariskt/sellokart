@@ -33,7 +33,7 @@ export function PageHeader({
           </div>
         )}
         <div className="space-y-1">
-          <h1 className="text-2xl font-black tracking-tight text-foreground">
+          <h1 className="text-2xl  tracking-tight text-foreground">
             {title}
           </h1>
           {description && (

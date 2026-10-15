@@ -25,7 +25,7 @@ export function NewArrivalsSection() {
       {/* Pebble Header with Tab Pills */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 sm:mb-14">
         <div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-landing-dark font-display leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl  tracking-tight text-landing-dark font-display leading-tight">
             Latest Products
           </h2>
         </div>

@@ -3,12 +3,12 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { 
-  RotateCcw, 
-  Plus, 
-  Loader2, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  RotateCcw,
+  Plus,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
   ShoppingBag,
   ArrowRight,
   Calendar,
@@ -29,21 +29,21 @@ import { PageHeader } from "@/components/page-header";
 
 export default function ReturnsPage() {
   const router = useRouter();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSandbox, setIsSandbox] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   // Return requests & orders data
   const [returnsList, setReturnsList] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [orderItemsMap, setOrderItemsMap] = useState<Record<string, any[]>>({});
-  
+
   // Modal toggle
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   // Form state
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedItem, setSelectedItem] = useState("");
@@ -68,7 +68,7 @@ export default function ReturnsPage() {
             .from("returns")
             .select("*")
             .order("created_at", { ascending: false });
-          
+
           if (returnsError) throw returnsError;
           setReturnsList(returnsData || []);
 
@@ -79,7 +79,7 @@ export default function ReturnsPage() {
             .eq("user_id", user.id)
             .eq("status", "delivered")
             .order("created_at", { ascending: false });
-          
+
           if (ordersError) throw ordersError;
           setOrders(ordersData || []);
 
@@ -90,7 +90,7 @@ export default function ReturnsPage() {
               .from("order_items")
               .select("*")
               .in("order_id", orderIds);
-            
+
             if (!itemsError && itemsData) {
               const map: Record<string, any[]> = {};
               itemsData.forEach(item => {
@@ -107,7 +107,7 @@ export default function ReturnsPage() {
             { id: "RET-9182", order_id: "ORD-7193", product_name: "Sustainable Tailored Blazer", quantity: 1, reason: "Wrong Size", status: "approved", comments: "A bit too tight in the shoulders.", created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString() },
             { id: "RET-8273", order_id: "ORD-9283", product_name: "Studio Headset Pro", quantity: 1, reason: "Defective/Faulty", status: "pending", comments: "Left headphone side has static noise.", created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() }
           ]);
-          
+
           // Load mock delivered orders
           const mockOrders = [
             { id: "ORD-7193", created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), status: "delivered" },
@@ -168,7 +168,7 @@ export default function ReturnsPage() {
 
     try {
       const supabase = createClient();
-      
+
       const { error: insertError } = await supabase
         .from("returns")
         .insert({
@@ -303,7 +303,7 @@ export default function ReturnsPage() {
                 <div className="w-10 h-10 bg-secondary/60 rounded-xl flex items-center justify-center text-primary shrink-0">
                   <Package className="w-5 h-5" />
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-primary">{ret.id}</span>
@@ -313,11 +313,11 @@ export default function ReturnsPage() {
                       Order: {ret.order_id}
                     </span>
                   </div>
-                  
+
                   <h4 className="font-bold text-foreground text-sm leading-snug">
                     {ret.product_name} <span className="text-muted-foreground font-normal">(Qty: {ret.quantity})</span>
                   </h4>
-                  
+
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground font-semibold">
                     <span className="text-destructive bg-destructive/5 border border-destructive/10 px-2 py-0.5 rounded-md text-[10px]">
                       Reason: {ret.reason}
@@ -327,7 +327,7 @@ export default function ReturnsPage() {
                       Filed on {formatDate(ret.created_at)}
                     </span>
                   </div>
-                  
+
                   {ret.comments && (
                     <p className="text-xs text-muted-foreground leading-relaxed italic mt-2 flex items-start gap-1">
                       <MessageSquare className="w-3.5 h-3.5 shrink-0 mt-0.5" />
@@ -356,11 +356,11 @@ export default function ReturnsPage() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-lg p-0 border-none overflow-hidden bg-white shadow-xl rounded-2xl">
           <DialogHeader className="p-6 pb-4 border-b border-border/60">
-            <DialogTitle className="text-lg font-black tracking-tight text-foreground">
+            <DialogTitle className="text-lg  tracking-tight text-foreground">
               Create Return Request
             </DialogTitle>
           </DialogHeader>
-          
+
           <form onSubmit={handleCreateReturn} className="p-6 space-y-4">
             {/* Step 1: Select Order */}
             <div className="space-y-1.5">
@@ -477,7 +477,7 @@ export default function ReturnsPage() {
               >
                 Cancel
               </Button>
-              
+
               <Button
                 type="submit"
                 disabled={saving}

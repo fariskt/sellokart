@@ -104,7 +104,7 @@ export function SearchPageClient({
 
           <button
             type="submit"
-            className="absolute right-2 top-2 bottom-2 px-6 rounded-full bg-landing-primary hover:bg-landing-primary-hover text-white text-xs font-black tracking-[0.12em] uppercase transition-all shadow-md active:scale-95 cursor-pointer font-display"
+            className="absolute right-2 top-2 bottom-2 px-6 rounded-full bg-landing-primary hover:bg-landing-primary-hover text-white text-xs  tracking-[0.12em] uppercase transition-all shadow-md active:scale-95 cursor-pointer font-display"
           >
             Search
           </button>
@@ -116,7 +116,7 @@ export function SearchPageClient({
             <div className="absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-xl border border-landing-primary/15 rounded-3xl shadow-xl z-30 overflow-hidden divide-y divide-landing-primary/10 animate-in fade-in slide-in-from-top-2 duration-200">
               {suggestions.length > 0 ? (
                 <div className="py-2.5">
-                  <span className="px-5 py-1.5 text-[10px] font-black text-landing-primary-muted uppercase tracking-widest block mb-1">
+                  <span className="px-5 py-1.5 text-[10px]  text-landing-primary-muted uppercase tracking-widest block mb-1">
                     Product Suggestions
                   </span>
                   {suggestions.map((p) => (
@@ -130,7 +130,7 @@ export function SearchPageClient({
                       className="w-full text-left px-5 py-2.5 hover:bg-landing-primary-light transition-colors flex items-center justify-between text-xs text-landing-dark font-bold font-display cursor-pointer"
                     >
                       <span>{p.name}</span>
-                      <span className="text-[10px] font-black uppercase text-landing-primary tracking-wider">
+                      <span className="text-[10px]  uppercase text-landing-primary tracking-wider">
                         {p.category}
                       </span>
                     </button>
@@ -167,7 +167,7 @@ export function SearchPageClient({
 
       {/* Results Header */}
       <div className="border-t border-landing-primary/10 pt-8 flex items-center justify-between">
-        <h2 className="text-xl font-black text-landing-dark font-display">
+        <h2 className="text-xl  text-landing-dark font-display">
           {initialQuery ? (
             <>
               Search Results for{" "}
@@ -194,7 +194,7 @@ export function SearchPageClient({
       ) : (
         initialQuery && (
           <div className="text-center py-20 bg-white/70 backdrop-blur-md border border-dashed border-landing-primary/20 rounded-3xl p-8">
-            <span className="text-xl font-black text-landing-dark block mb-2 font-display">
+            <span className="text-xl  text-landing-dark block mb-2 font-display">
               No results match your search
             </span>
             <span className="text-sm font-medium text-landing-primary-muted font-display">

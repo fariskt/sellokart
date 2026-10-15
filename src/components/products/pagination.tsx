@@ -49,7 +49,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
             key={page}
             onClick={() => handlePageChange(page)}
             className={cn(
-              "w-10 h-10 rounded-full text-xs font-black transition-all cursor-pointer font-display",
+              "w-10 h-10 rounded-full text-xs  transition-all cursor-pointer font-display",
               isCurrent
                 ? "bg-landing-primary text-white shadow-md shadow-landing-primary/30"
                 : "border border-landing-primary/15 bg-white/90 text-landing-dark hover:border-landing-primary hover:text-landing-primary shadow-xs",

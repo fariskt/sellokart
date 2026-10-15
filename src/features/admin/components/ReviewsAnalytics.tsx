@@ -58,16 +58,15 @@ export function ReviewsAnalytics({ data, loading }: ReviewsAnalyticsProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
         {/* Summary Card */}
         <div className="flex flex-col items-center justify-center p-4 border border-border bg-muted/10 rounded-lg text-center">
-          <span className="text-5xl font-black text-foreground tracking-tight">{data.averageRating}</span>
+          <span className="text-5xl  text-foreground tracking-tight">{data.averageRating}</span>
           <div className="flex items-center gap-0.5 mt-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${
-                  i < Math.round(data.averageRating)
+                className={`w-4 h-4 ${i < Math.round(data.averageRating)
                     ? "fill-amber-500 text-amber-500"
                     : "text-muted border-muted"
-                }`}
+                  }`}
               />
             ))}
           </div>

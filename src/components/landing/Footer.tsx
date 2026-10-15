@@ -64,7 +64,7 @@ export function Footer() {
 
             {/* Right Content */}
             <div className="lg:col-span-7 p-6 sm:p-10 lg:p-14 lg:pl-4 flex flex-col justify-center">
-              <h3 className="text-3xl sm:text-4xl lg:text-[42px] font-black tracking-tight text-white font-display leading-[1.12] mb-3 sm:mb-4">
+              <h3 className="text-3xl sm:text-4xl lg:text-[42px]  tracking-tight text-white font-display leading-[1.12] mb-3 sm:mb-4">
                 Join Our Exclusive
                 <br />
                 WhatsApp Community
@@ -98,7 +98,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-5">
             <Link
               href="/"
-              className="inline-flex items-center gap-1 text-2xl font-black tracking-tight text-landing-dark font-display mb-3"
+              className="inline-flex items-center gap-1 text-2xl  tracking-tight text-landing-dark font-display mb-3"
             >
               <span>SELLOKART</span>
             </Link>
@@ -142,7 +142,7 @@ export function Footer() {
 
           {/* Shop */}
           <div className="col-span-1 md:col-span-2">
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-landing-dark font-display mb-4">
+            <div className="text-[11px]  uppercase tracking-[0.2em] text-landing-dark font-display mb-4">
               Shop
             </div>
             <ul className="space-y-2.5">
@@ -165,7 +165,7 @@ export function Footer() {
 
           {/* Support */}
           <div className="col-span-1 md:col-span-2">
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-landing-dark font-display mb-4">
+            <div className="text-[11px]  uppercase tracking-[0.2em] text-landing-dark font-display mb-4">
               Support
             </div>
             <ul className="space-y-2.5">
@@ -187,7 +187,7 @@ export function Footer() {
 
           {/* Policies */}
           <div className="col-span-2 md:col-span-3">
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-landing-dark font-display mb-4">
+            <div className="text-[11px]  uppercase tracking-[0.2em] text-landing-dark font-display mb-4">
               Policies
             </div>
             <ul className="space-y-2.5">

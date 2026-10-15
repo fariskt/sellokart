@@ -87,7 +87,7 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
         <button
           type="button"
           onClick={() => setIsMobileExpanded(!isMobileExpanded)}
-          className="flex items-center space-x-2 text-landing-dark font-black text-sm cursor-pointer lg:cursor-default"
+          className="flex items-center space-x-2 text-landing-dark  text-sm cursor-pointer lg:cursor-default"
         >
           <SlidersHorizontal className="w-4 h-4 text-landing-primary" />
           <span className="tracking-tight">Filters</span>
@@ -124,7 +124,7 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
       >
         {/* Categories Filter */}
         <div className="space-y-3">
-          <h4 className="text-[10px] font-black tracking-[0.2em] uppercase text-landing-primary font-display">
+          <h4 className="text-[10px]  tracking-[0.2em] uppercase text-landing-primary font-display">
             Category
           </h4>
           <div className="space-y-1.5">
@@ -153,7 +153,7 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
 
         {/* Price Range Filter */}
         <div className="space-y-3 pt-4 border-t border-landing-primary/10">
-          <h4 className="text-[10px] font-black tracking-[0.2em] uppercase text-landing-primary font-display">
+          <h4 className="text-[10px]  tracking-[0.2em] uppercase text-landing-primary font-display">
             Price Range ($)
           </h4>
           <form onSubmit={handlePriceApply} className="space-y-3">
@@ -176,7 +176,7 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
             </div>
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-landing-dark hover:bg-landing-primary text-white text-[11px] font-black uppercase tracking-[0.14em] shadow-md transition-all cursor-pointer active:scale-98"
+              className="w-full py-3 rounded-xl bg-landing-dark hover:bg-landing-primary text-white text-[11px]  uppercase tracking-[0.14em] shadow-md transition-all cursor-pointer active:scale-98"
             >
               Apply Price
             </button>
