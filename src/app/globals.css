@@ -14,7 +14,7 @@
   --popover: #ffffff;
   --popover-foreground: #0f172a;
 
-  --primary: #0071e3;
+  --primary: #2A44FF;
   --primary-hover: #0062c5;
   --primary-foreground: #ffffff;
 
@@ -50,12 +50,10 @@
   --brand-muted: #71717a;
 
   --hero-gradient:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #eff6ff 0%,
       #ffffff 50%,
-      #dbeafe 100%
-    );
+      #dbeafe 100%);
 
   /* Landing page design tokens */
   --landing-primary: #1a3ff0;
@@ -72,7 +70,9 @@
   --landing-featured-gradient-end: #08123a;
   --landing-story-gradient-mid: #0c1d8a;
   --landing-hero-bg: linear-gradient(135deg, #f8faff 0%, #edf3ff 40%, #dce9ff 70%, #f0f6ff 100%);
-  --font-display: var(--font-jakarta);
+  /* --font-display: var(--font-jakarta); */
+  --font-display: var(--font-bricolage), sans-serif;
+  --font-jakarta: var(--font-bricolage);
 }
 
 /* ========================================
@@ -80,7 +80,9 @@
    ======================================== */
 
 @theme {
-  --font-sans: var(--font-jakarta), var(--font-inter), sans-serif;
+  /* --font-sans: var(--font-jakarta), var(--font-inter), sans-serif; */
+  --font-sans: var(--font-bricolage), sans-serif;
+  --font-display: var(--font-bricolage), sans-serif;
   --font-serif: var(--font-serif), Georgia, serif;
 
   --color-brand-yellow: var(--brand-yellow);
@@ -164,27 +166,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ========================================
-   SCROLLBAR
-======================================== */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #bfdbfe;
-  border-radius: 0px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #93c5fd;
-}
-
-::-webkit-scrollbar-track {
-  background: #f8fafc;
-}
 
 /* ========================================
    REUSABLE UTILITIES
@@ -259,4 +240,14 @@ body {
 .badge-stock {
   background: #dcfce7;
   color: #166534;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }

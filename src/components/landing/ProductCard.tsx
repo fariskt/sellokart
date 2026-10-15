@@ -1,144 +1,136 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Heart, Plus } from "lucide-react";
+import { useState } from "react";
+import { Heart, Star } from "lucide-react";
 import Link from "next/link";
 import { FormattedLandingProduct } from "@/features/products/lib/formatLandingProduct";
 import { PRODUCTS } from "./constants";
+import { useCartStore } from "@/store/cart-store";
 
-export type ProductType = typeof PRODUCTS[0];
+export type ProductType = (typeof PRODUCTS)[0];
 
 interface ProductCardProps {
-  product: FormattedLandingProduct | ProductType;
+  product: FormattedLandingProduct | ProductType | any;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const [wishlist, setWishlist] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    cardRef.current.style.transform = `perspective(1000px) rotateY(${x * 9}deg) rotateX(${-y * 9}deg) scale(1.025)`;
-  };
-
-  const handleMouseLeave = () => {
-    if (cardRef.current) {
-      cardRef.current.style.transform =
-        "perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1)";
-    }
-    setHovered(false);
-  };
+  const [added, setAdded] = useState(false);
+  const addToCart = useCartStore((state) => state.addToCart);
 
   const href =
     "slug" in product && product.slug
       ? `/products/${product.slug}`
       : `/products/${product.id}`;
 
-  const hasSalePrice = "salePrice" in product && product.salePrice != null;
+  const currentPrice =
+    "salePrice" in product && product.salePrice != null
+      ? product.salePrice
+      : "sale_price" in product && product.sale_price != null
+        ? product.sale_price
+        : product.price;
+
+  const originalPrice =
+    "salePrice" in product && product.salePrice != null
+      ? product.price
+      : "sale_price" in product && product.sale_price != null
+        ? product.price
+        : null;
+
+  const hasDiscount = originalPrice != null && originalPrice > currentPrice;
+  const discountPercent = hasDiscount
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : null;
+
+  const description =
+    product.description ||
+    "Premium crafted piece engineered with refined materials for exceptional comfort and lasting durability.";
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: currentPrice,
+      image: product.image,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
 
   return (
-    <div
-      ref={cardRef}
-      className="relative group cursor-pointer h-full flex flex-col"
-      style={{ transition: "transform 0.2s ease-out" }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Link href={href} className="flex-1 flex flex-col h-full">
-        {/* Image */}
-        <div className="relative flex-1 overflow-hidden rounded-2xl min-h-0 bg-landing-primary-light">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-
-          {product.tag && (
-            <div className="absolute top-3 left-3 text-[10px] font-black px-2.5 py-1.5 rounded-full bg-landing-primary text-white font-display tracking-[0.15em] z-10 shadow-sm">
-              {product.tag}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setWishlist(!wishlist);
-            }}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-white/92 backdrop-blur-sm cursor-pointer z-10 hover:scale-110"
-          >
-            <Heart
-              size={14}
-              fill={wishlist ? "currentColor" : "none"}
-              className={wishlist ? "text-landing-primary" : "text-landing-dark"}
+    <div className="group bg-white rounded-xl p-2 sm:p-3.5 border border-slate-200/90 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col md:justify-between md:h-full">
+      <div>
+        {/* Rounded Image Frame */}
+        <Link href={href} className="block">
+          <div className="relative w-full aspect-square rounded-md overflow-hidden bg-[#f7f7f9] flex items-center justify-center">
+            <img
+              src={`https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=800&fit=crop&auto=format&random=${product.id}`}
+              alt={product.name}
+              className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
             />
-          </button>
-
-          {/* Quick add */}
-          <div
-            className="absolute inset-x-3 bottom-3 transition-all duration-300 z-10"
-            style={{
-              opacity: hovered ? 1 : 0,
-              transform: hovered ? "translateY(0)" : "translateY(10px)",
-            }}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Direct navigation to product details
-                window.location.href = href;
-              }}
-              className="w-full py-2.5 text-[11px] font-black tracking-[0.15em] uppercase rounded-xl flex items-center justify-center gap-2 transition-colors bg-landing-dark text-white font-display hover:bg-landing-primary cursor-pointer shadow-lg"
-            >
-              <Plus size={13} /> View Product
-            </button>
           </div>
-        </div>
+        </Link>
 
-        {/* Info */}
-        <div className="mt-3 px-0.5 shrink-0">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-bold leading-tight text-landing-dark font-display truncate">
+        {/* Product Info */}
+        <div className="mt-3 px-1">
+          <Link href={href} className="block">
+            <h3 className="font-bold text-base sm:text-[17px] text-slate-900 tracking-tight leading-snug line-clamp-1 group-hover:text-landing-primary transition-colors">
               {product.name}
             </h3>
-            <div className="flex items-baseline gap-1.5 shrink-0">
-              {hasSalePrice ? (
-                <>
-                  <span className="text-xs text-landing-primary-muted line-through">
-                    ${product.price}
-                  </span>
-                  <span className="text-sm font-black text-landing-primary font-display">
-                    ${(product as FormattedLandingProduct).salePrice}
-                  </span>
-                </>
-              ) : (
-                <span className="text-sm font-black shrink-0 text-landing-dark font-display">
-                  ${product.price}
-                </span>
-              )}
-            </div>
-          </div>
-          {product.colors && product.colors.length > 0 && (
-            <div className="flex gap-1.5 mt-2">
-              {product.colors.map((color, i) => (
-                <div
+          </Link>
+
+          {/* Description line */}
+          <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed min-h-[32px]">
+            {description}
+          </p>
+
+          {/* Star Rating Row */}
+          <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center gap-0.5 text-amber-400">
+              {[...Array(5)].map((_, i) => (
+                <Star
                   key={i}
-                  className="w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm"
-                  style={{ background: color }}
+                  size={13}
+                  className="fill-amber-400 text-amber-400"
                 />
               ))}
             </div>
-          )}
+            <span className="text-xs font-semibold text-slate-600 ml-1">
+              4.8
+            </span>
+          </div>
+
+          {/* Price & Discount Pill Row */}
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-xl sm:text-2xl font-bold text-slate-900 font-display">
+              ₹{currentPrice}
+            </span>
+
+            {hasDiscount && (
+              <>
+                <span className="text-xs sm:text-sm text-slate-400 line-through font-normal">
+                  ₹{originalPrice}
+                </span>
+                <span className="rounded-full bg-black text-white text-[10px] font-bold px-2 py-0.5">
+                  -{discountPercent}%
+                </span>
+              </>
+            )}
+          </div>
         </div>
-      </Link>
+      </div>
+
+      {/* Action Buttons Row */}
+      <div className="flex items-center gap-2 mt-3.5 pt-1 px-1">
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="flex-1 py-2.5 px-3 rounded-full bg-black hover:bg-slate-800 text-white text-xs sm:text-[13px] font-semibold text-center transition-all cursor-pointer shadow-xs active:scale-95"
+        >
+          {added ? "Added!" : "Add to Cart"}
+        </button>
+      </div>
     </div>
   );
 }

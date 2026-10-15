@@ -12,6 +12,7 @@ export interface CatalogProduct {
   badge?: string;
   tag?: string | null;
   colors: string[];
+  sizes?: string[];
   image: string;
   images?: string[];
   category: string;
@@ -31,20 +32,6 @@ export function formatCatalogProduct(prod: any, index: number = 0): CatalogProdu
       ?.map((img: any) => img.image_url)
       .filter((url: any): url is string => typeof url === "string" && Boolean(url)) || [];
 
-  const categoryName =
-    prod.categories?.name ||
-    (typeof prod.category === "string" ? prod.category : "General");
-
-  // Derive badge / tag
-  const tag =
-    prod.featured
-      ? "FEATURED"
-      : prod.sale_price && prod.sale_price < prod.price
-        ? "SALE"
-        : index === 0
-          ? "NEW"
-          : null;
-
   // Extract color values if specified in attributes
   const colorAttr = prod.product_attributes?.find((attr: any) =>
     attr.attribute_name?.toLowerCase().includes("color"),
@@ -56,13 +43,27 @@ export function formatCatalogProduct(prod: any, index: number = 0): CatalogProdu
       .map((c: string) => c.trim())
       .filter(Boolean);
   }
-  if (!colors.length) {
-    colors =
-      PRODUCTS[index % PRODUCTS.length]?.colors || [
-        "#1a3ff0",
-        "#0a0f2e",
-        "#c8d4ff",
-      ];
+
+  // Extract size values if specified in attributes or variants
+  const sizeAttr = prod.product_attributes?.find((attr: any) =>
+    attr.attribute_name?.toLowerCase().includes("size"),
+  );
+  let sizes: string[] = [];
+  if (sizeAttr?.attribute_value) {
+    sizes = sizeAttr.attribute_value
+      .split(/[,/|]/)
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+  } else if (prod.product_variants && Array.isArray(prod.product_variants)) {
+    const variantSizes = prod.product_variants
+      .map((v: any) => {
+        const attr = v.product_variant_attributes?.find((a: any) =>
+          a.attribute_name?.toLowerCase().includes("size"),
+        );
+        return attr?.attribute_value || v.name;
+      })
+      .filter(Boolean);
+    sizes = Array.from(new Set(variantSizes));
   }
 
   const hasSale = prod.sale_price && prod.sale_price < prod.price;
@@ -76,17 +77,14 @@ export function formatCatalogProduct(prod: any, index: number = 0): CatalogProdu
     price: effectivePrice ?? 0,
     salePrice: hasSale ? prod.sale_price : null,
     oldPrice,
-    rating: 4.8,
-    reviews: 24,
-    badge: tag || undefined,
-    tag,
+    rating: typeof prod.rating === "number" ? prod.rating : 5.0,
+    reviews: typeof prod.reviews_count === "number" ? prod.reviews_count : 0,
     colors,
+    sizes,
     image: primaryImg,
     images: allImages.length > 0 ? allImages : [primaryImg],
-    category: categoryName,
-    description:
-      prod.description ||
-      `Discover the details of ${prod.name}. Expertly crafted with precision and quality materials.`,
+    category: "Products", //set to products for now
+    description: prod.description || "",
     stock: prod.stock,
     featured: Boolean(prod.featured),
   };

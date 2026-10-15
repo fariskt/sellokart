@@ -1,7 +1,5 @@
 import * as React from "react";
 import { ProductDetailsClient } from "@/components/products/product-details-client";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getProductBySlugOrId,
@@ -49,24 +47,8 @@ export default async function ProductDetailsPage({
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-28 font-display">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
-        {/* Back Link */}
-        <div className="mb-8">
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2.5 text-xs font-black tracking-[0.16em] uppercase text-landing-primary hover:text-landing-primary-hover transition-colors font-display group"
-          >
-            <div className="w-8 h-8 rounded-full border border-landing-primary/20 bg-white/90 flex items-center justify-center group-hover:bg-landing-primary group-hover:text-white transition-all shadow-xs">
-              <ArrowLeft
-                size={13}
-                className="transition-transform group-hover:-translate-x-0.5"
-              />
-            </div>
-            <span>Back</span>
-          </Link>
-        </div>
-
+    <div className="min-h-screen pt-24 pb-24">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Client Product Details */}
         <ProductDetailsClient
           product={product}

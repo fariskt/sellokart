@@ -1,447 +1,173 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
-import { Star } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Gift,
+  ShoppingCart,
+} from "lucide-react";
 import Link from "next/link";
 import { useLandingProducts } from "@/features/products/hooks/useLandingProducts";
 import { formatLandingProduct } from "@/features/products/lib/formatLandingProduct";
 
 export function HeroSection() {
-  const heroRef = useRef<HTMLElement>(null);
-  const layer1 = useRef<HTMLDivElement>(null);
-  const layer2 = useRef<HTMLDivElement>(null);
-  const layer3 = useRef<HTMLDivElement>(null);
-  const layer4 = useRef<HTMLDivElement>(null);
-
+  const [activeSlide, setActiveSlide] = useState(0);
   const { data: rawProducts } = useLandingProducts();
+
   const heroProduct =
     rawProducts && rawProducts.length > 0
-      ? formatLandingProduct(rawProducts[0])
+      ? formatLandingProduct(rawProducts[3])
       : null;
 
-  const heroImage =
-    heroProduct?.image ||
-    "https://www.aeropostale.com/dw/image/v2/BBSG_PRD/on/demandware.static/-/Sites-master-catalog-aeropostale/default/dw317ad9fd/60219350_204_main.jpg?sw=640&sh=780&sm=fit&sfrm=jpg";
+  const slides = [
+    {
+      eyebrow: "NEW COLLECTION",
+      titleLine1: "Wrapped in",
+      titleLine2: "Warmth.",
+      desc: "Precision-crafted essentials and statement pieces for those who move first. Premium materials. Uncompromising detail.",
+      tag: "LITTLE MOMENTS",
+    },
+    {
+      eyebrow: "SIGNATURE PIECES",
+      titleLine1: "Made to Move,",
+      titleLine2: "Built for Life.",
+      desc: "Breathable silhouettes and elevated textures designed for all-day ease and effortless style.",
+      tag: "BESTSELLER",
+    },
+  ];
 
-  const heroName = heroProduct?.name || "Aero Cloud Hoodie";
-  const heroPrice = heroProduct?.salePrice ?? heroProduct?.price ?? 189;
-  const heroHref = heroProduct
-    ? heroProduct.slug
-      ? `/products/${heroProduct.slug}`
-      : `/products/${heroProduct.id}`
-    : "/products";
-
-  useEffect(() => {
-    let rafId: number;
-    const handleMove = (e: MouseEvent) => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const x = e.clientX / vw - 0.5;
-        const y = e.clientY / vh - 0.5;
-        if (layer1.current)
-          layer1.current.style.transform = `translate(${x * 28}px, ${y * 18}px) rotate(-3deg)`;
-        if (layer2.current)
-          layer2.current.style.transform = `translate(${x * 48}px, ${y * 32}px) rotate(12deg)`;
-        if (layer3.current)
-          layer3.current.style.transform = `translate(${x * -32}px, ${y * -22}px) rotate(8deg)`;
-        if (layer4.current)
-          layer4.current.style.transform = `translate(${x * 38}px, ${y * 26}px) rotate(-15deg)`;
-      });
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMove);
-      cancelAnimationFrame(rafId);
-    };
-  }, []);
+  const current = slides[activeSlide];
 
   return (
-    <section
-      ref={heroRef}
-      className="relative min-h-screen pt-5 flex items-center overflow-hidden bg-landing-hero-bg"
-    >
-      {/* Background orbs */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          width: 800,
-          height: 800,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(26,63,240,0.1) 0%, transparent 70%)",
-          top: "5%",
-          right: "15%",
-          transform: "translate(0,0)",
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          width: 400,
-          height: 400,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(26,63,240,0.07) 0%, transparent 70%)",
-          bottom: "10%",
-          left: "30%",
-        }}
-      />
+    <div className="w-full">
+      {/* Main Hero Container */}
+      <section>
+        <div className="relative w-full pt-16 sm:pt-20 overflow-hidden min-h-[620px] sm:min-h-[650px] flex items-center text-white shadow-2xl">
+          {/* Full Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src={heroProduct?.image || "https://images.unsplash.com/photo-1612817159949-195b6eb9e31a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"}
+              alt="Hero background"
+              className="w-full h-full object-cover object-center transition-all duration-1000 scale-105"
+            />
 
-      {/* Subtle grid */}
-      <div
-        className="absolute inset-0 opacity-[0.025] pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(var(--landing-dark) 1px, transparent 1px), linear-gradient(90deg, var(--landing-dark) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-        }}
-      />
+            {/* Balanced background overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
 
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-12 w-full">
-        <div className="grid lg:grid-cols-2 items-center min-h-screen gap-8 lg:gap-0">
-          {/* Left — text */}
-          <div className="flex flex-col justify-center lg:py-0 lg:pr-12">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55 }}
-              className="inline-flex items-center gap-3 mb-8"
-            >
-              <span className="w-8 h-px bg-landing-primary" />
-              <span className="text-[11px] font-black tracking-[0.28em] uppercase text-landing-primary font-display">
-                SS26 — New Collection
-              </span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, delay: 0.08 }}
-              className="leading-[0.88] tracking-[-0.03em] mb-8 text-landing-dark font-display font-black"
-              style={{
-                fontSize: "clamp(3.8rem, 7.5vw, 7.5rem)",
-              }}
-            >
-              WEAR
-              <br />
-              <span className="text-landing-primary">WHAT&apos;S</span>
-              <br />
-              NEXT.
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="text-[15px] leading-relaxed max-w-sm mb-10 text-landing-primary-muted"
-            >
-              Precision-crafted essentials and statement pieces for those who
-              move first. Premium materials. Uncompromising detail.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.3 }}
-              className="flex flex-wrap gap-3"
-            >
-              <Link
-                href="/products"
-                className="px-7 py-3.5 text-[13px] font-black tracking-[0.12em] uppercase rounded-full transition-all cursor-pointer bg-landing-primary hover:bg-landing-primary-hover text-white font-display"
+            {/* Subtle overall darkening */}
+            <div className="absolute inset-0 bg-black/10" />
+          </div>
+          {/* Grid Layout inside Stage */}
+          <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-16 py-12 lg:py-16 grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 flex flex-col justify-center">
+              {/* Eyebrow Pill */}
+              <motion.div
+                key={`eyebrow-${activeSlide}`}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="inline-flex items-center gap-2 mb-6"
               >
-                Shop New Collection
-              </Link>
-              <Link
-                href="/categories"
-                className="px-7 py-3.5 text-[13px] font-black tracking-[0.12em] uppercase rounded-full border-2 transition-all cursor-pointer border-landing-dark text-landing-dark font-display hover:bg-landing-dark hover:text-white"
-              >
-                Explore Collections
-              </Link>
-            </motion.div>
+                <span className="px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-[11px] font-black tracking-[0.2em] uppercase font-display flex items-center gap-1.5 shadow-xs">
+                  {current.eyebrow}
+                </span>
+              </motion.div>
 
-            {/* Mobile Hero Visual (< lg) */}
-            <div className="lg:hidden mt-10 mb-2 flex justify-center">
-              <div className="relative w-full max-w-[320px]">
-                <Link href={heroHref} className="block relative group">
-                  <div className="w-full h-[360px] rounded-3xl overflow-hidden shadow-2xl shadow-landing-primary/20 bg-landing-primary-light">
-                    <img
-                      src={heroImage}
-                      alt={heroName}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="absolute top-3 right-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-landing-primary text-white font-display tracking-[0.15em] shadow-md">
-                    NEW DROP
-                  </div>
-                  <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-lg border border-landing-primary/10 flex items-center justify-between">
-                    <div className="min-w-0 pr-2">
-                      <div className="text-[11px] font-medium text-landing-primary-muted">
-                        Just dropped
-                      </div>
-                      <div className="text-sm font-black text-landing-dark font-display truncate">
-                        {heroName}
-                      </div>
-                    </div>
-                    <div className="text-base font-black text-landing-primary font-display shrink-0">
-                      ${heroPrice}
-                    </div>
-                  </div>
+              {/* Expressive Pebble Heading */}
+              <motion.h1
+                key={`title-${activeSlide}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.05 }}
+                className="text-4xl sm:text-6xl lg:text-[76px] font-black tracking-tight leading-[0.95] text-white font-display mb-6 drop-shadow-sm"
+              >
+                {current.titleLine1}
+                <br />
+                <span className="text-landing-accent-light">
+                  {current.titleLine2}
+                </span>
+              </motion.h1>
+
+              {/* Pebble Pill Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3.5 mb-10">
+                <Link
+                  href="/products"
+                  className="rounded-full bg-white text-landing-dark hover:bg-landing-accent-light px-7 py-3.5 sm:py-4 inline-flex items-center gap-3 font-display font-bold text-sm tracking-wide shadow-xl hover:shadow-2xl transition-all group cursor-pointer"
+                >
+                  <span>Shop Collection</span>
+                  <span className="w-7 h-7 rounded-full bg-landing-dark text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                    <ArrowRight size={13} />
+                  </span>
                 </Link>
               </div>
-            </div>
 
-            {/* Stats bar */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.55, delay: 0.45 }}
-              className="flex flex-wrap sm:flex-nowrap gap-6 sm:gap-10 mt-10 lg:mt-14 pt-8 lg:pt-10"
-              style={{ borderTop: "1px solid rgba(10,15,46,0.1)" }}
-            >
-              {[
-                ["180+", "Premium Styles"],
-                ["50K+", "Happy Customers"],
-                ["4.9★", "Average Rating"],
-              ].map(([val, label]) => (
-                <div key={label}>
-                  <div className="text-[20px] sm:text-[22px] font-black tracking-tight text-landing-dark font-display">
-                    {val}
-                  </div>
-                  <div className="text-[11px] font-medium mt-0.5 text-landing-primary-muted">
-                    {label}
-                  </div>
+              {/* Pebble Slider Pagination Controls */}
+              <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/15 max-w-md">
+                <div className="text-xs font-bold text-white/80 font-display tracking-wider">
+                  0{activeSlide + 1} / 0{slides.length}
                 </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Right — 3D studio scene */}
-          <div className="relative h-[85vh] hidden lg:flex items-center justify-center">
-            {/* Studio light */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse 75% 75% at 55% 45%, rgba(26,63,240,0.1) 0%, transparent 70%)",
-              }}
-            />
-
-            {/* Ground shadow */}
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                width: 300,
-                height: 50,
-                background:
-                  "radial-gradient(ellipse, rgba(26,63,240,0.18) 0%, transparent 70%)",
-                borderRadius: "50%",
-                bottom: "8%",
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            />
-
-            {/* Main product */}
-            <div
-              ref={layer1}
-              className="absolute"
-              style={{
-                top: "6%",
-                left: "50%",
-                marginLeft: -160,
-                transition: "transform 0.12s ease-out",
-                zIndex: 3,
-              }}
-            >
-              <Link href={heroHref}>
-                <div
-                  style={{
-                    width: 320,
-                    height: 390,
-                    borderRadius: 28,
-                    overflow: "hidden",
-                    boxShadow:
-                      "0 32px 80px rgba(26,63,240,0.28), 0 12px 32px rgba(0,0,0,0.12)",
-                  }}
-                >
-                  <img
-                    src={heroImage}
-                    alt={heroName}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                {/* Progress bar track */}
+                <div className="w-20 h-1 bg-white/25 rounded-full overflow-hidden relative">
+                  <div
+                    className="h-full bg-white rounded-full transition-all duration-300"
+                    style={{
+                      width: `${((activeSlide + 1) / slides.length) * 100}%`,
+                    }}
                   />
                 </div>
-                <div className="absolute -top-3 -right-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-landing-primary text-white font-display tracking-[0.15em] shadow-md">
-                  NEW DROP
-                </div>
-              </Link>
-            </div>
-
-            {/* Sneaker */}
-            <div
-              ref={layer2}
-              className="absolute"
-              style={{
-                bottom: "10%",
-                right: "2%",
-                transition: "transform 0.16s ease-out",
-                zIndex: 4,
-              }}
-            >
-              <div
-                style={{
-                  width: 210,
-                  height: 148,
-                  borderRadius: 22,
-                  overflow: "hidden",
-                  boxShadow:
-                    "0 20px 60px rgba(26,63,240,0.22), 0 8px 24px rgba(0,0,0,0.1)",
-                }}
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=420&h=296&fit=crop&auto=format"
-                  alt="Sneaker"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Cap */}
-            <div
-              ref={layer3}
-              className="absolute"
-              style={{
-                top: "10%",
-                left: "2%",
-                transition: "transform 0.13s ease-out",
-                zIndex: 2,
-              }}
-            >
-              <div
-                style={{
-                  width: 148,
-                  height: 148,
-                  borderRadius: 22,
-                  overflow: "hidden",
-                  boxShadow: "0 16px 48px rgba(10,15,46,0.14)",
-                }}
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=296&h=296&fit=crop&auto=format"
-                  alt="Cap"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Watch */}
-            <div
-              ref={layer4}
-              className="absolute"
-              style={{
-                bottom: "22%",
-                left: "6%",
-                transition: "transform 0.18s ease-out",
-                zIndex: 2,
-              }}
-            >
-              <div
-                style={{
-                  width: 112,
-                  height: 112,
-                  borderRadius: 18,
-                  overflow: "hidden",
-                  boxShadow: "0 12px 32px rgba(26,63,240,0.2)",
-                }}
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=224&h=224&fit=crop&auto=format"
-                  alt="Watch"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Floating price card */}
-            <motion.div
-              animate={{ y: [0, -9, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 3.2,
-                ease: "easeInOut",
-              }}
-              className="absolute"
-              style={{ top: "43%", right: "0%" }}
-            >
-              <Link href={heroHref}>
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: 20,
-                    padding: "14px 18px",
-                    boxShadow: "0 20px 60px rgba(26,63,240,0.18)",
-                    border: "1px solid rgba(26,63,240,0.1)",
-                    maxWidth: 200,
-                  }}
-                >
-                  <div className="text-[11px] font-medium text-landing-primary-muted">
-                    Just dropped
-                  </div>
-                  <div className="text-sm font-black mt-0.5 text-landing-dark font-display truncate">
-                    {heroName}
-                  </div>
-                  <div className="text-base font-black text-landing-primary font-display">
-                    ${heroPrice}
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-
-            {/* Floating rating pill */}
-            <motion.div
-              animate={{ y: [0, 7, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 4,
-                ease: "easeInOut",
-                delay: 1.2,
-              }}
-              className="absolute"
-              style={{ bottom: "30%", right: "25%" }}
-            >
-              <div className="bg-landing-dark rounded-2xl px-4 py-2.5 shadow-[0_16px_48px_rgba(0,0,0,0.3)]">
-                <div className="flex items-center gap-1 mb-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={10}
-                      fill="currentColor"
-                      className="text-landing-primary"
-                    />
-                  ))}
-                </div>
-                <div className="text-[11px] font-bold text-white">
-                  50K+ Reviews
+                {/* Arrow navigation buttons */}
+                <div className="flex items-center gap-1.5 ml-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveSlide(
+                        (prev) => (prev - 1 + slides.length) % slides.length
+                      )
+                    }
+                    className="w-8 h-8 rounded-full border border-white/30 text-white hover:bg-white hover:text-landing-dark flex items-center justify-center transition-all cursor-pointer"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveSlide((prev) => (prev + 1) % slides.length)
+                    }
+                    className="w-8 h-8 rounded-full border border-white/30 text-white hover:bg-white hover:text-landing-dark flex items-center justify-center transition-all cursor-pointer"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-landing-primary-muted font-display">
-          Scroll
-        </span>
-        <motion.div
-          animate={{ scaleY: [0, 1, 0], opacity: [0, 1, 0] }}
-          transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-          className="w-px h-8 origin-top bg-gradient-to-b from-landing-primary to-transparent"
-        />
+      {/* Signature Marquee Ticker */}
+      <div className="relative w-full bg-gradient-to-r from-[#9ef2df] via-[#b6e8fa] to-[#d6dcfe] border-y border-[#1e3d48]/10 py-2.5 sm:py-3 overflow-hidden select-none">
+        <div className="flex items-center whitespace-nowrap gap-8 sm:gap-10 animate-[marquee_25s_linear_infinite]">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center gap-8 sm:gap-10 shrink-0">
+              <span className="text-xs sm:text-[13px] font-bold tracking-[0.14em] uppercase text-[#1e3d48]">
+                FREE SHIPPING &amp; RETURNS
+              </span>
+              <Gift size={16} strokeWidth={2} className="text-[#1e3d48] shrink-0" />
+              <span className="text-xs sm:text-[13px] font-bold tracking-[0.14em] uppercase text-[#1e3d48]">
+                GET A FREE GIFT
+              </span>
+              <ShoppingCart size={16} strokeWidth={2} className="text-[#1e3d48] shrink-0" />
+            </div>
+          ))}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
