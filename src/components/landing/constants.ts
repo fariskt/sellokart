@@ -1,4 +1,4 @@
-export const NAV_LINKS = ["New Arrivals", "Men", "Women", "Accessories", "Collections"];
+export const NAV_LINKS = ["Shop"];
 
 export const PRODUCTS = [
   { id: 1, name: "Aero Cloud Hoodie", price: 189, tag: "NEW", colors: ["#1a3ff0", "#0a0f2e", "#c8d4ff"], image: "https://www.aeropostale.com/dw/image/v2/BBSG_PRD/on/demandware.static/-/Sites-master-catalog-aeropostale/default/dw317ad9fd/60219350_204_main.jpg?sw=640&sh=780&sm=fit&sfrm=jpg" },

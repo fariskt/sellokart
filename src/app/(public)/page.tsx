@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { NewArrivalsSection } from "@/components/landing/NewArrivalsSection";
 import { FeaturedProductSection } from "@/components/landing/FeaturedProductSection";
 import { ReviewsSection } from "@/components/landing/ReviewsSection";
+import { WhatsAppCta } from "@/components/landing/WhatsappCta";
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <NewArrivalsSection />
       <FeaturedProductSection />
       <ReviewsSection />
+      <WhatsAppCta />
     </div>
   );
 }

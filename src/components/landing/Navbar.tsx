@@ -186,16 +186,16 @@ export function Navbar() {
           {/* Left Nav items (Desktop) */}
           <nav className="hidden lg:flex items-center gap-6">
             <Link
+              href="/"
+              className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1 cursor-pointer"
+            >
+              Home
+            </Link>
+            <Link
               href="/products"
               className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1 cursor-pointer"
             >
               Shop
-            </Link>
-            <Link
-              href="/products?sort=newest"
-              className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display cursor-pointer"
-            >
-              New Arrivals
             </Link>
             <Link
               href="/contact"
@@ -550,35 +550,6 @@ export function Navbar() {
               >
                 <span>Shop All Products</span>
                 <span className="text-xs text-landing-primary">➔</span>
-              </Link>
-              <Link
-                href="/categories"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-bold text-landing-dark hover:text-landing-primary font-display flex items-center justify-between"
-              >
-                <span>Explore Collections</span>
-                <span className="text-xs text-landing-primary">➔</span>
-              </Link>
-              <Link
-                href="/products?sort=newest"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-bold text-landing-dark hover:text-landing-primary font-display"
-              >
-                New Arrivals
-              </Link>
-              <Link
-                href="/deals"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-bold text-landing-dark hover:text-landing-primary font-display"
-              >
-                Deals & Specials
-              </Link>
-              <Link
-                href="/about"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-bold text-landing-dark hover:text-landing-primary font-display"
-              >
-                Our Story
               </Link>
             </nav>
 

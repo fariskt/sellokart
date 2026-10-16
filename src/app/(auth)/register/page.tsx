@@ -72,9 +72,6 @@ export default function RegisterPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-landing-dark font-display tracking-tight leading-tight">
               Create Account
             </h1>
-            <p className="text-xs sm:text-sm text-landing-primary-muted font-display mt-2 font-medium">
-              Join us today and discover premium shopping and easy selling.
-            </p>
           </div>
 
           {/* Success State */}

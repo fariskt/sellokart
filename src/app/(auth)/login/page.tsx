@@ -26,14 +26,14 @@ export default function LoginPage() {
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-landing-accent-glow/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header Navigation */}
-      <header className="w-full max-w-[1400px] mx-auto flex items-center justify-between py-2 sm:py-4 z-20">
+      <header className="w-full max-w-[1400px] mx-auto flex items-center justify-between z-20">
         <Link href="/" className="inline-flex items-center transition-transform hover:scale-105 duration-200">
           <Image
             src="/logo4.png"
             alt="Sellokart"
-            width={150}
-            height={38}
-            className="h-8 sm:h-9 w-auto object-contain"
+            width={250}
+            height={70}
+            className="h-20 sm:h-28 w-full object-cover"
             priority
           />
         </Link>
