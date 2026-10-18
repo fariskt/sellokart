@@ -9,18 +9,17 @@ import {
   Plus,
   Minus,
   ShoppingBag,
-  Tag,
   ArrowRight,
   Truck,
-  Percent,
   CheckCircle2,
-  AlertCircle
+  Tag,
+  ChevronRight,
+  ShieldCheck,
+  ArrowLeft,
 } from "lucide-react";
+
 import { useCartStore } from "@/store/cart-store";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/page-header";
 
 export default function CartPage() {
   const { items, updateQuantity, removeFromCart, clearCart } = useCartStore();
@@ -30,42 +29,29 @@ export default function CartPage() {
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
 
-  // Hydration fix
   useEffect(() => {
     setMounted(true);
-    console.log("Analytics: Cart Viewed", items);
   }, []);
-
-  // Analytics: Cart Updated
-  useEffect(() => {
-    if (mounted) {
-      console.log("Analytics: Cart Updated", items);
-    }
-  }, [items, mounted]);
 
   if (!mounted) {
     return (
       <div className="bg-background min-h-screen pt-24 pb-16 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-foreground border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Subtotal calculation
+  // Calculations
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-  // Shipping calculation (free over ₹1,999)
-  const isFreeShipping = subtotal >= 1999 || (discount && discount.code === "FREESHIP");
-  const shippingFee = items.length === 0 ? 0 : isFreeShipping ? 0 : 150;
-
-  // Tax (18% GST)
+  const freeShippingThreshold = 1999;
+  const isFreeShipping = subtotal >= freeShippingThreshold || discount?.code === "FREESHIP";
+  const shippingFee = items.length === 0 ? 0 : isFreeShipping ? 0 : 70;
   const tax = Math.round(subtotal * 0.18);
-
-  // Discount
   const discountAmount = discount ? Math.round((subtotal * discount.percent) / 100) : 0;
-
-  // Total
   const total = Math.max(0, subtotal + shippingFee + tax - discountAmount);
+
+  const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+  const progressPercent = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,15 +63,15 @@ export default function CartPage() {
 
     if (code === "SAVE10") {
       setDiscount({ code: "SAVE10", percent: 10 });
-      setCouponSuccess("10% discount coupon applied successfully!");
+      setCouponSuccess("10% discount applied!");
     } else if (code === "SAVE20") {
       setDiscount({ code: "SAVE20", percent: 20 });
-      setCouponSuccess("20% discount coupon applied successfully!");
+      setCouponSuccess("20% discount applied!");
     } else if (code === "FREESHIP") {
       setDiscount({ code: "FREESHIP", percent: 0 });
-      setCouponSuccess("Free shipping coupon applied successfully!");
+      setCouponSuccess("Free shipping applied!");
     } else {
-      setCouponError("Invalid coupon code. Try 'SAVE10', 'SAVE20' or 'FREESHIP'.");
+      setCouponError("Invalid coupon. Try SAVE10, SAVE20, or FREESHIP.");
     }
   };
 
@@ -108,274 +94,281 @@ export default function CartPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Shopping Cart"
-        description="Manage your selected items and proceed to checkout"
-        icon={ShoppingBag}
-        action={
-          items.length > 0 ? (
-            <Button
-              onClick={clearCart}
-              variant="outline"
-              size="sm"
-              className="text-xs font-bold text-destructive hover:bg-destructive/5 hover:text-destructive border-border/60 hover:border-destructive/30 rounded-xl cursor-pointer"
-            >
-              Clear All
-            </Button>
-          ) : undefined
-        }
-      />
+    <div className="max-w-6xl mx-auto py-4 px-2 sm:px-4 space-y-6">
+      {/* Breadcrumb matching the Checkout flow */}
+      <nav className="flex items-center space-x-2 text-xs font-semibold">
+        <span className="text-foreground font-bold">Cart</span>
+        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
+        <Link
+          href="/checkout"
+          className="text-muted-foreground/70 hover:text-foreground transition-colors"
+        >
+          Shipping
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
+        <span className="text-muted-foreground/50">Payment</span>
+      </nav>
 
       {items.length === 0 ? (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-3xl bg-white p-8 text-center"
+          className="bg-white rounded-2xl border border-border/80 p-12 text-center shadow-xs max-w-lg mx-auto space-y-5"
         >
-          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center text-primary mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground mx-auto">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">Your cart is empty</h2>
-          <p className="text-muted-foreground text-sm max-w-sm mb-8">
-            Looks like you haven't added anything to your cart yet. Explore our curated collections to get started.
-          </p>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">Your cart is empty</h2>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto mt-1">
+              Looks like you haven&apos;t added any items to your bag yet.
+            </p>
+          </div>
           <Button
             asChild
-            className="px-6 py-3 rounded-xl font-bold text-sm bg-primary text-white hover:bg-primary-hover button-shadow transition-all hover:translate-y-[-1px] active:translate-y-[1px]"
+            className="h-11 px-6 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer shadow-xs"
           >
             <Link href="/products">
-              <span>Start Shopping</span>
+              <span>Explore Products</span>
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Cart Items Table List */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="border border-border rounded-2xl bg-white overflow-hidden shadow-xs">
-              <div className="p-6 border-b border-border/60 flex items-center justify-between">
-                <span className="text-sm font-bold text-foreground">
-                  Items ({items.reduce((sum, item) => sum + item.quantity, 0)})
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column (7 cols): Items List & Free Shipping Progress */}
+          <div className="lg:col-span-7 bg-white rounded-2xl border border-border/80 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex items-center justify-between border-b border-border/60 pb-4">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">
+                Shopping Cart ({items.reduce((s, i) => s + i.quantity, 0)})
+              </h1>
+              <button
+                type="button"
+                onClick={clearCart}
+                className="text-xs font-semibold text-destructive hover:underline cursor-pointer"
+              >
+                Clear Cart
+              </button>
+            </div>
+
+            {/* Free Shipping Milestone Bar */}
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/60 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-foreground">
+                  <Truck className="w-4 h-4 text-primary" />
+                  {isFreeShipping ? (
+                    <span className="text-success font-bold">You unlocked Free Standard Shipping!</span>
+                  ) : (
+                    <span>
+                      Add <strong className="text-foreground">₹{amountNeededForFreeShipping.toLocaleString()}</strong> more for Free Shipping
+                    </span>
+                  )}
                 </span>
-                <Button
-                  onClick={clearCart}
-                  variant="link"
-                  className="text-xs font-bold text-destructive p-0 h-auto cursor-pointer hover:underline"
-                >
-                  Clear All
-                </Button>
+                <span className="text-muted-foreground">{progressPercent}%</span>
               </div>
-
-              <div className="divide-y divide-border/60">
-                <AnimatePresence initial={false}>
-                  {items.map((item) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 1 }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden"
-                    >
-                      {/* Image & Title */}
-                      <div className="flex items-center space-x-4">
-                        <div className="w-20 h-20 bg-muted/30 rounded-xl border border-border/40 p-2 flex items-center justify-center shrink-0">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-foreground text-sm sm:text-base line-clamp-1">
-                            {item.name}
-                          </h3>
-                          <span className="text-xs text-muted-foreground mt-1 block">
-                            Unit Price: ₹{item.price.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Controls */}
-                      <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 mt-2 sm:mt-0">
-                        {/* Quantity selector */}
-                        <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
-                          <button
-                            onClick={() => decrementQty(item.id, item.quantity)}
-                            type="button"
-                            className="p-2 hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="w-10 text-center text-sm font-bold text-foreground">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => incrementQty(item.id, item.quantity)}
-                            type="button"
-                            className="p-2 hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Item Subtotal & Delete */}
-                        <div className="flex items-center space-x-4">
-                          <span className="font-extrabold text-foreground text-sm sm:text-base">
-                            ₹{(item.price * item.quantity).toLocaleString()}
-                          </span>
-                          <Button
-                            onClick={() => removeFromCart(item.id)}
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-muted-foreground hover:text-destructive p-1 rounded-lg hover:bg-destructive/5 cursor-pointer"
-                            aria-label="Remove item"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+              <div className="w-full bg-border/60 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
             </div>
 
-            {/* Free Shipping Alert Banner */}
-            {subtotal < 1999 && (
-              <div className="border border-amber-500/10 bg-amber-500/5 rounded-2xl p-4 flex items-start space-x-3">
-                <Truck className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-                <div>
-                  <h4 className="text-sm font-bold text-amber-900">Add ₹{(1999 - subtotal).toLocaleString()} more for Free Shipping</h4>
-                  <p className="text-xs text-amber-700/80 mt-0.5">Explore more products to avoid the ₹150 shipping charge.</p>
-                </div>
-              </div>
-            )}
+            {/* Items List */}
+            <div className="divide-y divide-border/60">
+              <AnimatePresence initial={false}>
+                {items.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    {/* Image & Title */}
+                    <div className="flex items-center space-x-4">
+                      <div className="w-20 h-20 bg-muted/20 rounded-xl border border-border/60 p-2 flex items-center justify-center shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-foreground text-sm sm:text-base line-clamp-1">
+                          {item.name}
+                        </h3>
+                        <span className="text-xs text-muted-foreground mt-0.5 block font-mono">
+                          ₹{item.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Quantity & Item Subtotal */}
+                    <div className="flex items-center justify-between sm:justify-end gap-6">
+                      {/* Quantity Selector */}
+                      <div className="flex items-center border border-border/80 rounded-lg overflow-hidden bg-white">
+                        <button
+                          type="button"
+                          onClick={() => decrementQty(item.id, item.quantity)}
+                          className="p-1.5 sm:p-2 text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="w-9 text-center text-xs sm:text-sm font-bold text-foreground">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => incrementQty(item.id, item.quantity)}
+                          className="p-1.5 sm:p-2 text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Total for item & Delete icon */}
+                      <div className="flex items-center space-x-3.5">
+                        <span className="font-bold text-foreground text-sm sm:text-base font-mono">
+                          ₹{(item.price * item.quantity).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-muted-foreground/60 hover:text-destructive p-1 rounded-md transition-colors cursor-pointer"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer p-0"
+              >
+                <Link href="/products" className="inline-flex items-center">
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                  <span>Continue Shopping</span>
+                </Link>
+              </Button>
+            </div>
           </div>
 
-          {/* Order Summary & Coupon Column */}
-          <div className="space-y-6">
-            {/* Coupon Form */}
-            <div className="border border-border rounded-2xl bg-white p-6 shadow-xs">
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-primary" />
-                <span>Promo Code</span>
-              </h3>
+          {/* Right Column (5 cols): Order Summary matching Checkout Theme */}
+          <div className="lg:col-span-5 bg-white rounded-2xl border border-border/80 p-6 sm:p-8 shadow-xs space-y-6">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground">
+              Order Summary
+            </h2>
 
+            {/* Promo Code Box */}
+            <div>
               {discount ? (
-                <div className="bg-success/5 border border-success/15 rounded-xl p-3 flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-success">
-                    <Percent className="w-4 h-4 shrink-0" />
-                    <span className="text-xs font-bold uppercase">{discount.code} Applied</span>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-success/5 border border-success/20 text-xs">
+                  <div className="flex items-center space-x-2 text-success font-semibold">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{discount.code} Applied</span>
                   </div>
-                  <Button
+                  <button
+                    type="button"
                     onClick={handleRemoveCoupon}
-                    variant="link"
-                    className="text-xs font-bold text-destructive p-0 h-auto cursor-pointer hover:underline"
+                    className="text-destructive font-bold text-xs hover:underline cursor-pointer"
                   >
                     Remove
-                  </Button>
+                  </button>
                 </div>
               ) : (
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                  <Input
+                <form
+                  onSubmit={handleApplyCoupon}
+                  className="flex items-center border border-border/80 rounded-xl px-3 py-1 bg-white focus-within:ring-1 focus-within:ring-primary"
+                >
+                  <Tag className="w-4 h-4 text-muted-foreground mr-2 shrink-0" />
+                  <input
                     type="text"
-                    placeholder="e.g. SAVE10"
+                    placeholder="Discount code"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
-                    className="flex-1 uppercase border border-border h-10"
+                    className="flex-1 py-2 text-xs sm:text-sm outline-none uppercase bg-transparent"
                   />
-                  <Button
+                  <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-bold cursor-pointer shrink-0 rounded-xl"
+                    className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors px-2 py-1 cursor-pointer"
                   >
                     Apply
-                  </Button>
+                  </button>
                 </form>
               )}
 
-              {/* Messages */}
               {couponError && (
-                <div className="flex items-center space-x-1.5 text-destructive text-xs mt-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{couponError}</span>
-                </div>
+                <p className="text-[11px] text-destructive mt-1.5 font-medium">{couponError}</p>
               )}
               {couponSuccess && (
-                <div className="flex items-center space-x-1.5 text-success text-xs mt-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                  <span>{couponSuccess}</span>
+                <p className="text-[11px] text-success mt-1.5 font-medium">{couponSuccess}</p>
+              )}
+            </div>
+
+            {/* Calculations Breakdown */}
+            <div className="space-y-3 pt-2 text-xs sm:text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span className="font-semibold text-foreground font-mono">
+                  ₹{subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-muted-foreground">
+                <span>Estimated Shipping</span>
+                <span className="font-semibold text-foreground font-mono">
+                  {shippingFee === 0 ? "Free" : `₹${shippingFee.toFixed(2)}`}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-muted-foreground">
+                <span>Estimated taxes (18% GST)</span>
+                <span className="font-semibold text-foreground font-mono">
+                  ₹{tax.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-success">
+                  <span>Discount ({discount?.percent}%)</span>
+                  <span className="font-semibold font-mono">
+                    -₹{discountAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
               )}
 
-              <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-                Available coupons: <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-[10px]">SAVE10</code> (10% Off), <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-[10px]">SAVE20</code> (20% Off), <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-[10px]">FREESHIP</code> (Free Shipping).
+              <div className="pt-4 border-t border-border flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
+                <span>Total</span>
+                <span className="text-base sm:text-lg font-black font-mono">
+                  ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
               </div>
             </div>
 
-            {/* Order Summary Card */}
-            <div className="border border-border rounded-2xl bg-white p-6 shadow-xs space-y-6">
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
-                Order Summary
-              </h3>
+            {/* Proceed to Checkout Button */}
+            <Button
+              asChild
+              className="w-full h-12 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+            >
+              <Link href="/checkout">
+                <span>Proceed to Checkout</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Link>
+            </Button>
 
-              <div className="space-y-3 divide-y divide-border/40 text-sm">
-                {/* Subtotal */}
-                <div className="flex justify-between pt-1">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-semibold text-foreground">₹{subtotal.toLocaleString()}</span>
-                </div>
-
-                {/* GST */}
-                <div className="flex justify-between pt-3">
-                  <span className="text-muted-foreground">Estimated GST (18%)</span>
-                  <span className="font-semibold text-foreground">₹{tax.toLocaleString()}</span>
-                </div>
-
-                {/* Shipping */}
-                <div className="flex justify-between pt-3">
-                  <span className="text-muted-foreground">Shipping Fee</span>
-                  <span className="font-semibold text-foreground">
-                    {shippingFee === 0 ? (
-                      <span className="text-success font-bold">FREE</span>
-                    ) : (
-                      `₹${shippingFee}`
-                    )}
-                  </span>
-                </div>
-
-                {/* Discount */}
-                {discountAmount > 0 && (
-                  <div className="flex justify-between pt-3 text-success">
-                    <span>Discount ({discount?.percent}%)</span>
-                    <span className="font-bold">-₹{discountAmount.toLocaleString()}</span>
-                  </div>
-                )}
-
-                {/* Total */}
-                <div className="flex justify-between pt-4 text-base font-bold text-foreground">
-                  <span>Total Amount</span>
-                  <span className="text-lg text-primary ">₹{total.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <Button
-                asChild
-                className="w-full inline-flex items-center justify-center py-6 rounded-xl font-bold text-sm bg-primary text-white hover:bg-primary-hover button-shadow transition-all hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer"
-              >
-                <Link href="/checkout">
-                  <span>Proceed to Checkout</span>
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-
-              <div className="text-center">
-                <Link href="/products" className="text-xs font-semibold text-primary hover:underline cursor-pointer">
-                  Continue Shopping
-                </Link>
-              </div>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground text-center">
+              <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>Safe & Secure Checkout Guaranteed</span>
             </div>
           </div>
         </div>
