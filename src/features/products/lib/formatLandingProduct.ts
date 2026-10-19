@@ -1,5 +1,3 @@
-import { PRODUCTS } from "@/components/landing/constants";
-
 export interface FormattedLandingProduct {
   id: string | number;
   name: string;
@@ -23,9 +21,7 @@ export function formatLandingProduct(
     product.product_images?.[0]?.image_url;
 
   // Fallback if product has no uploaded image
-  const fallbackImage =
-    PRODUCTS[index % PRODUCTS.length]?.image ||
-    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=720&fit=crop&auto=format";
+  const fallbackImage = "/placeholder-image.jpg";
 
   // Extract color values if specified in product attributes
   const colorAttr = product.product_attributes?.find((attr: any) =>
@@ -39,12 +35,7 @@ export function formatLandingProduct(
       .filter(Boolean);
   }
   if (!colors.length) {
-    colors =
-      PRODUCTS[index % PRODUCTS.length]?.colors || [
-        "#1a3ff0",
-        "#0a0f2e",
-        "#c8d4ff",
-      ];
+    colors = ["#1a3ff0", "#0a0f2e", "#c8d4ff"];
   }
 
   // Derive display tag

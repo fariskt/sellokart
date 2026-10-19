@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
               <Sparkles size={12} className="shrink-0" />
               <span>Password Recovery</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-landing-dark font-display tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl fond-medium text-landing-dark font-display tracking-tight leading-tight">
               Reset Password
             </h1>
             <p className="text-xs sm:text-sm text-landing-primary-muted font-display mt-2 font-medium">

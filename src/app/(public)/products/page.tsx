@@ -52,10 +52,7 @@ export default async function ProductsPage({
     }
   });
 
-  const categories =
-    categoryNamesSet.size > 0
-      ? Array.from(categoryNamesSet)
-      : ["Electronics", "Fashion", "Living & Decor"];
+  const categories = Array.from(categoryNamesSet);
 
   // 1. FILTERING
   let filteredProducts = allProducts.filter((prod) => {

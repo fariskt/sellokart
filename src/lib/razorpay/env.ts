@@ -1,6 +1,6 @@
 /**
  * Razorpay Environment Variables Helper & Validator
- * Ensures secret keys are never loaded into the client bundle and required keys are present.
+ * Ensures secret keys are validated properly and never empty.
  */
 
 export function getRazorpayServerEnv() {
@@ -8,22 +8,28 @@ export function getRazorpayServerEnv() {
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-  if (!keyId) {
+  if (!keyId || !keyId.trim()) {
     throw new Error(
       "Missing RAZORPAY_KEY_ID environment variable. Please configure it in .env.local."
     );
   }
 
-  if (!keySecret) {
+  if (!keySecret || !keySecret.trim()) {
     throw new Error(
       "Missing RAZORPAY_KEY_SECRET environment variable. Please configure it in .env.local."
     );
   }
 
+  if (!webhookSecret || !webhookSecret.trim()) {
+    throw new Error(
+      "Missing RAZORPAY_WEBHOOK_SECRET environment variable. Please configure it in .env.local."
+    );
+  }
+
   return {
-    keyId,
-    keySecret,
-    webhookSecret: webhookSecret || "",
+    keyId: keyId.trim(),
+    keySecret: keySecret.trim(),
+    webhookSecret: webhookSecret.trim(),
     isTestMode: keyId.startsWith("rzp_test_"),
   };
 }
@@ -31,14 +37,14 @@ export function getRazorpayServerEnv() {
 export function getRazorpayPublicEnv() {
   const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
 
-  if (!keyId) {
+  if (!keyId || !keyId.trim()) {
     throw new Error(
       "Missing NEXT_PUBLIC_RAZORPAY_KEY_ID environment variable. Please configure it in .env.local."
     );
   }
 
   return {
-    keyId,
+    keyId: keyId.trim(),
     isTestMode: keyId.startsWith("rzp_test_"),
   };
 }

@@ -116,3 +116,49 @@ CREATE POLICY "Enable insert and update for payments" ON public.payments
   TO anon, authenticated
   USING (true)
   WITH CHECK (true);
+
+-- 6. Addresses table & RLS policies for saved checkout addresses
+CREATE TABLE IF NOT EXISTS public.addresses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  address_line_1 TEXT NOT NULL,
+  address_line_2 TEXT,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  postal_code TEXT NOT NULL,
+  country TEXT NOT NULL DEFAULT 'India',
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_addresses_user_id ON public.addresses (user_id);
+ALTER TABLE public.addresses ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own addresses" ON public.addresses;
+CREATE POLICY "Users can read own addresses" ON public.addresses
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own addresses" ON public.addresses;
+CREATE POLICY "Users can insert own addresses" ON public.addresses
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own addresses" ON public.addresses;
+CREATE POLICY "Users can update own addresses" ON public.addresses
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own addresses" ON public.addresses;
+CREATE POLICY "Users can delete own addresses" ON public.addresses
+  FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
+

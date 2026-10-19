@@ -1,352 +1,430 @@
-"use client";
-
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
   Calendar,
   CreditCard,
   Truck,
-  Check,
   Package,
-  Download,
   MapPin,
   Clock,
-  AlertTriangle,
-  Play,
-  RotateCcw,
-  Star,
-  Loader2
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { PrintInvoiceButton } from "@/features/orders/components/PrintInvoiceButton";
+
+export const dynamic = "force-dynamic";
 
 interface OrderDetailsProps {
   params: Promise<{ id: string }>;
 }
 
-export default function OrderDetailsPage({ params }: OrderDetailsProps) {
-  const resolvedParams = React.use(params);
+interface ShippingAddressData {
+  addressLine1?: string;
+  addressLine2?: string | null;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+interface ProductImageRelation {
+  image_url: string;
+  is_primary?: boolean;
+}
+
+interface ProductRelation {
+  id: string;
+  name?: string | null;
+  product_images?: ProductImageRelation[] | null;
+}
+
+interface OrderItemData {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  product_name: string;
+  product_sku: string | null;
+  quantity: number;
+  price: number;
+  created_at: string;
+  products?: ProductRelation | null;
+}
+
+interface PaymentData {
+  id: string;
+  gateway: string | null;
+  gateway_order_id: string | null;
+  gateway_payment_id: string | null;
+  amount: number | null;
+  status: string | null;
+  currency: string | null;
+  paid_at: string | null;
+  created_at: string | null;
+}
+
+interface ShipmentData {
+  id: string;
+  courier_name?: string | null;
+  carrier?: string | null;
+  tracking_number?: string | null;
+  shipment_status?: string | null;
+  estimated_delivery?: string | null;
+  notes?: string | null;
+  created_at?: string | null;
+}
+
+interface OrderRecord {
+  id: string;
+  order_number: string | null;
+  user_id: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  shipping_address: ShippingAddressData | null;
+  subtotal: number | null;
+  tax: number | null;
+  shipping: number | null;
+  discount: number | null;
+  total: number | null;
+  status: string;
+  payment_status: string;
+  razorpay_order_id: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  order_items?: OrderItemData[];
+  payments?: PaymentData[] | PaymentData | null;
+}
+
+export default async function OrderDetailsPage({ params }: OrderDetailsProps) {
+  const resolvedParams = await params;
   const orderId = resolvedParams.id;
 
-  const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState<any>(null);
-  const [orderItems, setOrderItems] = useState<any[]>([]);
-  const [payment, setPayment] = useState<any>(null);
-  const [shipment, setShipment] = useState<any>(null);
-  const [isSandbox, setIsSandbox] = useState(false);
-  const [error, setError] = useState("");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Simulated status progression
-  const [simStatus, setSimStatus] = useState<string>("processing");
-  const [simAutoplay, setSimAutoplay] = useState(false);
+  if (!user) {
+    redirect(`/login?next=/account/orders/${orderId}`);
+  }
 
-  useEffect(() => {
-    async function loadOrderDetails() {
-      try {
-        const supabase = createClient();
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const cleanOrderId = orderId.replace(/[,()\\%"_]/g, "").trim().slice(0, 50);
 
-        if (userError || !user) {
-          setError("Session expired. Please log in.");
-          setLoading(false);
-          return;
-        }
+  // 1. Authoritatively fetch Order with relations directly on server
+  let { data: orderData, error: orderErr } = await supabase
+    .from("orders")
+    .select(
+      `
+      *,
+      order_items (
+        id,
+        order_id,
+        product_id,
+        product_name,
+        product_sku,
+        quantity,
+        price,
+        created_at,
+        products (
+          id,
+          name,
+          product_images (
+            image_url,
+            is_primary
+          )
+        )
+      ),
+      payments (
+        id,
+        gateway,
+        gateway_order_id,
+        gateway_payment_id,
+        amount,
+        status,
+        currency,
+        paid_at,
+        created_at
+      )
+    `
+    )
+    .eq("user_id", user.id)
+    .or(`id.eq.${cleanOrderId},order_number.eq.${cleanOrderId}`)
+    .maybeSingle();
 
-        try {
-          // 1. Fetch Order
-          const { data: orderData, error: orderErr } = await supabase
-            .from("orders")
-            .select("*")
-            .eq("id", orderId)
-            .single();
+  // Resilient fallback query if relation schema mismatch occurs
+  if (!orderData) {
+    const fallbackRes = await supabase
+      .from("orders")
+      .select(
+        `
+        *,
+        order_items (
+          id,
+          order_id,
+          product_id,
+          product_name,
+          product_sku,
+          quantity,
+          price,
+          created_at
+        ),
+        payments (
+          id,
+          gateway,
+          gateway_order_id,
+          gateway_payment_id,
+          amount,
+          status,
+          currency,
+          paid_at,
+          created_at
+        )
+      `
+      )
+      .eq("user_id", user.id)
+      .or(`id.eq.${cleanOrderId},order_number.eq.${cleanOrderId}`)
+      .maybeSingle();
 
-          if (orderErr) throw orderErr;
-          setOrder(orderData);
-          setSimStatus(orderData.status);
-
-          // 2. Fetch Order Items
-          const { data: itemsData } = await supabase
-            .from("order_items")
-            .select("*, products(*)")
-            .eq("order_id", orderId);
-          setOrderItems(itemsData || []);
-
-          // 3. Fetch Payment details
-          const { data: payData } = await supabase
-            .from("payments")
-            .select("*")
-            .eq("order_id", orderId)
-            .single();
-          setPayment(payData);
-
-          // 4. Fetch Shipment details
-          const { data: shipData } = await supabase
-            .from("shipments")
-            .select("*")
-            .eq("order_id", orderId)
-            .single();
-          setShipment(shipData);
-        } catch (dbErr) {
-          setIsSandbox(true);
-          // Set Sandbox Mock details
-          const totalAmount = orderId === "ORD-9283" ? 11999 : orderId === "ORD-8742" ? 3999 : 14999;
-          const status = orderId === "ORD-9283" ? "processing" : orderId === "ORD-8742" ? "shipped" : "delivered";
-          const payMethod = orderId === "ORD-9283" ? "UPI" : orderId === "ORD-8742" ? "Card" : "NetBanking";
-
-          setSimStatus(status);
-          setOrder({
-            id: orderId,
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            total_amount: totalAmount,
-            status: status,
-            payment_method: payMethod
-          });
-
-          // Mock items based on total
-          if (totalAmount === 11999) {
-            setOrderItems([
-              { id: 101, quantity: 1, price: 11999, product_name: "Studio Headset Pro", image: "/images/headphones.png", category: "Electronics" }
-            ]);
-          } else if (totalAmount === 3999) {
-            setOrderItems([
-              { id: 102, quantity: 1, price: 3999, product_name: "Creative Minimalist Desk Mat", image: "/images/workspace.png", category: "Living & Decor" }
-            ]);
-          } else {
-            setOrderItems([
-              { id: 103, quantity: 2, price: 7499, product_name: "Aesthetic Premium Jacket", image: "/images/fashion.png", category: "Fashion" }
-            ]);
-          }
-
-          setPayment({
-            payment_method: payMethod,
-            payment_status: "completed",
-            amount: totalAmount,
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-          });
-
-          setShipment({
-            carrier: "BlueDart Express",
-            tracking_number: `BD-${orderId.split("-")[1] || "83719"}-IN`,
-            status: status === "delivered" ? "delivered" : "in_transit",
-            estimated_delivery: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-          });
-        }
-      } catch (err: any) {
-        setError("Failed to resolve order details.");
-      } finally {
-        setLoading(false);
-      }
+    if (fallbackRes.data) {
+      orderData = fallbackRes.data;
+      orderErr = null;
     }
+  }
 
-    loadOrderDetails();
-  }, [orderId]);
+  if (orderErr) {
+    console.error("Order lookup error:", orderErr.message);
+  }
 
-  // Autoplay simulator logic
-  useEffect(() => {
-    if (!simAutoplay) return;
-
-    const stages = ["pending", "processing", "shipped", "delivered"];
-    const currentIndex = stages.indexOf(simStatus);
-
-    if (currentIndex === stages.length - 1) {
-      setSimAutoplay(false);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setSimStatus(stages[currentIndex + 1]);
-    }, 6000);
-
-    return () => clearTimeout(timer);
-  }, [simStatus, simAutoplay]);
-
-  const handleNextStage = () => {
-    const stages = ["pending", "processing", "shipped", "delivered"];
-    const currentIndex = stages.indexOf(simStatus);
-    if (currentIndex < stages.length - 1) {
-      setSimStatus(stages[currentIndex + 1]);
-    }
-  };
-
-  const handleResetStage = () => {
-    setSimStatus("pending");
-    setSimAutoplay(false);
-  };
-
-  const printInvoice = () => {
-    window.print();
-  };
-
-  if (loading) {
+  // 2. Enforce strict customer ownership
+  if (!orderData || (orderData.user_id && orderData.user_id !== user.id)) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="p-8 max-w-lg mx-auto text-center space-y-4 border border-border rounded-2xl bg-card">
+        <div className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <h3 className="text-lg font-bold text-foreground">Order Not Found</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          The requested order could not be located or does not belong to your account.
+        </p>
+        <Button asChild variant="outline" size="sm" className="cursor-pointer">
+          <Link href="/account/orders">
+            <ArrowLeft className="w-4 h-4 mr-1.5" />
+            <span>Back to Orders</span>
+          </Link>
+        </Button>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6 max-w-lg mx-auto text-center space-y-4">
-        <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
-        <h3 className="text-lg font-bold text-foreground">Order details failed</h3>
-        <p className="text-sm text-muted-foreground">{error}</p>
-        <Link href="/account/orders" className="text-sm text-primary hover:underline font-bold">
-          Return to Orders
-        </Link>
-      </div>
-    );
+  const order = orderData as unknown as OrderRecord;
+  const items = order.order_items || [];
+
+  // 3. Fetch real shipment record from database if present
+  let shipment: ShipmentData | null = null;
+  try {
+    const { data: shipData } = await supabase
+      .from("shipments")
+      .select("*")
+      .eq("order_id", order.id)
+      .maybeSingle();
+
+    if (shipData) {
+      shipment = shipData as ShipmentData;
+    }
+  } catch (shipErr) {
+    console.warn("Shipments relation check:", shipErr);
   }
 
-  // Invoice calculations
-  const itemsSubtotal = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const gst = Math.round(itemsSubtotal * 0.18);
-  const shippingCharge = itemsSubtotal >= 1999 ? 0 : 150;
-  const grandTotal = itemsSubtotal + shippingCharge + gst;
+  // Payment details resolved from authoritative relation
+  const payment: PaymentData | null = Array.isArray(order.payments)
+    ? order.payments[0] || null
+    : order.payments || null;
 
-  // Timeline helper
+  // Real calculations loaded from server order record
+  const subtotal = Number(
+    order.subtotal ?? items.reduce((acc, i) => acc + (i.price || 0) * (i.quantity || 1), 0)
+  );
+  const tax = Number(order.tax ?? Math.round(subtotal * 0.18));
+  const shippingFee = Number(order.shipping ?? (subtotal >= 1999 ? 0 : 150));
+  const discount = Number(order.discount ?? 0);
+  const total = Number(order.total ?? subtotal + tax + shippingFee - discount);
+
+  const displayOrderNumber = order.order_number || order.id.slice(0, 8).toUpperCase();
+
+  // Timeline configuration based purely on real server status
+  const isCancelled =
+    order.status?.toLowerCase() === "cancelled" || order.status?.toLowerCase() === "refunded";
+
   const timelineStages = [
-    { label: "Ordered", status: "pending", desc: "Order details received", icon: Package },
-    { label: "Confirmed", status: "processing", desc: "Payment cleared, packing items", icon: Clock },
-    { label: "Shipped", status: "shipped", desc: "Dispatched from warehouse hub", icon: Truck },
-    { label: "Delivered", status: "delivered", desc: "Order delivered safely", icon: Check }
+    { label: "Order Placed", status: "pending", desc: "Order initialized & verified", icon: Package },
+    {
+      label: "Confirmed",
+      status: "confirmed",
+      desc: "Payment verified, order confirmed",
+      icon: Clock,
+    },
+    {
+      label: "Shipped",
+      status: "shipped",
+      desc: "Dispatched from warehouse",
+      icon: Truck,
+    },
+    {
+      label: "Delivered",
+      status: "delivered",
+      desc: "Delivered to shipping address",
+      icon: CheckCircle2,
+    },
   ];
 
-  const getStageState = (stageStatus: string) => {
-    const stages = ["pending", "processing", "shipped", "delivered"];
-    const targetIdx = stages.indexOf(stageStatus);
-    const currentIdx = stages.indexOf(simStatus);
+  const normalizedStatus =
+    order.status?.toLowerCase() === "processing" ? "confirmed" : order.status?.toLowerCase() || "pending";
+  const stageKeys = ["pending", "confirmed", "shipped", "delivered"];
+  const currentStageIndex = stageKeys.indexOf(normalizedStatus);
 
-    if (currentIdx >= targetIdx) {
-      return "completed";
-    }
-    if (currentIdx + 1 === targetIdx) {
-      return "active";
-    }
+  const getStageState = (stageKey: string) => {
+    if (isCancelled) return "cancelled";
+    const stageIdx = stageKeys.indexOf(stageKey);
+    if (currentStageIndex >= stageIdx) return "completed";
+    if (currentStageIndex + 1 === stageIdx) return "active";
     return "upcoming";
   };
+
+  const getOrderStatusBadgeClass = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "delivered":
+        return "bg-success/15 text-success border-success/30";
+      case "shipped":
+        return "bg-accent text-accent-foreground border-accent-foreground/20";
+      case "confirmed":
+      case "processing":
+      case "in_progress":
+        return "bg-primary/10 text-primary border-primary/20";
+      case "pending":
+        return "bg-warning/15 text-warning border-warning/30";
+      case "cancelled":
+      case "refunded":
+        return "bg-destructive/10 text-destructive border-destructive/20";
+      default:
+        return "bg-muted text-muted-foreground border-border";
+    }
+  };
+
+  const getPaymentStatusBadgeClass = (pStatus: string | null | undefined) => {
+    switch (pStatus?.toLowerCase()) {
+      case "paid":
+        return "bg-success/15 text-success border-success/30";
+      case "pending":
+        return "bg-warning/15 text-warning border-warning/30";
+      case "failed":
+        return "bg-destructive/10 text-destructive border-destructive/20";
+      case "refunded":
+        return "bg-muted text-muted-foreground border-border";
+      default:
+        return "bg-muted text-muted-foreground border-border";
+    }
+  };
+
+  const shippingAddr = order.shipping_address;
 
   return (
     <div className="space-y-8 print:p-0 print:border-none">
       <PageHeader
         title="Order Details"
-        description={`Order ID: ${orderId} • Review purchase receipt and live tracking timeline.`}
+        description={`Order #${displayOrderNumber} • Placed on ${new Date(
+          order.created_at
+        ).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })}`}
         icon={Package}
         action={
           <div className="flex items-center gap-3 print:hidden">
-            <Link
-              href="/account/orders"
-              className="inline-flex items-center justify-center px-4 py-2 border border-border hover:border-primary/50 hover:bg-secondary/10 text-muted-foreground hover:text-primary rounded-xl text-xs font-bold transition-all cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-              <span>Back to Orders</span>
-            </Link>
-
-            <Button
-              onClick={printInvoice}
-              variant="outline"
-              size="sm"
-              className="rounded-xl font-bold border-border/60 hover:bg-secondary/10 transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4 mr-1.5" />
-              <span>Print Invoice</span>
+            <Button asChild variant="outline" size="sm" className="cursor-pointer">
+              <Link href="/account/orders">
+                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
+                <span>Back to Orders</span>
+              </Link>
             </Button>
+            <PrintInvoiceButton />
           </div>
         }
       />
 
-      {/* Database Warning */}
-      {isSandbox && (
-        <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 flex items-start space-x-3 text-xs text-amber-700/80 print:hidden">
-          <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-          <div>
-            <span className="font-bold text-amber-900 block mb-0.5">Offline Sandbox Fallback</span>
-            Loading mockup database entities. Updates and progressions are simulated locally.
+      {/* Cancellation Notice if applicable */}
+      {isCancelled && (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 flex items-start space-x-3 text-xs text-destructive print:hidden">
+          <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <h4 className="font-bold text-sm">Order Cancelled</h4>
+            <p className="text-muted-foreground">
+              This order has been cancelled and is no longer in active fulfillment.
+            </p>
           </div>
         </div>
       )}
 
-      {/* Progression Simulator Panel */}
-      <div className="bg-slate-900 border border-border-dark text-white rounded-2xl p-6 shadow-md space-y-4 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="font-extrabold text-sm uppercase tracking-wider text-slate-300">
-              Real-time Status Simulator
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Simulate order shipping stages to preview real-time timeline modifications.
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setSimAutoplay(!simAutoplay)}
-              className={cn(
-                "inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                simAutoplay ? "bg-amber-500 hover:bg-amber-600 text-slate-950" : "bg-slate-800 hover:bg-slate-700 text-white"
-              )}
-            >
-              <Play className={cn("w-3.5 h-3.5 mr-1", simAutoplay && "animate-pulse")} />
-              <span>{simAutoplay ? "Pause Autoplay" : "Autoplay (6s)"}</span>
-            </button>
-
-            <button
-              onClick={handleNextStage}
-              disabled={simStatus === "delivered" || simAutoplay}
-              className="px-3 py-1.5 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all cursor-pointer disabled:cursor-not-allowed"
-            >
-              Next Stage
-            </button>
-
-            <button
-              onClick={handleResetStage}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors cursor-pointer text-slate-400 hover:text-white"
-              aria-label="Reset status"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Real Shipping Progress Tracker */}
+      <div className="border border-border rounded-2xl bg-card p-6 md:p-8 shadow-xs space-y-6">
+        <div className="flex items-center justify-between border-b border-border/60 pb-4">
+          <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
+            Shipping Progress Tracker
+          </h3>
+          <Badge
+            variant="outline"
+            className={cn("capitalize font-bold text-[10px]", getOrderStatusBadgeClass(order.status))}
+          >
+            <span>{order.status}</span>
+          </Badge>
         </div>
-      </div>
-
-      {/* Timeline Progression Column */}
-      <div className="border border-border rounded-2xl bg-white p-6 md:p-8 shadow-xs space-y-6">
-        <h3 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/40 pb-4">
-          Shipping Progress Tracker
-        </h3>
 
         {/* Timeline Horizontal Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 relative">
           {timelineStages.map((stage, idx) => {
             const state = getStageState(stage.status);
             const Icon = stage.icon;
+
             return (
-              <div key={stage.label} className="flex flex-col items-center text-center space-y-3 relative group">
+              <div
+                key={stage.label}
+                className="flex flex-col items-center text-center space-y-3 relative group"
+              >
                 {/* Horizontal connect line */}
-                {idx < 3 && (
-                  <div className={cn(
-                    "hidden sm:block absolute top-5 left-1/2 right-[-50%] h-[2px] z-0 transition-colors duration-500",
-                    getStageState(timelineStages[idx + 1].status) === "completed"
-                      ? "bg-green-500"
-                      : getStageState(stage.status) === "completed"
-                        ? "bg-primary animate-pulse"
+                {idx < 3 && !isCancelled && (
+                  <div
+                    className={cn(
+                      "hidden sm:block absolute top-5 left-1/2 right-[-50%] h-[2px] z-0 transition-colors duration-300",
+                      currentStageIndex > idx
+                        ? "bg-success"
+                        : currentStageIndex === idx
+                        ? "bg-primary/50"
                         : "bg-border"
-                  )} />
+                    )}
+                  />
                 )}
 
                 {/* Node Ring circle */}
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center border-2 z-10 transition-all duration-500 relative",
-                  state === "completed" && "bg-green-500 border-green-500 text-white",
-                  state === "active" && "bg-white border-primary text-primary shadow-xs ring-4 ring-primary/10 scale-105",
-                  state === "upcoming" && "bg-white border-border text-muted-foreground"
-                )}>
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center border-2 z-10 transition-all relative",
+                    state === "completed" && "bg-success border-success text-white",
+                    state === "active" &&
+                      "bg-card border-primary text-primary shadow-xs ring-4 ring-primary/10 scale-105",
+                    state === "upcoming" && "bg-card border-border text-muted-foreground",
+                    state === "cancelled" && "bg-muted border-border text-muted-foreground opacity-60"
+                  )}
+                >
                   {state === "completed" ? (
-                    <Check className="w-5 h-5 stroke-[3px]" />
+                    <CheckCircle2 className="w-5 h-5 stroke-[2.5px]" />
                   ) : (
                     <Icon className="w-4 h-4" />
                   )}
@@ -354,12 +432,15 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
 
                 {/* Text Description details */}
                 <div className="space-y-0.5">
-                  <h4 className={cn(
-                    "text-xs font-bold leading-tight transition-colors",
-                    state === "completed" && "text-green-600",
-                    state === "active" && "text-primary",
-                    state === "upcoming" && "text-muted-foreground"
-                  )}>
+                  <h4
+                    className={cn(
+                      "text-xs font-bold leading-tight",
+                      state === "completed" && "text-success",
+                      state === "active" && "text-primary",
+                      state === "upcoming" && "text-muted-foreground",
+                      state === "cancelled" && "text-muted-foreground"
+                    )}
+                  >
                     {stage.label}
                   </h4>
                   <p className="text-[10px] text-muted-foreground max-w-[140px] mx-auto">
@@ -375,147 +456,247 @@ export default function OrderDetailsPage({ params }: OrderDetailsProps) {
       {/* Main split details: Left Invoice Items, Right Shipment and Payment details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Order Items & Pricing Invoice Summary */}
-        <div className="lg:col-span-2 border border-border rounded-2xl bg-white overflow-hidden shadow-xs space-y-6">
+        <div className="lg:col-span-2 border border-border rounded-2xl bg-card overflow-hidden shadow-xs space-y-6">
           <div className="px-6 py-5 border-b border-border/60 flex items-center justify-between">
-            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Itemized Invoice</h3>
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
+              Itemized Invoice
+            </h3>
             <span className="text-xs text-muted-foreground flex items-center gap-1 font-semibold">
               <Calendar className="w-3.5 h-3.5" />
-              {order ? new Date(order.created_at).toLocaleDateString() : ""}
+              {new Date(order.created_at).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
             </span>
           </div>
 
           {/* List items */}
-          <div className="divide-y divide-border/40 px-6">
-            {orderItems.map((item) => (
-              <div key={item.id} className="py-4 flex items-center justify-between gap-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-muted/30 rounded-xl border border-border/40 p-2 flex items-center justify-center shrink-0">
-                    <img
-                      src={item.image || (item.products?.image)}
-                      alt={item.product_name || (item.products?.name)}
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-foreground text-sm line-clamp-1">
-                      {item.product_name || (item.products?.name)}
-                    </h4>
-                    <span className="text-[10px] text-muted-foreground block mt-0.5">
-                      Qty: {item.quantity} &times; ₹{item.price.toLocaleString()}
+          <div className="divide-y divide-border/60 px-6">
+            {items.length === 0 ? (
+              <p className="py-6 text-xs text-muted-foreground text-center">
+                No items recorded for this order.
+              </p>
+            ) : (
+              items.map((item) => {
+                const prod = item.products;
+                const imageUrl =
+                  prod?.product_images?.find((img) => img.is_primary)?.image_url ||
+                  prod?.product_images?.[0]?.image_url ||
+                  null;
+
+                return (
+                  <div key={item.id} className="py-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-14 h-14 bg-muted rounded-xl border border-border p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={item.product_name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <Package className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="space-y-0.5">
+                        <h4 className="font-bold text-foreground text-sm line-clamp-1">
+                          {item.product_name || prod?.name || "Purchased Product"}
+                        </h4>
+                        {item.product_sku && (
+                          <span className="text-[10px] text-muted-foreground font-mono block">
+                            SKU: {item.product_sku}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-muted-foreground block">
+                          Qty: {item.quantity} &times; ₹{Number(item.price || 0).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="font-bold text-foreground text-sm">
+                      ₹{((item.price || 0) * (item.quantity || 1)).toLocaleString("en-IN")}
                     </span>
                   </div>
-                </div>
-
-                <span className="font-extrabold text-foreground text-sm">
-                  ₹{(item.price * item.quantity).toLocaleString()}
-                </span>
-              </div>
-            ))}
+                );
+              })
+            )}
           </div>
 
           {/* Totals Summary */}
-          <div className="bg-muted/15 border-t border-border/60 p-6 space-y-3 text-sm divide-y divide-border/30">
+          <div className="bg-muted/30 border-t border-border/60 p-6 space-y-3 text-sm divide-y divide-border/40">
             <div className="flex justify-between pt-1 font-semibold">
               <span className="text-muted-foreground">Items Subtotal</span>
-              <span className="text-foreground">₹{itemsSubtotal.toLocaleString()}</span>
+              <span className="text-foreground">₹{subtotal.toLocaleString("en-IN")}</span>
             </div>
 
             <div className="flex justify-between pt-3 font-semibold">
-              <span className="text-muted-foreground">Estimated GST (18%)</span>
-              <span className="text-foreground">₹{gst.toLocaleString()}</span>
+              <span className="text-muted-foreground">GST (18%)</span>
+              <span className="text-foreground">₹{tax.toLocaleString("en-IN")}</span>
             </div>
 
             <div className="flex justify-between pt-3 font-semibold">
               <span className="text-muted-foreground">Shipping Fee</span>
               <span className="text-foreground">
-                {shippingCharge === 0 ? (
+                {shippingFee === 0 ? (
                   <span className="text-success font-bold">FREE</span>
                 ) : (
-                  `₹${shippingCharge}`
+                  `₹${shippingFee.toLocaleString("en-IN")}`
                 )}
               </span>
             </div>
 
+            {discount > 0 && (
+              <div className="flex justify-between pt-3 font-semibold text-success">
+                <span>Discount Applied</span>
+                <span>-₹{discount.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+
             <div className="flex justify-between pt-4 text-base font-bold text-foreground">
               <span>Grand Total</span>
-              <span className="text-lg text-primary ">₹{grandTotal.toLocaleString()}</span>
+              <span className="text-lg text-primary">₹{total.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
 
         {/* Shipping details and Payments */}
         <div className="space-y-6">
-          {/* Shipment Tracking details */}
-          {shipment && (
-            <div className="border border-border rounded-2xl bg-white p-6 shadow-xs space-y-4">
-              <h3 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/40 pb-3 flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-primary" />
-                <span>Delivery Status</span>
-              </h3>
+          {/* Shipping Address */}
+          <div className="border border-border rounded-2xl bg-card p-6 shadow-xs space-y-4">
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/60 pb-3 flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span>Shipping Address</span>
+            </h3>
 
+            <div className="space-y-2 text-xs text-muted-foreground">
+              <p className="font-bold text-sm text-foreground">
+                {order.customer_name || user.user_metadata?.full_name || "Customer"}
+              </p>
+              {order.customer_phone && <p>Phone: {order.customer_phone}</p>}
+              {order.customer_email && <p>Email: {order.customer_email}</p>}
+
+              {shippingAddr ? (
+                <div className="pt-2 border-t border-border/40 space-y-0.5 text-foreground">
+                  <p>{shippingAddr.addressLine1}</p>
+                  {shippingAddr.addressLine2 && <p>{shippingAddr.addressLine2}</p>}
+                  <p>
+                    {shippingAddr.city}, {shippingAddr.state} - {shippingAddr.postalCode}
+                  </p>
+                  <p>{shippingAddr.country || "India"}</p>
+                </div>
+              ) : (
+                <p className="text-[11px] italic">Address details attached to profile.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Real Shipment Tracking Details */}
+          <div className="border border-border rounded-2xl bg-card p-6 shadow-xs space-y-4">
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/60 pb-3 flex items-center gap-1.5">
+              <Truck className="w-4 h-4 text-primary" />
+              <span>Courier & Tracking</span>
+            </h3>
+
+            {shipment ? (
               <div className="space-y-3.5 text-xs font-semibold">
-                {/* Carrier info */}
                 <div className="space-y-0.5">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">Carrier Partner</span>
-                  <span className="text-foreground text-sm font-extrabold">{shipment.carrier}</span>
-                </div>
-
-                {/* Tracking ID */}
-                <div className="space-y-0.5">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">Tracking ID</span>
-                  <span className="text-foreground font-mono bg-muted px-2 py-0.5 rounded border border-border/60 text-[10px]">
-                    {shipment.tracking_number}
+                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                    Courier Partner
+                  </span>
+                  <span className="text-foreground text-sm font-bold">
+                    {shipment.courier_name || shipment.carrier || "Standard Carrier"}
                   </span>
                 </div>
 
-                {/* Estimated Delivery */}
+                {shipment.tracking_number && (
+                  <div className="space-y-0.5">
+                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                      Tracking Reference
+                    </span>
+                    <span className="text-foreground font-mono bg-muted px-2 py-0.5 rounded border border-border text-[10px]">
+                      {shipment.tracking_number}
+                    </span>
+                  </div>
+                )}
+
+                {shipment.estimated_delivery && (
+                  <div className="space-y-0.5">
+                    <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                      Estimated Arrival
+                    </span>
+                    <span className="text-foreground flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                      {new Date(shipment.estimated_delivery).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Courier and tracking information will be updated automatically as soon as your package
+                is dispatched from our fulfillment facility.
+              </p>
+            )}
+          </div>
+
+          {/* Payment Card Details */}
+          <div className="border border-border rounded-2xl bg-card p-6 shadow-xs space-y-4">
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/60 pb-3 flex items-center gap-1.5">
+              <CreditCard className="w-4 h-4 text-primary" />
+              <span>Payment Details</span>
+            </h3>
+
+            <div className="space-y-3.5 text-xs font-semibold">
+              <div className="space-y-0.5">
+                <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                  Gateway
+                </span>
+                <span className="text-foreground capitalize">
+                  {payment?.gateway || "Razorpay Online"}
+                </span>
+              </div>
+
+              <div className="space-y-0.5">
+                <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                  Payment Status
+                </span>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "capitalize font-bold text-[10px] mt-0.5",
+                    getPaymentStatusBadgeClass(payment?.status || order.payment_status)
+                  )}
+                >
+                  <span>{payment?.status || order.payment_status || "Pending"}</span>
+                </Badge>
+              </div>
+
+              {(payment?.gateway_payment_id || order.razorpay_order_id) && (
                 <div className="space-y-0.5">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">Estimated Arrival</span>
-                  <span className="text-foreground flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-                    {new Date(shipment.estimated_delivery).toLocaleDateString()}
+                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                    Transaction ID
+                  </span>
+                  <span className="text-foreground font-mono bg-muted px-2 py-0.5 rounded border border-border text-[10px] block truncate">
+                    {payment?.gateway_payment_id || order.razorpay_order_id}
                   </span>
                 </div>
+              )}
+
+              <div className="space-y-0.5">
+                <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">
+                  Amount Transacted
+                </span>
+                <span className="text-foreground text-sm font-bold">
+                  ₹{total.toLocaleString("en-IN")}
+                </span>
               </div>
             </div>
-          )}
-
-          {/* Payment Card details */}
-          {payment && (
-            <div className="border border-border rounded-2xl bg-white p-6 shadow-xs space-y-4">
-              <h3 className="font-bold text-foreground text-sm uppercase tracking-wider border-b border-border/40 pb-3 flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4 text-primary" />
-                <span>Payment Summary</span>
-              </h3>
-
-              <div className="space-y-3.5 text-xs font-semibold">
-                {/* Method */}
-                <div className="space-y-0.5">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">Payment Method</span>
-                  <span className="text-foreground capitalize">{payment.payment_method}</span>
-                </div>
-
-                {/* Status */}
-                <div className="space-y-0.5">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">Transaction Status</span>
-                  <span className={cn(
-                    "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border capitalize mt-0.5",
-                    payment.payment_status === "completed" && "bg-green-50 text-green-700 border-green-100",
-                    payment.payment_status === "pending" && "bg-amber-50 text-amber-700 border-amber-100",
-                    payment.payment_status === "failed" && "bg-red-50 text-red-700 border-red-100"
-                  )}>
-                    {payment.payment_status}
-                  </span>
-                </div>
-
-                {/* Total amount */}
-                <div className="space-y-0.5">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider block">Amount Transacted</span>
-                  <span className="text-foreground text-sm font-extrabold">{payment.amount}</span>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

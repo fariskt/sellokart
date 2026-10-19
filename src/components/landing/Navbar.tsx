@@ -1,23 +1,56 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Search, User, ShoppingBag, Menu, X, ArrowRight, Sparkles } from "lucide-react";
+import {
+  Search,
+  User,
+  ShoppingBag,
+  Menu,
+  X,
+  ArrowRight,
+  ArrowLeft,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  Sparkles,
+  ShieldCheck,
+  HelpCircle,
+} from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import Image from "next/image";
 import { useLandingProducts } from "@/features/products/hooks/useLandingProducts";
 import { formatLandingProduct } from "@/features/products/lib/formatLandingProduct";
-import { PRODUCTS } from "./constants";
 import { useCartStore } from "@/store/cart-store";
+import { signout } from "@/features/auth/actions";
+import { useSidebarStore } from "@/store/sidebar-store";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 const POPULAR_SEARCHES = ["Hoodie", "Runner", "Sneakers", "Jacket", "Cargo", "Cap"];
 
 export function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  const isAdmin = pathname.startsWith("/admin") || user?.app_metadata?.role === "admin";
+  const hasSidebar = pathname.startsWith("/admin") || pathname.startsWith("/account");
+  const { isCollapsed, isHovered } = useSidebarStore();
+  const [mounted, setMounted] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const collapsed = mounted ? isCollapsed : false;
+  const hovered = mounted ? isHovered : false;
+  const isExpanded = !collapsed || hovered;
 
   // Search State
   const [searchOpen, setSearchOpen] = useState(false);
@@ -38,7 +71,7 @@ export function Navbar() {
     if (rawProducts && rawProducts.length > 0) {
       return rawProducts.map((p, i) => formatLandingProduct(p, i));
     }
-    return PRODUCTS;
+    return [];
   }, [rawProducts]);
 
   const query = searchQuery.trim().toLowerCase();
@@ -85,7 +118,7 @@ export function Navbar() {
     }
   }, [isModalOpen]);
 
-  // Click outside listener to close search dropdown
+  // Click outside listener to close search & profile dropdowns
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
@@ -94,6 +127,9 @@ export function Navbar() {
       }
       if (mobileSearchRef.current && !mobileSearchRef.current.contains(target)) {
         setMobileSearchOpen(false);
+      }
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+        setShowDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -106,6 +142,7 @@ export function Navbar() {
       if (e.key === "Escape") {
         setSearchOpen(false);
         setMobileSearchOpen(false);
+        setShowDropdown(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -144,6 +181,71 @@ export function Navbar() {
     }
   };
 
+  const isCheckout = pathname === "/checkout";
+
+  // Distraction-free Minimal Header for Checkout Page
+  if (isCheckout) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-landing-primary/10 select-none">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-[68px] flex items-center justify-between">
+          {/* Left: Brand Logo & Subtle Secure Checkout Indicator */}
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            <Link
+              href="/"
+              className="inline-flex items-center transition-transform hover:scale-105 duration-200"
+            >
+              <Image
+                src="/logo4.png"
+                alt="Sellokart"
+                width={160}
+                height={50}
+                className="h-8 sm:h-9 w-auto object-contain"
+                priority
+              />
+            </Link>
+
+            {/* Subtle Secure Checkout Indicator */}
+            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[11px] sm:text-xs font-semibold select-none">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Secure Checkout</span>
+            </div>
+          </div>
+
+          {/* Right: Essential Cart Navigation & Support Access */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Support Access */}
+            <Link
+              href="/contact"
+              target="_blank"
+              title="Need help? Contact support"
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-slate-100"
+            >
+              <HelpCircle className="w-4 h-4 text-muted-foreground/80 shrink-0" />
+              <span className="hidden sm:inline">Need Help?</span>
+            </Link>
+
+            {/* Essential Cart Navigation */}
+            <Link
+              href="/cart"
+              className="flex items-center gap-2 text-xs font-bold text-landing-dark hover:text-landing-primary transition-colors px-3 py-1.5 rounded-full border border-landing-primary/15 bg-white hover:bg-slate-50 shadow-2xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 hidden sm:inline" />
+              <div className="relative flex items-center">
+                <ShoppingBag className="w-4 h-4" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-landing-primary text-white text-[9px] flex items-center justify-center font-bold">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <span className="hidden sm:inline">Cart</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <>
       {/* Modal Dark Overlay */}
@@ -175,47 +277,86 @@ export function Navbar() {
       )}
 
       <header
-        className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-6 lg:px-0 pointer-events-none"
+        className={cn(
+          "fixed top-0 right-0 z-50 pointer-events-none transition-all duration-300",
+          hasSidebar
+            ? isExpanded
+              ? "left-0 md:left-64"
+              : "left-0 md:left-16"
+            : "left-0"
+        )}
         style={{
           right: isModalOpen && scrollbarWidth > 0 ? `${scrollbarWidth}px` : 0,
         }}
       >
         <div
-          className="px-4 sm:px-7 pointer-events-auto h-16 sm:h-[68px] flex items-center justify-between w-full bg-white border border-landing-primary/10"
+          className={cn(
+            "pointer-events-auto h-16 sm:h-[68px] flex items-center justify-between w-full bg-white border border-landing-primary/10 select-none",
+            hasSidebar ? "px-4 sm:px-6" : "px-4 sm:px-7"
+          )}
         >
-          {/* Left Nav items (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1 cursor-pointer"
-            >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1 cursor-pointer"
-            >
-              Shop
-            </Link>
-            <Link
-              href="/contact"
-              className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display cursor-pointer"
-            >
-              Contact
-            </Link>
-          </nav>
+          {/* Left Side: Desktop Nav or Context Badge if on Sidebar page */}
+          {hasSidebar ? (
+            <div className="flex items-center gap-3 shrink-0">
+              <Link href="/" className="flex md:hidden items-center">
+                <Image
+                  src="/logo4.png"
+                  alt="Sellokart-Logo"
+                  width={140}
+                  height={140}
+                  className="h-7 sm:h-8 w-auto object-contain"
+                />
+              </Link>
+              <div className="hidden md:flex items-center gap-3">
+                <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-landing-primary-light text-landing-primary font-display border border-landing-primary/10">
+                  {isAdmin ? "Admin Console" : "My Account"}
+                </span>
+                <Link
+                  href="/"
+                  className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1.5 cursor-pointer ml-1"
+                >
+                  <ArrowLeft size={14} />
+                  <span>Back to Store</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <nav className="hidden lg:flex items-center gap-6">
+              <Link
+                href="/"
+                className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1 cursor-pointer"
+              >
+                Home
+              </Link>
+              <Link
+                href="/products"
+                className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1 cursor-pointer"
+              >
+                Shop
+              </Link>
+              <Link
+                href="/contact"
+                className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display cursor-pointer"
+              >
+                Contact
+              </Link>
+            </nav>
+          )}
 
-          {/* Center Logo */}
-          <div className="flex items-center">
-            <Link href="/">
-              <Image
-                src="/logo4.png"
-                alt="Sellokart-Logo"
-                width={160}
-                height={160}
-              />
-            </Link>
-          </div>
+          {/* Center Logo (on non-sidebar pages) */}
+          {!hasSidebar && (
+            <div className="flex items-center">
+              <Link href="/">
+                <Image
+                  src="/logo4.png"
+                  alt="Sellokart-Logo"
+                  width={160}
+                  height={160}
+                  className="h-8 sm:h-20 w-auto object-contain"
+                />
+              </Link>
+            </div>
+          )}
 
           {/* Right Search, Cart & Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -414,14 +555,90 @@ export function Navbar() {
             {/* Auth Actions */}
             <div className="hidden sm:flex items-center gap-2 ml-1">
               {user ? (
-                <Link
-                  href={
-                    user.app_metadata?.role === "admin" ? "/admin" : "/account"
-                  }
-                  className="flex items-center gap-1.5 text-xs font-bold text-landing-dark hover:text-landing-primary transition-colors cursor-pointer bg-landing-primary-light px-3.5 py-2 rounded-full font-display border border-landing-primary/10"
-                >
-                  <User size={14} />
-                </Link>
+                <div ref={dropdownRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-landing-dark hover:text-landing-primary transition-colors cursor-pointer bg-landing-primary-light px-3.5 py-2 rounded-full font-display border border-landing-primary/10 shadow-2xs"
+                  >
+                    {user.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt={user.user_metadata?.full_name || "Profile"}
+                        className="w-4 h-4 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User size={14} />
+                    )}
+                    <span className="max-w-[90px] truncate hidden md:inline">
+                      {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                    </span>
+                  </button>
+
+                  <AnimatePresence>
+                    {showDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-3 w-56 rounded-2xl bg-white border border-landing-primary/15 shadow-2xl p-2 z-50 font-display select-none"
+                      >
+                        <div className="px-3 py-2 border-b border-landing-primary/10 mb-1.5">
+                          <p className="text-[10px] font-bold text-landing-primary-muted uppercase tracking-wider">
+                            Signed in as
+                          </p>
+                          <p className="text-xs font-bold text-landing-dark truncate mt-0.5">
+                            {user.email}
+                          </p>
+                        </div>
+
+                        <Link
+                          href={isAdmin ? "/admin" : "/account"}
+                          onClick={() => setShowDropdown(false)}
+                          className="flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold text-landing-dark hover:bg-landing-primary-light hover:text-landing-primary transition-colors cursor-pointer"
+                        >
+                          <LayoutDashboard className="w-3.5 h-3.5 text-landing-primary-muted" />
+                          <span>{isAdmin ? "Admin Dashboard" : "Customer Portal"}</span>
+                        </Link>
+
+                        {!isAdmin && (
+                          <Link
+                            href="/account/orders"
+                            onClick={() => setShowDropdown(false)}
+                            className="flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold text-landing-dark hover:bg-landing-primary-light hover:text-landing-primary transition-colors cursor-pointer"
+                          >
+                            <ShoppingBag className="w-3.5 h-3.5 text-landing-primary-muted" />
+                            <span>My Orders</span>
+                          </Link>
+                        )}
+
+                        <Link
+                          href={isAdmin ? "/admin/settings" : "/account/profile"}
+                          onClick={() => setShowDropdown(false)}
+                          className="flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold text-landing-dark hover:bg-landing-primary-light hover:text-landing-primary transition-colors cursor-pointer"
+                        >
+                          <Settings className="w-3.5 h-3.5 text-landing-primary-muted" />
+                          <span>Settings</span>
+                        </Link>
+
+                        <div className="w-full h-[1px] bg-landing-primary/10 my-1.5" />
+
+                        <button
+                          onClick={() => {
+                            setShowDropdown(false);
+                            signout();
+                          }}
+                          type="button"
+                          className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 transition-colors cursor-pointer text-left"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               ) : (
                 <>
                   <Link
@@ -555,16 +772,60 @@ export function Navbar() {
 
             <div className="pt-4 border-t border-landing-primary/10 flex flex-col gap-2.5">
               {user ? (
-                <Link
-                  href={
-                    user.app_metadata?.role === "admin" ? "/admin" : "/account"
-                  }
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-landing-primary-light text-landing-dark text-xs font-bold font-display"
-                >
-                  <User size={15} />
-                  <span>My Account</span>
-                </Link>
+                <div className="flex flex-col gap-2">
+                  <div className="px-3.5 py-2.5 bg-landing-primary-light/50 rounded-2xl flex items-center gap-3">
+                    {user.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt={user.user_metadata?.full_name || "Profile"}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-landing-primary/10 flex items-center justify-center text-landing-primary">
+                        <User size={16} />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-landing-dark truncate">
+                        {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                      </p>
+                      <p className="text-[10px] text-landing-primary-muted truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <Link
+                      href={isAdmin ? "/admin" : "/account"}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-full bg-landing-primary-light text-landing-dark text-xs font-bold font-display"
+                    >
+                      <LayoutDashboard size={14} />
+                      <span>{isAdmin ? "Admin" : "Account"}</span>
+                    </Link>
+                    <Link
+                      href="/account/orders"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-full bg-landing-primary-light text-landing-dark text-xs font-bold font-display"
+                    >
+                      <ShoppingBag size={14} />
+                      <span>Orders</span>
+                    </Link>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      signout();
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-destructive/20 text-destructive text-xs font-bold font-display hover:bg-destructive/10 transition-colors mt-1 cursor-pointer"
+                  >
+                    <LogOut size={14} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   <Link

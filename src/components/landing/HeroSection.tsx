@@ -20,7 +20,7 @@ export function HeroSection() {
 
   const heroProduct =
     rawProducts && rawProducts.length > 0
-      ? formatLandingProduct(rawProducts[3])
+      ? formatLandingProduct(rawProducts.find((p: any) => p.featured) || rawProducts[0])
       : null;
 
   const slides = [
@@ -50,9 +50,12 @@ export function HeroSection() {
           {/* Full Background Image */}
           <div className="absolute inset-0 z-0">
             <img
-              src={heroProduct?.image || "https://images.unsplash.com/photo-1612817159949-195b6eb9e31a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"}
+              src={heroProduct?.image || "/placeholder-image.jpg"}
               alt="Hero background"
               className="w-full h-full object-cover object-center transition-all duration-1000 scale-105"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/placeholder-image.jpg";
+              }}
             />
 
             {/* Balanced background overlay */}

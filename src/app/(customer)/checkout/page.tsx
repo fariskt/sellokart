@@ -7,11 +7,13 @@ import Script from "next/script";
 import { useRouter } from "next/navigation";
 import {
   ChevronRight,
-  Tag,
-  HelpCircle,
+  ArrowLeft,
   Loader2,
   Lock,
   CheckCircle2,
+  ShoppingBag,
+  Shield,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 declare global {
   interface Window {
@@ -57,9 +60,9 @@ export default function CheckoutPage() {
 
   const [mounted, setMounted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
 
-  // Form states matching image & backend
+  // Form states
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,19 +72,46 @@ export default function CheckoutPage() {
   const [zipCode, setZipCode] = useState("");
   const [description, setDescription] = useState(""); // Description / Street Address
 
-  // Shipping Method selection (Free vs Express)
-  const [shippingMethod, setShippingMethod] = useState<"free" | "express">("free");
-
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<{
-    code: string;
-    percent?: number;
-    discountAmount?: number;
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState("");
+
+  // Server Authoritative Pricing State
+  const [pricing, setPricing] = useState<{
+    subtotal: number;
+    discount: number;
+    shipping: number;
+    gstAmount: number;
+    total: number;
+    totalPaise: number;
+    isFreeShipping: boolean;
+    couponCode: string | null;
+    couponApplied: boolean;
+    couponMessage?: string;
+  }>({
+    subtotal: 0,
+    discount: 0,
+    shipping: 0,
+    gstAmount: 0,
+    total: 0,
+    totalPaise: 0,
+    isFreeShipping: true,
+    couponCode: null,
+    couponApplied: false,
+  });
+
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [priceMismatchModal, setPriceMismatchModal] = useState<{
+    newTotal: number;
+    newTotalPaise: number;
   } | null>(null);
 
   // Saved addresses
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [saveAddress, setSaveAddress] = useState(true);
 
   // Hydration & user session resolution
   useEffect(() => {
@@ -89,96 +119,112 @@ export default function CheckoutPage() {
 
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user: authUser } }) => {
-      if (authUser) {
-        setUser(authUser);
-        if (authUser.email) setEmail(authUser.email);
-
-        const fullName = authUser.user_metadata?.full_name || "";
-        if (fullName) {
-          const parts = fullName.trim().split(" ");
-          setFirstName(parts[0] || "");
-          setLastName(parts.slice(1).join(" ") || "");
-        }
-        if (authUser.user_metadata?.phone) {
-          setPhone(authUser.user_metadata.phone);
-        }
-
-        // Fetch customer addresses if logged in
-        supabase
-          .from("addresses")
-          .select("*")
-          .eq("user_id", authUser.id)
-          .then(({ data }) => {
-            if (data && data.length > 0) {
-              const addresses = data as SavedAddress[];
-              setSavedAddresses(addresses);
-              const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
-              if (defaultAddr) {
-                if (defaultAddr.full_name) {
-                  const parts = defaultAddr.full_name.trim().split(" ");
-                  setFirstName(parts[0] || "");
-                  setLastName(parts.slice(1).join(" ") || "");
-                }
-                if (defaultAddr.phone) setPhone(defaultAddr.phone);
-                setDescription(defaultAddr.address_line_1);
-                setCity(defaultAddr.city);
-                setState(defaultAddr.state);
-                setZipCode(defaultAddr.postal_code);
-              }
-            }
-          });
+      if (!authUser) {
+        router.replace("/login?next=/checkout");
+        return;
       }
+
+      setUser(authUser);
+      if (authUser.email) setEmail(authUser.email);
+
+      const fullName = authUser.user_metadata?.full_name || "";
+      if (fullName) {
+        const parts = fullName.trim().split(" ");
+        setFirstName(parts[0] || "");
+        setLastName(parts.slice(1).join(" ") || "");
+      }
+      if (authUser.user_metadata?.phone) {
+        setPhone(authUser.user_metadata.phone);
+      }
+
+      // Fetch customer addresses if logged in
+      supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", authUser.id)
+        .order("is_default", { ascending: false })
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            const addresses = data as SavedAddress[];
+            setSavedAddresses(addresses);
+            const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+            if (defaultAddr) {
+              setSelectedAddressId(defaultAddr.id);
+              if (defaultAddr.full_name) {
+                const parts = defaultAddr.full_name.trim().split(" ");
+                setFirstName(parts[0] || "");
+                setLastName(parts.slice(1).join(" ") || "");
+              }
+              if (defaultAddr.phone) setPhone(defaultAddr.phone);
+              setDescription(defaultAddr.address_line_1);
+              setCity(defaultAddr.city);
+              setState(defaultAddr.state);
+              setZipCode(defaultAddr.postal_code);
+            }
+          }
+        });
     });
-  }, []);
+  }, [router]);
 
-  // Price calculations
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  // Fetch authoritative pricing from server
+  useEffect(() => {
+    if (items.length === 0) return;
 
-  // Shipping calculation
-  const expressFee = 150;
-  const standardFee = subtotal >= 1999 || appliedCoupon?.code === "FREESHIP" ? 0 : 70;
-  const baseShipping = shippingMethod === "express" ? expressFee : standardFee;
-  const shippingFee = items.length === 0 ? 0 : baseShipping;
+    fetch("/api/pricing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: items.map((i) => ({
+          id: i.id,
+          variantId: i.variantId || null,
+          quantity: i.quantity,
+        })),
+        couponCode: appliedCouponCode || null,
+        destination: {
+          city: city.trim(),
+          state: state.trim(),
+          postalCode: zipCode.trim(),
+          country: "India",
+        },
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.pricing) {
+          setPricing(data.pricing);
+          if (data.pricing.couponApplied && appliedCouponCode) {
+            setCouponSuccess(`Coupon ${data.pricing.couponCode} applied!`);
+            setCouponError("");
+          } else if (appliedCouponCode && data.pricing.couponMessage) {
+            setCouponError(data.pricing.couponMessage);
+            setCouponSuccess("");
+          }
+        }
+      })
+      .catch((err) => console.error("Checkout pricing fetch failed:", err));
+  }, [items, appliedCouponCode, city, state, zipCode]);
 
-  // Tax calculation (18% GST)
-  const tax = Math.round(subtotal * 0.18);
-
-  // Discount calculation
-  const discountAmount = appliedCoupon
-    ? appliedCoupon.percent
-      ? Math.round((subtotal * appliedCoupon.percent) / 100)
-      : appliedCoupon.discountAmount || 0
-    : 0;
-
-  const total = Math.max(0, subtotal + shippingFee + tax - discountAmount);
+  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
   // Coupon handling
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
+    setCouponError("");
+    setCouponSuccess("");
     const code = couponCode.trim().toUpperCase();
     if (!code) return;
-
-    if (code === "SAVE10") {
-      setAppliedCoupon({ code: "SAVE10", percent: 10 });
-      toast.success("Coupon SAVE10 applied (10% off)");
-    } else if (code === "SAVE20") {
-      setAppliedCoupon({ code: "SAVE20", percent: 20 });
-      toast.success("Coupon SAVE20 applied (20% off)");
-    } else if (code === "FREESHIP") {
-      setAppliedCoupon({ code: "FREESHIP", percent: 0, discountAmount: 0 });
-      toast.success("Coupon FREESHIP applied (Free Shipping)");
-    } else {
-      toast.error("Invalid coupon code. Try SAVE10, SAVE20, or FREESHIP.");
-    }
+    setAppliedCouponCode(code);
   };
 
   const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
+    setAppliedCouponCode(null);
     setCouponCode("");
+    setCouponSuccess("");
+    setCouponError("");
   };
 
   // Payment Initiation Handler
-  const handleInitiatePayment = async () => {
+  const handleInitiatePayment = async (confirmedPriceChange = false) => {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
     if (!firstName.trim()) {
@@ -247,14 +293,53 @@ export default function CheckoutPage() {
             id: i.id,
             quantity: i.quantity,
           })),
-          couponCode: appliedCoupon?.code || null,
+          couponCode: appliedCouponCode || null,
+          expectedTotalPaise: pricing ? pricing.totalPaise : undefined,
+          confirmedPriceChange,
         }),
       });
+
+      if (response.status === 401) {
+        toast.error("Your session has expired. Please sign in to proceed.");
+        router.push("/login?next=/checkout");
+        return;
+      }
+
+      if (response.status === 409) {
+        const mismatchData = await response.json();
+        setIsProcessing(false);
+        setPriceMismatchModal({
+          newTotal: (mismatchData.newTotalPaise || 0) / 100,
+          newTotalPaise: mismatchData.newTotalPaise || 0,
+        });
+        return;
+      }
 
       const orderData = await response.json();
 
       if (!response.ok || !orderData.success) {
         throw new Error(orderData.error || "Failed to initialize payment session with server.");
+      }
+
+      // Save address to user's account if requested
+      if (saveAddress && user?.id) {
+        try {
+          const supabase = createClient();
+          await supabase.from("addresses").insert({
+            user_id: user.id,
+            full_name: fullName,
+            phone: phone.trim(),
+            address_line_1: description.trim(),
+            address_line_2: null,
+            city: city.trim(),
+            state: state.trim(),
+            postal_code: zipCode.trim(),
+            country: "India",
+            is_default: savedAddresses.length === 0,
+          });
+        } catch (addrErr) {
+          console.warn("Could not save address to account:", addrErr);
+        }
       }
 
       const { orderId, orderNumber, razorpayOrderId, amount, currency, keyId } = orderData;
@@ -273,6 +358,7 @@ export default function CheckoutPage() {
           razorpay_order_id: string;
           razorpay_signature: string;
         }) {
+          setIsVerifyingPayment(true);
           try {
             // 3. Send payment signatures to server verification endpoint
             const verifyRes = await fetch("/api/razorpay/verify-payment", {
@@ -315,6 +401,8 @@ export default function CheckoutPage() {
                 verifyMsg
               )}`
             );
+          } finally {
+            setIsVerifyingPayment(false);
           }
         },
         prefill: {
@@ -327,7 +415,7 @@ export default function CheckoutPage() {
           orderNumber: orderNumber,
         },
         theme: {
-          color: "#111111", // Sleek dark/primary matching the reference UI
+          color: "#0f172a", // Sleek dark matching theme token
         },
         modal: {
           ondismiss: function () {
@@ -371,49 +459,118 @@ export default function CheckoutPage() {
     );
   }
 
+  if (items.length === 0) {
+    return (
+      <div className="max-w-md mx-auto pt-24 pb-16 px-4 text-center space-y-4 font-sans">
+        <div className="w-16 h-16 rounded-full bg-landing-primary-light flex items-center justify-center mx-auto text-landing-primary">
+          <ShoppingBag className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-medium text-foreground">Your cart is empty</h2>
+        <p className="text-xs text-muted-foreground">
+          You don&apos;t have any items in your cart to checkout.
+        </p>
+        <Button asChild className="rounded-full px-7 py-2.5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs">
+          <Link href="/products">Browse Products</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto py-4 px-2 sm:px-4 space-y-6">
+    <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-8 font-sans">
       {/* Official Razorpay Standard Checkout Script */}
       <Script
         id="razorpay-checkout-sdk"
         src="https://checkout.razorpay.com/v1/checkout.js"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column (7 cols): Breadcrumb, Shipping Address, Shipping Method */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-border/80 p-6 sm:p-8 shadow-xs space-y-8">
-          {/* Breadcrumbs matching image: Cart > Shipping > Payment */}
-          <nav className="flex items-center space-x-2 text-xs font-semibold">
-            <Link
-              href="/cart"
-              className="text-primary hover:underline transition-colors"
-            >
-              Cart
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <span className="text-foreground font-bold">Shipping</span>
-            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <span className="text-muted-foreground/60">Payment</span>
-          </nav>
+      {/* Top Header & 3-Step Stepper matching Cart Page */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+        <div>
+          <h1 className="text-3xl sm:text-4xl tracking-tight text-foreground font-normal">
+            Checkout
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Shipping &amp; Payment Details
+          </p>
+        </div>
 
-          {/* Section 1: Shipping Address */}
-          <div className="space-y-5">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">
+        {/* Stepper */}
+        <div className="flex items-center gap-2 sm:gap-3 text-xs">
+          {/* Step 1: Cart (Clickable back to cart) */}
+          <Link
+            href="/cart"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            <span className="w-5 h-5 rounded-full border border-border text-muted-foreground flex items-center justify-center font-medium text-[11px]">
+              1
+            </span>
+            <span>Cart</span>
+          </Link>
+
+          <div className="w-6 sm:w-10 h-px bg-border" />
+
+          {/* Step 2: Shipping (Active) */}
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-[11px]">
+              2
+            </span>
+            <span className="font-semibold text-foreground">Shipping</span>
+          </div>
+
+          <div className="w-6 sm:w-10 h-px bg-border" />
+
+          {/* Step 3: Payment */}
+          <div className="flex items-center gap-2 text-muted-foreground/60">
+            <span className="w-5 h-5 rounded-full border border-border/60 text-muted-foreground/60 flex items-center justify-center font-medium text-[11px]">
+              3
+            </span>
+            <span>Payment</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+        {/* Left Column (7 cols): Shipping Address Form */}
+        <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-3xl border border-border/60 p-6 sm:p-8 shadow-2xs space-y-6">
+          <div className="flex items-center justify-between pb-2 border-b border-border/50">
+            <h2 className="text-xl sm:text-2xl font-medium text-foreground">
               Shipping Address
             </h2>
+            <span className="text-xs text-muted-foreground">All fields with * are required</span>
+          </div>
 
-            {/* Saved Address quick picker if available */}
-            {savedAddresses.length > 0 && (
-              <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs">
-                <span className="font-semibold text-muted-foreground block mb-2">
-                  Select a saved address:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {savedAddresses.map((addr) => (
+          {/* Saved Address quick picker if available */}
+          {savedAddresses.length > 0 && (
+            <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 text-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-foreground">Saved Delivery Addresses</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAddressId(null);
+                    setFirstName(user?.user_metadata?.full_name?.split(" ")[0] || "");
+                    setLastName(user?.user_metadata?.full_name?.split(" ").slice(1).join(" ") || "");
+                    setPhone(user?.user_metadata?.phone || "");
+                    setDescription("");
+                    setCity("");
+                    setState("");
+                    setZipCode("");
+                  }}
+                  className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                >
+                  + Enter new address
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {savedAddresses.map((addr) => {
+                  const isSelected = selectedAddressId === addr.id;
+                  return (
                     <button
                       type="button"
                       key={addr.id}
                       onClick={() => {
+                        setSelectedAddressId(addr.id);
                         const parts = (addr.full_name || "").trim().split(" ");
                         setFirstName(parts[0] || "");
                         setLastName(parts.slice(1).join(" ") || "");
@@ -423,272 +580,242 @@ export default function CheckoutPage() {
                         setState(addr.state);
                         setZipCode(addr.postal_code);
                       }}
-                      className="px-3 py-1.5 rounded-lg border border-border bg-white hover:border-primary text-xs font-medium cursor-pointer transition-colors"
+                      className={cn(
+                        "p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between text-xs space-y-1.5 shadow-2xs",
+                        isSelected
+                          ? "border-foreground bg-foreground/5 ring-1 ring-foreground"
+                          : "border-border/80 bg-white hover:border-foreground/50"
+                      )}
                     >
-                      {addr.full_name} ({addr.city})
+                      <div className="flex items-center justify-between font-bold text-foreground">
+                        <span className="truncate">{addr.full_name}</span>
+                        {addr.is_default && (
+                          <span className="text-[9px] font-bold text-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground line-clamp-2">
+                        {addr.address_line_1}, {addr.city}, {addr.state} - {addr.postal_code}
+                      </p>
+                      <span className="text-[10px] text-muted-foreground/80">
+                        📞 {addr.phone}
+                      </span>
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            <div className="space-y-4">
-              {/* Row 1: First Name* | Last Name* */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="firstName" className="text-xs font-medium text-foreground">
-                    First Name*
-                  </Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="Divyansh"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm"
-                    disabled={isProcessing}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="lastName" className="text-xs font-medium text-foreground">
-                    Last Name*
-                  </Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Agarwal"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm"
-                    disabled={isProcessing}
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Email* | Phone number* */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-xs font-medium text-foreground">
-                    Email*
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="divyansh@webparsh.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm"
-                    disabled={isProcessing}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-xs font-medium text-foreground">
-                    Phone number*
-                  </Label>
-                  <div className="flex rounded-lg border border-border/80 overflow-hidden focus-within:ring-1 focus-within:ring-primary bg-white">
-                    <div className="px-3 bg-muted/30 border-r border-border/60 flex items-center justify-center text-xs font-semibold text-muted-foreground select-none">
-                      IND ▾
-                    </div>
-                    <input
-                      id="phone"
-                      type="tel"
-                      placeholder="+91 9377588843"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="flex-1 px-3 py-2 text-sm outline-none bg-transparent"
-                      disabled={isProcessing}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 3: City* | State* | Zip Code* (3 cols matching reference image) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="city" className="text-xs font-medium text-foreground">
-                    City*
-                  </Label>
-                  <Input
-                    id="city"
-                    type="text"
-                    placeholder="Bangalore"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm"
-                    disabled={isProcessing}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="state" className="text-xs font-medium text-foreground">
-                    State*
-                  </Label>
-                  <Input
-                    id="state"
-                    type="text"
-                    placeholder="Karnataka"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm"
-                    disabled={isProcessing}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="zipCode" className="text-xs font-medium text-foreground">
-                    Zip Code*
-                  </Label>
-                  <Input
-                    id="zipCode"
-                    type="text"
-                    placeholder="560021"
-                    value={zipCode}
-                    onChange={(e) => setZipCode(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm"
-                    disabled={isProcessing}
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: Description* (Textarea matching image) */}
+          <div className="space-y-4 pt-1">
+            {/* Row 1: First Name* | Last Name* */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="description" className="text-xs font-medium text-foreground">
-                  Description*
+                <Label htmlFor="firstName" className="text-xs font-medium text-foreground">
+                  First Name*
                 </Label>
-                <Textarea
-                  id="description"
-                  placeholder="Enter a description..."
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="rounded-lg border-border/80 focus-visible:ring-1 focus-visible:ring-primary text-sm resize-none"
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="John"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  disabled={isProcessing}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="lastName" className="text-xs font-medium text-foreground">
+                  Last Name*
+                </Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
             </div>
+
+            {/* Row 2: Email* | Phone number* */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-medium text-foreground">
+                  Email*
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  disabled={isProcessing}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-xs font-medium text-foreground">
+                  Phone number*
+                </Label>
+                <div className="flex rounded-xl border border-border/80 overflow-hidden focus-within:ring-1 focus-within:ring-foreground bg-white">
+                  <div className="px-3 bg-muted/40 border-r border-border/60 flex items-center justify-center text-xs font-semibold text-muted-foreground select-none">
+                    IND +91
+                  </div>
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder="9876543210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="flex-1 px-3 py-2 text-sm outline-none bg-transparent"
+                    disabled={isProcessing}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Row 3: City* | State* | Zip Code* */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="city" className="text-xs font-medium text-foreground">
+                  City*
+                </Label>
+                <Input
+                  id="city"
+                  type="text"
+                  placeholder="Mumbai"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  disabled={isProcessing}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="state" className="text-xs font-medium text-foreground">
+                  State*
+                </Label>
+                <Input
+                  id="state"
+                  type="text"
+                  placeholder="Maharashtra"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  disabled={isProcessing}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="zipCode" className="text-xs font-medium text-foreground">
+                  Zip / Postal Code*
+                </Label>
+                <Input
+                  id="zipCode"
+                  type="text"
+                  placeholder="400001"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  disabled={isProcessing}
+                />
+              </div>
+            </div>
+
+            {/* Row 4: Street Address / Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="description" className="text-xs font-medium text-foreground">
+                Street Address / Apartment, Suite, etc.*
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="House/Flat No, Building, Street, Landmark..."
+                rows={3}
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setSelectedAddressId(null);
+                }}
+                className="rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm resize-none"
+                disabled={isProcessing}
+              />
+            </div>
+
+            {/* Save Address Checkbox */}
+            <div className="flex items-center space-x-2 pt-1">
+              <input
+                id="saveAddress"
+                type="checkbox"
+                checked={saveAddress}
+                onChange={(e) => setSaveAddress(e.target.checked)}
+                className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
+              />
+              <Label
+                htmlFor="saveAddress"
+                className="text-xs text-muted-foreground cursor-pointer select-none font-medium"
+              >
+                Save this shipping address to my account for future orders
+              </Label>
+            </div>
           </div>
 
-          {/* Section 2: Shipping Method */}
-          <div className="space-y-4 pt-2">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">
-              Shipping Method
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: Free Shipping */}
-              <label
-                onClick={() => setShippingMethod("free")}
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                  shippingMethod === "free"
-                    ? "border-foreground bg-muted/20 ring-1 ring-foreground"
-                    : "border-border/80 bg-white hover:border-border"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                      shippingMethod === "free"
-                        ? "border-foreground"
-                        : "border-muted-foreground/60"
-                    }`}
-                  >
-                    {shippingMethod === "free" && (
-                      <div className="w-2 h-2 rounded-full bg-foreground" />
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-foreground block">
-                      Free Shipping
-                    </span>
-                    <span className="text-xs text-muted-foreground block">
-                      7-20 Days
-                    </span>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-foreground">
-                  ₹0
-                </span>
-              </label>
-
-              {/* Option 2: Express Shipping */}
-              <label
-                onClick={() => setShippingMethod("express")}
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                  shippingMethod === "express"
-                    ? "border-foreground bg-muted/20 ring-1 ring-foreground"
-                    : "border-border/80 bg-white hover:border-border"
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                      shippingMethod === "express"
-                        ? "border-foreground"
-                        : "border-muted-foreground/60"
-                    }`}
-                  >
-                    {shippingMethod === "express" && (
-                      <div className="w-2 h-2 rounded-full bg-foreground" />
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-foreground block">
-                      Express Shipping
-                    </span>
-                    <span className="text-xs text-muted-foreground block">
-                      1-3 Days
-                    </span>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-foreground">
-                  ₹{expressFee}
-                </span>
-              </label>
-            </div>
+          {/* Return to Cart */}
+          <div className="pt-4 border-t border-border/50">
+            <Link
+              href="/cart"
+              className="inline-flex items-center gap-2 text-xs font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Cart</span>
+            </Link>
           </div>
         </div>
 
-        {/* Right Column (5 cols): Your Cart, Discount Code, Totals, Continue CTA */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-border/80 p-6 sm:p-8 shadow-xs space-y-6">
-          <h2 className="text-lg sm:text-xl font-bold text-foreground">
-            Your Cart
-          </h2>
+        {/* Right Column (5 cols): Order Summary Card matching Cart Page */}
+        <div className="lg:col-span-5 xl:col-span-4 bg-muted/30 rounded-3xl border border-border/60 p-6 sm:p-7 shadow-2xs space-y-6 sticky top-24">
+          <div className="flex items-center justify-between pb-2 border-b border-border/50">
+            <h2 className="text-xl sm:text-2xl font-medium text-foreground">
+              Order Summary
+            </h2>
+            <span className="text-xs text-muted-foreground">{totalItems} {totalItems === 1 ? "item" : "items"}</span>
+          </div>
 
-          {/* Cart Items List with Badge for Quantity */}
-          <div className="divide-y divide-border/60">
+          {/* Compact Cart Items List */}
+          <div className="divide-y divide-border/50 max-h-60 overflow-y-auto pr-1">
             {items.map((item) => (
-              <div key={item.id} className="py-3 flex items-center justify-between gap-4">
-                <div className="flex items-center space-x-3.5 min-w-0">
-                  {/* Thumbnail with Quantity Badge on Top-Right */}
+              <div key={item.id} className="py-2.5 flex items-center justify-between gap-3">
+                <div className="flex items-center space-x-3 min-w-0">
+                  {/* Thumbnail with Quantity Badge */}
                   <div className="relative shrink-0">
-                    <div className="w-14 h-14 rounded-lg bg-muted/30 border border-border/60 p-1 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 rounded-xl bg-white border border-border/60 p-1 flex items-center justify-center overflow-hidden">
                       <img
                         src={item.image}
                         alt={item.name}
                         className="max-h-full max-w-full object-contain"
                       />
                     </div>
-                    {/* Badge */}
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-foreground text-background text-[10px] font-bold flex items-center justify-center shadow-xs">
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-foreground text-background text-[10px] font-bold flex items-center justify-center shadow-xs">
                       {item.quantity}
                     </span>
                   </div>
 
-                  {/* Title & subtitle */}
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate block">
+                    <h3 className="text-xs font-semibold text-foreground truncate block">
                       {item.name}
                     </h3>
-                    <span className="text-[11px] text-muted-foreground block">
+                    <span className="text-[10px] text-muted-foreground block">
                       Qty: {item.quantity}
                     </span>
                   </div>
                 </div>
 
-                {/* Price */}
-                <span className="text-xs sm:text-sm font-bold text-foreground shrink-0 font-mono">
+                <span className="text-xs font-bold text-foreground shrink-0">
                   ₹{(item.price * item.quantity).toLocaleString("en-IN", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -698,51 +825,12 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          {/* Discount code box matching image */}
-          <div className="pt-2">
-            {appliedCoupon ? (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-success/5 border border-success/20 text-xs">
-                <div className="flex items-center space-x-2 text-success font-semibold">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{appliedCoupon.code} Applied</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRemoveCoupon}
-                  className="text-destructive font-bold text-xs hover:underline cursor-pointer"
-                >
-                  Remove
-                </button>
-              </div>
-            ) : (
-              <form
-                onSubmit={handleApplyCoupon}
-                className="flex items-center border border-border/80 rounded-xl px-3 py-1 bg-white focus-within:ring-1 focus-within:ring-primary"
-              >
-                <Tag className="w-4 h-4 text-muted-foreground mr-2 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Discount code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  className="flex-1 py-2 text-xs sm:text-sm outline-none uppercase bg-transparent"
-                />
-                <button
-                  type="submit"
-                  className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors px-2 py-1 cursor-pointer"
-                >
-                  Apply
-                </button>
-              </form>
-            )}
-          </div>
-
-          {/* Subtotal, Shipping, Estimated Taxes, Total */}
-          <div className="space-y-3 pt-2 text-xs sm:text-sm">
+          {/* Calculations Breakdown */}
+          <div className="space-y-3 text-xs sm:text-sm pt-1 border-t border-border/50">
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span>
-              <span className="font-semibold text-foreground font-mono">
-                ₹{subtotal.toLocaleString("en-IN", {
+              <span className="font-semibold text-foreground">
+                ₹{pricing.subtotal.toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -751,58 +839,101 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between text-muted-foreground">
               <span>Shipping</span>
-              <span className="font-semibold text-foreground font-mono">
-                {shippingFee === 0 ? "Free" : `₹${shippingFee.toFixed(2)}`}
+              <span className="font-semibold text-foreground">
+                {pricing.shipping === 0 ? (
+                  <span className="text-emerald-600 font-bold">Free</span>
+                ) : (
+                  `₹${pricing.shipping.toFixed(2)}`
+                )}
               </span>
             </div>
 
             <div className="flex justify-between text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <span>Estimated taxes</span>
-                <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/60" />
-              </span>
-              <span className="font-semibold text-foreground font-mono">
-                ₹{tax.toLocaleString("en-IN", {
+              <span>GST included</span>
+              <span className="font-semibold text-foreground">
+                ₹{pricing.gstAmount.toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
               </span>
             </div>
 
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-success">
-                <span>Discount</span>
-                <span className="font-semibold font-mono">
-                  -₹{discountAmount.toLocaleString("en-IN", {
+            {pricing.discount > 0 && (
+              <div className="flex justify-between text-emerald-600 font-medium">
+                <span>Discount ({pricing.couponCode || appliedCouponCode})</span>
+                <span className="font-semibold">
+                  -₹{pricing.discount.toLocaleString("en-IN", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </span>
               </div>
             )}
-
-            {/* Total */}
-            <div className="pt-4 border-t border-border flex justify-between items-center text-sm sm:text-base font-bold text-foreground">
-              <span>Total</span>
-              <span className="text-base sm:text-lg font-black font-mono">
-                ₹{total.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            </div>
           </div>
 
-          {/* Continue to Payment CTA matching image */}
+          {/* Promo code input matching Cart page */}
+          <div className="pt-2 border-t border-border/50">
+            {pricing.couponApplied && pricing.couponCode ? (
+              <div className="flex items-center justify-between p-2.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs">
+                <div className="flex items-center space-x-2 text-emerald-700 font-semibold pl-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{pricing.couponCode} Applied</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveCoupon}
+                  className="text-destructive font-bold text-xs hover:underline pr-2 cursor-pointer"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleApplyCoupon} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Promo code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="flex-1 bg-white border border-border/80 rounded-full px-4 py-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground shadow-2xs uppercase"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full bg-foreground text-background hover:bg-foreground/90 px-5 py-2.5 text-xs font-bold font-display transition-all cursor-pointer shadow-2xs shrink-0"
+                >
+                  Apply
+                </button>
+              </form>
+            )}
+
+            {couponError && (
+              <p className="text-[11px] text-destructive mt-1.5 font-medium pl-2">{couponError}</p>
+            )}
+            {couponSuccess && (
+              <p className="text-[11px] text-emerald-600 mt-1.5 font-medium pl-2">{couponSuccess}</p>
+            )}
+          </div>
+
+          {/* Total Payable */}
+          <div className="pt-4 border-t border-border/50 flex justify-between items-center">
+            <span className="text-base sm:text-lg font-medium text-foreground">Total payable</span>
+            <span className="text-2xl sm:text-3xl font-bold text-foreground">
+              ₹{pricing.total.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+
+          {/* Continue to Payment CTA */}
           <Button
             type="button"
-            onClick={handleInitiatePayment}
+            onClick={() => handleInitiatePayment(false)}
             disabled={isProcessing}
-            className="w-full h-12 rounded-xl font-bold text-sm bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+            className="w-full h-13 rounded-full font-display font-bold text-sm bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md disabled:opacity-60"
           >
             {isProcessing ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin mr-1" />
                 <span>Processing Payment...</span>
               </>
             ) : (
@@ -810,12 +941,79 @@ export default function CheckoutPage() {
             )}
           </Button>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground text-center">
-            <Lock className="w-3 h-3 text-muted-foreground" />
-            <span>Encrypted 256-bit SSL transaction via Razorpay</span>
+          {/* Security and delivery guarantees matching reference */}
+          <div className="space-y-2 pt-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-muted-foreground/70 shrink-0" />
+              <span>Secure checkout, encrypted payment</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-muted-foreground/70 shrink-0" />
+              <span>Encrypted 256-bit SSL transaction via Razorpay</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Full-Page High-Trust Payment Verification Overlay */}
+      {isVerifyingPayment && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-5 shadow-2xl border border-border/60 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-2xl bg-foreground/5 border border-border/80 flex items-center justify-center mx-auto text-foreground">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-foreground">Verifying Payment</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                We are securely confirming your transaction with the bank and issuing your order. Please do not refresh or close this tab.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground bg-muted/40 py-2.5 px-4 rounded-xl border border-border/60">
+              <Lock className="w-4 h-4 text-emerald-600" />
+              <span>256-bit Encrypted Bank Handshake</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Price Mismatch Confirmation Modal */}
+      {priceMismatchModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-border/60 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-foreground">Price Updated</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                The prices or discounts in your cart were updated to match the authoritative server amount.
+              </p>
+              <div className="p-3 bg-muted/40 rounded-xl border border-border/60 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">New Total Payable:</span>
+                <span className="font-bold text-foreground text-base">₹{priceMismatchModal.newTotal.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-full h-11 text-xs font-semibold"
+                onClick={() => setPriceMismatchModal(null)}
+              >
+                Review Cart
+              </Button>
+              <Button
+                className="flex-1 rounded-full h-11 text-xs font-bold bg-foreground text-background hover:bg-foreground/90"
+                onClick={() => {
+                  setPriceMismatchModal(null);
+                  handleInitiatePayment(true);
+                }}
+              >
+                Accept &amp; Pay
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

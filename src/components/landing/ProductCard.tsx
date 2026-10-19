@@ -1,16 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Link from "next/link";
 import { FormattedLandingProduct } from "@/features/products/lib/formatLandingProduct";
-import { PRODUCTS } from "./constants";
 import { useCartStore } from "@/store/cart-store";
 
-export type ProductType = (typeof PRODUCTS)[0];
+export interface ProductType {
+  id: string | number;
+  name: string;
+  price: number;
+  salePrice?: number | null;
+  sale_price?: number | null;
+  tag?: string | null;
+  colors?: string[];
+  image: string;
+  description?: string;
+  slug?: string;
+}
 
 interface ProductCardProps {
-  product: FormattedLandingProduct | ProductType | any;
+  product: FormattedLandingProduct | ProductType;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -65,9 +75,12 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={href} className="block">
           <div className="relative w-full aspect-square rounded-md overflow-hidden bg-[#f7f7f9] flex items-center justify-center">
             <img
-              src={`https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=800&fit=crop&auto=format&random=${product.id}`}
-              alt={product.name}
+              src={product?.image || "/placeholder-image.jpg"}
+              alt={product?.name || "Product"}
               className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/placeholder-image.jpg";
+              }}
             />
           </div>
         </Link>

@@ -108,7 +108,7 @@ export function ReviewsTable({
               // Find primary image or use first image
               const images = product?.product_images ?? [];
               const primaryImage = images.find((img) => img.is_primary) ?? images[0];
-              const imageUrl = primaryImage?.image_url || "/images/headphones.png";
+              const imageUrl = primaryImage?.image_url || "/placeholder-image.jpg";
 
               return (
                 <TableRow
@@ -124,7 +124,7 @@ export function ReviewsTable({
                           alt={productName}
                           className="max-h-full max-w-full object-contain"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/images/headphones.png";
+                            (e.target as HTMLImageElement).src = "/placeholder-image.jpg";
                           }}
                         />
                       </div>

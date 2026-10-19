@@ -27,7 +27,7 @@ export default function ContactPage() {
     <div className="w-full py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
       {/* Simple Header */}
       <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-black font-display text-landing-dark">
+        <h1 className="text-3xl sm:text-4xl fond-medium font-display text-landing-dark">
           Contact Us
         </h1>
         <p className="mt-2 text-sm sm:text-base text-landing-primary-muted max-w-lg mx-auto">

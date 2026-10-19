@@ -43,11 +43,11 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
                 <TableCell>
                   <div className="w-10 h-10 bg-muted/40 rounded-md border border-border flex items-center justify-center p-1.5 overflow-hidden shrink-0">
                     <img
-                      src={p.image_url || "/images/headphones.png"}
+                      src={p.image_url || "/placeholder-image.jpg"}
                       alt={p.name}
                       className="max-h-full max-w-full object-contain"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/headphones.png";
+                        (e.target as HTMLImageElement).src = "/placeholder-image.jpg";
                       }}
                     />
                   </div>

@@ -70,9 +70,6 @@
   --landing-featured-gradient-end: #08123a;
   --landing-story-gradient-mid: #0c1d8a;
   --landing-hero-bg: linear-gradient(135deg, #f8faff 0%, #edf3ff 40%, #dce9ff 70%, #f0f6ff 100%);
-  /* --font-display: var(--font-jakarta); */
-  --font-display: var(--font-bricolage), sans-serif;
-  --font-jakarta: var(--font-bricolage);
 }
 
 /* ========================================
@@ -80,10 +77,7 @@
    ======================================== */
 
 @theme {
-  /* --font-sans: var(--font-jakarta), var(--font-inter), sans-serif; */
-  --font-sans: var(--font-bricolage), sans-serif;
-  --font-display: var(--font-bricolage), sans-serif;
-  --font-serif: var(--font-serif), Georgia, serif;
+  --font-sans: var(--font-jakarta), Arial, sans-serif;
 
   --color-brand-yellow: var(--brand-yellow);
   --color-brand-yellow-hover: var(--brand-yellow-hover);

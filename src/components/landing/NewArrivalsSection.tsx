@@ -1,23 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ProductCard } from "./ProductCard";
-import { PRODUCTS } from "./constants";
 import { useLandingProducts } from "@/features/products/hooks/useLandingProducts";
 import { formatLandingProduct } from "@/features/products/lib/formatLandingProduct";
 
 export function NewArrivalsSection() {
   const { data: rawProducts, isLoading } = useLandingProducts();
 
-  // Format Supabase products or fallback to default constants if empty
+  // Format Supabase products
   const allProducts =
     rawProducts && rawProducts.length > 0
       ? rawProducts.map((p, idx) => formatLandingProduct(p, idx))
-      : PRODUCTS;
+      : [];
 
-  // Filter based on active tab
+  // Display first 8 products
   const products = allProducts.slice(0, 8);
 
   return (

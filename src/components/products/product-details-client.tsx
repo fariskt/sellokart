@@ -37,14 +37,17 @@ export function ProductDetailsClient({
     state.items.some((i) => String(i.id) === String(product.id)),
   );
 
-  // Gallery images (Using Unsplash high-res images for aspect ratio testing)
+  // Gallery images from real product images
   const thumbnails = React.useMemo(() => {
-    return [
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1000&auto=format&fit=crop&q=80",
-      "/placeholder-image.jpg",
-      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=1000&auto=format&fit=crop&q=80",
-    ];
-  }, []);
+    if (product.images && product.images.length > 0) {
+      const valid = product.images.filter((img) => Boolean(img) && typeof img === "string");
+      if (valid.length > 0) return valid;
+    }
+    if (product.image) {
+      return [product.image];
+    }
+    return ["/placeholder-image.jpg"];
+  }, [product.images, product.image]);
 
   const [activeImage, setActiveImage] = React.useState(thumbnails[0]);
   const [quantity, setQuantity] = React.useState(1);
@@ -171,9 +174,12 @@ export function ProductDetailsClient({
                     )}
                   >
                     <img
-                      src={thumb}
+                      src={thumb || "/placeholder-image.jpg"}
                       alt={`Thumbnail ${idx + 1}`}
                       className="w-full h-full object-cover rounded-xl"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/placeholder-image.jpg";
+                      }}
                     />
                   </button>
                 );
@@ -184,9 +190,12 @@ export function ProductDetailsClient({
           {/* Single Main Image Showcase Box with locked aspect ratio */}
           <div className="relative flex-1 w-full aspect-[4/5] rounded-3xl bg-[#f7f8f9] border border-slate-100 overflow-hidden group">
             <img
-              src={activeImage}
+              src={activeImage || "/placeholder-image.jpg"}
               alt={product.name}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/placeholder-image.jpg";
+              }}
             />
 
             {/* Mobile Wishlist overlay button on top right of box */}
@@ -557,9 +566,12 @@ export function ProductDetailsClient({
                   {/* Image fills the complete container */}
                   <div className="relative w-full aspect-[4/5] rounded-[18px] bg-[#f4f5f6] border border-slate-100/80 overflow-hidden mb-2.5 group-hover:bg-[#eaecee] transition-colors">
                     <img
-                      src={item.image}
+                      src={item.image || "/placeholder-image.jpg"}
                       alt={item.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/placeholder-image.jpg";
+                      }}
                     />
                   </div>
 

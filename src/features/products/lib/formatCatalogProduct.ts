@@ -1,5 +1,3 @@
-import { PRODUCTS } from "@/components/landing/constants";
-
 export interface CatalogProduct {
   id: string | number;
   name: string;
@@ -25,7 +23,7 @@ export function formatCatalogProduct(prod: any, index: number = 0): CatalogProdu
   const primaryImg =
     prod.product_images?.find((img: any) => img.is_primary)?.image_url ||
     prod.product_images?.[0]?.image_url ||
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=720&fit=crop&auto=format";
+    "/placeholder-image.jpg";
 
   const allImages =
     prod.product_images

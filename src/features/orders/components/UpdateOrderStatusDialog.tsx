@@ -14,7 +14,7 @@ import { toast } from "sonner";
 // Zod validation schema for updating status
 const updateStatusSchema = z.object({
   status: z.enum(
-    ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"],
+    ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "refunded"],
     {
       error: "Order status is required",
     }
@@ -37,6 +37,7 @@ interface UpdateOrderStatusDialogProps {
 
 const orderStatusOptions = [
   { label: "Pending", value: "pending" },
+  { label: "Confirmed", value: "confirmed" },
   { label: "Processing", value: "processing" },
   { label: "Shipped", value: "shipped" },
   { label: "Delivered", value: "delivered" },

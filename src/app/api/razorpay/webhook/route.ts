@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/razorpay/server";
-import { handleOrderSale } from "@/features/inventory/lib/inventory.action";
 import { createAuditLog } from "@/features/audit-logs/lib/audit-log.action";
 
 interface WebhookPayload {
@@ -18,10 +17,6 @@ interface WebhookPayload {
         status?: string;
         error_description?: string;
         error_reason?: string;
-        notes?: {
-          localOrderId?: string;
-          orderNumber?: string;
-        };
       };
     };
     order?: {
@@ -29,16 +24,15 @@ interface WebhookPayload {
         id: string;
         amount?: number;
         status?: string;
-        notes?: {
-          localOrderId?: string;
-          orderNumber?: string;
-        };
       };
     };
   };
 }
 
 export async function POST(req: NextRequest) {
+  let eventId = "";
+  const adminClient = createAdminClient();
+
   try {
     // 1. Read exact raw request body for cryptographic signature verification
     const rawBody = await req.text();
@@ -77,155 +71,168 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Reject if event ID is missing (no random or timestamp fallback)
+    const rawEventId = req.headers.get("x-razorpay-event-id") || body.event_id || body.id;
+    if (!rawEventId || typeof rawEventId !== "string" || !rawEventId.trim()) {
+      return NextResponse.json(
+        { error: "Missing webhook event ID" },
+        { status: 400 }
+      );
+    }
+
+    eventId = rawEventId.trim();
     const event = body.event;
-    const eventId =
-      req.headers.get("x-razorpay-event-id") ||
-      body.event_id ||
-      body.id ||
-      `${event}-${Date.now()}`;
 
-    const adminClient = await createAdminClient();
-
-    // 4. Deduplication and Idempotency tracking via webhook_events
-    try {
-      const { data: existingEvent } = await adminClient
-        .from("webhook_events")
-        .select("id, status")
-        .eq("event_id", eventId)
-        .maybeSingle();
-
-      if (existingEvent) {
-        return NextResponse.json({
-          status: "ok",
-          message: "Event already processed",
-        });
-      }
-
-      // Record event receipt
-      await adminClient.from("webhook_events").insert({
+    // 4. Dedupe via insert-first: insert into webhook_events with status 'processing'
+    const { error: insertEventErr } = await adminClient
+      .from("webhook_events")
+      .insert({
         event_id: eventId,
         event_type: event,
         payload: body,
         status: "processing",
       });
-    } catch {
-      // Table might not exist yet before migration is applied; proceed with event handling
+
+    if (insertEventErr) {
+      if (insertEventErr.code === "23505") {
+        // Unique violation - event already recorded
+        const { data: existingEvent, error: fetchErr } = await adminClient
+          .from("webhook_events")
+          .select("id, status, created_at")
+          .eq("event_id", eventId)
+          .single();
+
+        if (fetchErr || !existingEvent) {
+          return NextResponse.json(
+            { error: "Webhook event lookup error" },
+            { status: 500 }
+          );
+        }
+
+        if (existingEvent.status === "processed") {
+          return NextResponse.json(
+            { status: "ok", message: "Event already processed" },
+            { status: 200 }
+          );
+        }
+
+        const createdAtMs = new Date(existingEvent.created_at).getTime();
+        const isStuck = Date.now() - createdAtMs > 5 * 60 * 1000;
+
+        if (isStuck || existingEvent.status === "failed") {
+          // Re-process stuck or previously failed event
+          await adminClient
+            .from("webhook_events")
+            .update({ status: "processing" })
+            .eq("event_id", eventId);
+        } else {
+          // Still processing by another invocation
+          return NextResponse.json(
+            { status: "ok", message: "Event currently being processed" },
+            { status: 200 }
+          );
+        }
+      } else {
+        // Table or database unavailable
+        console.error("webhook_events insert failed:", insertEventErr);
+        return NextResponse.json(
+          { error: "Webhook storage error" },
+          { status: 500 }
+        );
+      }
     }
 
-    // 5. Extract payment & order entities from Razorpay payload
+    // 5. Extract payment & order entities from verified payload
     const paymentEntity = body.payload?.payment?.entity;
     const orderEntity = body.payload?.order?.entity;
 
     const rzpPaymentId = paymentEntity?.id;
     const rzpOrderId = paymentEntity?.order_id || orderEntity?.id;
-    const localOrderId =
-      paymentEntity?.notes?.localOrderId ||
-      orderEntity?.notes?.localOrderId;
+    const paymentAmountPaise = Number(paymentEntity?.amount ?? orderEntity?.amount ?? 0);
+    const paymentCurrency = paymentEntity?.currency || "INR";
 
     const nowIso = new Date().toISOString();
 
-    // 6. Handle specific Razorpay webhook events
+    // 6. Handle webhook events
     switch (event) {
       case "payment.captured":
       case "order.paid": {
-        if (!rzpOrderId && !localOrderId && !rzpPaymentId) {
-          console.warn("Webhook received without identifiable order/payment ID:", body);
-          break;
+        if (!rzpOrderId) {
+          console.error("Webhook payment.captured without razorpay order ID:", { rzpPaymentId });
+          await adminClient
+            .from("webhook_events")
+            .update({ status: "failed" })
+            .eq("event_id", eventId);
+          return NextResponse.json(
+            { error: "Missing gateway order ID in captured payment event" },
+            { status: 500 }
+          );
         }
 
-        // Look up local order
-        let orderQuery = adminClient.from("orders").select("id, order_number, total, payment_status, status, user_id");
-        if (localOrderId) {
-          orderQuery = orderQuery.eq("id", localOrderId);
-        } else if (rzpOrderId) {
-          // Look up order via payments table
-          const { data: pRec } = await adminClient
-            .from("payments")
-            .select("order_id")
-            .eq("gateway_order_id", rzpOrderId)
-            .maybeSingle();
+        // Look up order ONLY by razorpay_order_id from verified payload (ignore notes)
+        const { data: order, error: orderLookupErr } = await adminClient
+          .from("orders")
+          .select("id, order_number, total, payment_status, status, user_id, razorpay_order_id")
+          .eq("razorpay_order_id", rzpOrderId)
+          .single();
 
-          if (pRec?.order_id) {
-            orderQuery = orderQuery.eq("id", pRec.order_id);
-          } else {
-            orderQuery = orderQuery.eq("razorpay_order_id", rzpOrderId);
+        if (orderLookupErr || !order) {
+          console.error("CRITICAL: No matching order found for captured payment:", {
+            rzpPaymentId,
+            rzpOrderId,
+            error: orderLookupErr?.message,
+          });
+          await adminClient
+            .from("webhook_events")
+            .update({ status: "failed" })
+            .eq("event_id", eventId);
+          return NextResponse.json(
+            { error: "Matching order record not found for captured payment" },
+            { status: 500 }
+          );
+        }
+
+        // Call atomic mark_order_paid RPC
+        const { data: paidResult, error: markErr } = await adminClient.rpc("mark_order_paid", {
+          p_order_id: order.id,
+          p_gateway_order_id: rzpOrderId,
+          p_gateway_payment_id: rzpPaymentId || `pay_${rzpOrderId}`,
+          p_amount_paise: paymentAmountPaise,
+          p_currency: paymentCurrency,
+        });
+
+        if (markErr) {
+          console.error("Webhook mark_order_paid RPC failed:", markErr);
+          await adminClient
+            .from("webhook_events")
+            .update({ status: "failed" })
+            .eq("event_id", eventId);
+          return NextResponse.json(
+            { error: "Order payment finalization failed" },
+            { status: 500 }
+          );
+        }
+
+        if (paidResult && !paidResult.already_paid) {
+          try {
+            await createAuditLog({
+              userId: order.user_id,
+              action: `Webhook ${event} Processed`,
+              tableName: "orders",
+              recordId: order.id,
+              entityName: `Order #${order.order_number}`,
+              metadata: {
+                eventId,
+                event,
+                rzpPaymentId,
+                rzpOrderId,
+              },
+            });
+          } catch (auditErr) {
+            console.warn("Audit log notice:", auditErr);
           }
         }
 
-        const { data: order } = await orderQuery.maybeSingle();
-
-        if (order) {
-          // Check if already paid (idempotency guard)
-          if (order.payment_status !== "paid") {
-            // Update order
-            await adminClient
-              .from("orders")
-              .update({
-                payment_status: "paid",
-                status: "processing",
-                updated_at: nowIso,
-              })
-              .eq("id", order.id);
-
-            // Update payments table
-            if (rzpOrderId || rzpPaymentId) {
-              const { data: existingPay } = await adminClient
-                .from("payments")
-                .select("id")
-                .or(
-                  `order_id.eq.${order.id},gateway_order_id.eq.${rzpOrderId || ""},gateway_payment_id.eq.${rzpPaymentId || ""}`
-                )
-                .maybeSingle();
-
-              if (existingPay) {
-                const updatePayRes = await adminClient
-                  .from("payments")
-                  .update({
-                    status: "paid",
-                    gateway_payment_id: rzpPaymentId,
-                    paid_at: nowIso,
-                    updated_at: nowIso,
-                  })
-                  .eq("id", existingPay.id);
-
-                if (updatePayRes.error && updatePayRes.error.code === "PGRST204") {
-                  await adminClient
-                    .from("payments")
-                    .update({
-                      status: "paid",
-                      gateway_payment_id: rzpPaymentId,
-                      paid_at: nowIso,
-                    })
-                    .eq("id", existingPay.id);
-                }
-              }
-            }
-
-            // Deduct inventory atomically & idempotently
-            try {
-              await handleOrderSale(order.id);
-            } catch (e) {
-              console.error("Webhook handleOrderSale error:", e);
-            }
-
-            // Audit log
-            try {
-              await createAuditLog({
-                userId: order.user_id,
-                action: `Webhook ${event} Processed`,
-                tableName: "orders",
-                recordId: order.id,
-                entityName: `Order #${order.order_number}`,
-                metadata: {
-                  eventId,
-                  event,
-                  rzpPaymentId,
-                  rzpOrderId,
-                },
-              });
-            } catch {}
-          }
-        }
         break;
       }
 
@@ -235,25 +242,9 @@ export async function POST(req: NextRequest) {
           paymentEntity?.error_reason ||
           "Payment failed at gateway";
 
-        if (rzpOrderId || rzpPaymentId || localOrderId) {
-          // Guard: Never downgrade an already paid order due to an out-of-order failure event
-          let existingOrder = null;
-          if (localOrderId) {
-            const { data } = await adminClient
-              .from("orders")
-              .select("id, payment_status")
-              .eq("id", localOrderId)
-              .maybeSingle();
-            existingOrder = data;
-          }
-
-          if (existingOrder && existingOrder.payment_status === "paid") {
-            console.log("Ignoring payment.failed for already paid order:", existingOrder.id);
-            break;
-          }
-
-          // Update payment record to failed
-          const failUpdateRes = await adminClient
+        if (rzpOrderId) {
+          // Update payments by gateway_order_id using .eq() only, never downgrade a paid payment
+          const { error: failErr } = await adminClient
             .from("payments")
             .update({
               status: "failed",
@@ -261,59 +252,77 @@ export async function POST(req: NextRequest) {
               gateway_payment_id: rzpPaymentId,
               updated_at: nowIso,
             })
-            .or(`gateway_order_id.eq.${rzpOrderId || ""},order_id.eq.${localOrderId || ""}`);
+            .eq("gateway_order_id", rzpOrderId)
+            .neq("status", "paid");
 
-          if (failUpdateRes.error && failUpdateRes.error.code === "PGRST204") {
+          if (failErr) {
+            console.error("Failed to update payment failure status:", failErr);
             await adminClient
-              .from("payments")
-              .update({
-                status: "failed",
-                failure_reason: errorDesc,
-                gateway_payment_id: rzpPaymentId,
-              })
-              .or(`gateway_order_id.eq.${rzpOrderId || ""},order_id.eq.${localOrderId || ""}`);
+              .from("webhook_events")
+              .update({ status: "failed" })
+              .eq("event_id", eventId);
+            return NextResponse.json(
+              { error: "Payment failure record update failed" },
+              { status: 500 }
+            );
           }
         }
         break;
       }
 
       case "payment.authorized": {
-        // Track authorization in payment record, but DO NOT mark order paid if capture is expected
-        if (rzpOrderId && rzpPaymentId) {
-          try {
+        if (rzpOrderId) {
+          // Update payments by gateway_order_id, never downgrade a paid payment
+          const { error: authErr } = await adminClient
+            .from("payments")
+            .update({
+              gateway_payment_id: rzpPaymentId,
+              updated_at: nowIso,
+            })
+            .eq("gateway_order_id", rzpOrderId)
+            .neq("status", "paid");
+
+          if (authErr) {
+            console.error("Failed to update payment authorized status:", authErr);
             await adminClient
-              .from("payments")
-              .update({
-                gateway_payment_id: rzpPaymentId,
-                status: "pending",
-                updated_at: nowIso,
-              })
-              .eq("gateway_order_id", rzpOrderId);
-          } catch {}
+              .from("webhook_events")
+              .update({ status: "failed" })
+              .eq("event_id", eventId);
+            return NextResponse.json(
+              { error: "Payment authorization record update failed" },
+              { status: 500 }
+            );
+          }
         }
         break;
       }
 
       default: {
-        // Other events acknowledged
         break;
       }
     }
 
-    // Mark event as processed in webhook_events table
-    try {
-      await adminClient
-        .from("webhook_events")
-        .update({ status: "processed", processed_at: nowIso })
-        .eq("event_id", eventId);
-    } catch {}
+    // 7. On success mark event processed
+    await adminClient
+      .from("webhook_events")
+      .update({ status: "processed", processed_at: nowIso })
+      .eq("event_id", eventId);
 
     return NextResponse.json({ status: "ok", received: true });
   } catch (error: unknown) {
-    console.error("Unhandled error in /api/razorpay/webhook:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Unhandled webhook error:", error);
+
+    if (eventId) {
+      try {
+        await adminClient
+          .from("webhook_events")
+          .update({ status: "failed" })
+          .eq("event_id", eventId);
+      } catch {}
+    }
+
     return NextResponse.json(
-      { error: "Webhook handler error", message: message },
+      { error: "Webhook handler encountered an error" },
       { status: 500 }
     );
   }

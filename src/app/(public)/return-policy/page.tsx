@@ -10,7 +10,7 @@ export default function ReturnPolicyPage() {
   return (
     <div className="w-full py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-black font-display text-landing-dark">
+        <h1 className="text-3xl sm:text-4xl fond-medium font-display text-landing-dark">
           Return &amp; Refund Policy
         </h1>
         <p className="mt-2 text-xs sm:text-sm text-landing-primary-muted">
