@@ -77,7 +77,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <img
               src={product?.image || "/placeholder-image.jpg"}
               alt={product?.name || "Product"}
-              className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = "/placeholder-image.jpg";
               }}

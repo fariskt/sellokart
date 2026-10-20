@@ -27,9 +27,5 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
     endDate: params.endDate,
   });
 
-  return (
-    <div className="p-6">
-      <ReviewsPageClient initialData={reviewsData} />
-    </div>
-  );
+  return <ReviewsPageClient initialData={reviewsData} />;
 }

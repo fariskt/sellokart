@@ -42,18 +42,18 @@ export function CustomersTable({ customers }: CustomersTableProps) {
   const router = useRouter();
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
             <TableHead className="w-[50px]"></TableHead>
-            <TableHead>Customer Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead className="text-center">Total Orders</TableHead>
-            <TableHead className="text-right">Total Spend</TableHead>
-            <TableHead>Last Order Date</TableHead>
-            <TableHead>Joined Date</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer Name</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">Total Orders</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Total Spend</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Last Order Date</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Joined Date</TableHead>
             <TableHead className="w-14" />
           </TableRow>
         </TableHeader>

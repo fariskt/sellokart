@@ -1,6 +1,7 @@
 "use client";
 
 import { AppDialog } from "@/components/AppDialog";
+import { Button } from "@/components/ui/button";
 import { ProductFormValues } from "../lib/types";
 import { ProductForm } from "./ProductForm";
 import { SubmitButton } from "@/components/common/SubmitButton";
@@ -8,11 +9,8 @@ import { SubmitButton } from "@/components/common/SubmitButton";
 interface ProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-
   mode: "create" | "edit";
-
   product?: ProductFormValues;
-
   categories: {
     id: string;
     name: string;
@@ -32,16 +30,31 @@ export function ProductDialog({
     <AppDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={isEdit ? "Edit Product" : "Create Product"}
-      description={isEdit ? "Update product details." : "Add a new product."}
+      title={isEdit ? "Edit Product" : "New Product"}
+      description={
+        isEdit
+          ? product?.name
+            ? `Editing "${product.name}"`
+            : "Update product information, pricing, media, and variants."
+          : "Fill in the details to add a new product to your catalog."
+      }
       size="2xl"
       footer={
-        <SubmitButton
-          mode={mode}
-          form="product-form"
-          createText="Create Product"
-          updateText="Update Product"
-        />
+        <div className="flex w-full items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <SubmitButton
+            mode={mode}
+            form="product-form"
+            createText="Create Product"
+            updateText="Save Changes"
+          />
+        </div>
       }
     >
       <ProductForm

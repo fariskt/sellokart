@@ -42,17 +42,17 @@ function formatDate(dateStr: string | null) {
 
 export function PaymentsTable({ payments, onView }: PaymentsTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Order Number</TableHead>
-            <TableHead>Gateway</TableHead>
-            <TableHead>Payment ID</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Paid At</TableHead>
-            <TableHead>Created At</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Order Number</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Gateway</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payment ID</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Amount</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Paid At</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Created At</TableHead>
             <TableHead className="w-14" />
           </TableRow>
         </TableHeader>

@@ -28,6 +28,7 @@ import { signout } from "@/features/auth/actions";
 import { useSidebarStore } from "@/store/sidebar-store";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Logo } from "../common/Logo";
 
 const POPULAR_SEARCHES = ["Hoodie", "Runner", "Sneakers", "Jacket", "Cargo", "Cap"];
 
@@ -189,26 +190,8 @@ export function Navbar() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-landing-primary/10 select-none">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-[68px] flex items-center justify-between">
           {/* Left: Brand Logo & Subtle Secure Checkout Indicator */}
-          <div className="flex items-center gap-2.5 sm:gap-4">
-            <Link
-              href="/"
-              className="inline-flex items-center transition-transform hover:scale-105 duration-200"
-            >
-              <Image
-                src="/logo4.png"
-                alt="Sellokart"
-                width={160}
-                height={50}
-                className="h-8 sm:h-9 w-auto object-contain"
-                priority
-              />
-            </Link>
-
-            {/* Subtle Secure Checkout Indicator */}
-            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[11px] sm:text-xs font-semibold select-none">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>Secure Checkout</span>
-            </div>
+          <div>
+            <Logo />
           </div>
 
           {/* Right: Essential Cart Navigation & Support Access */}
@@ -222,23 +205,6 @@ export function Navbar() {
             >
               <HelpCircle className="w-4 h-4 text-muted-foreground/80 shrink-0" />
               <span className="hidden sm:inline">Need Help?</span>
-            </Link>
-
-            {/* Essential Cart Navigation */}
-            <Link
-              href="/cart"
-              className="flex items-center gap-2 text-xs font-bold text-landing-dark hover:text-landing-primary transition-colors px-3 py-1.5 rounded-full border border-landing-primary/15 bg-white hover:bg-slate-50 shadow-2xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 hidden sm:inline" />
-              <div className="relative flex items-center">
-                <ShoppingBag className="w-4 h-4" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-landing-primary text-white text-[9px] flex items-center justify-center font-bold">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <span className="hidden sm:inline">Cart</span>
             </Link>
           </div>
         </div>

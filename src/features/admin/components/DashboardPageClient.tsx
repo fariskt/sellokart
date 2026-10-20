@@ -25,6 +25,9 @@ import {
   CouponAnalyticsData,
 } from "../lib/types";
 
+import Link from "next/link";
+import { Plus } from "lucide-react";
+
 interface DashboardPageClientProps {
   stats: DashboardStatsData;
   revenueAnalytics: RevenueAnalyticsItem[];
@@ -53,16 +56,24 @@ export function DashboardPageClient({
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <Title>Analytics Dashboard</Title>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Overview of store performance, revenue trends, and key business metrics.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <Title>Store Dashboard</Title>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Plan, monitor, and accomplish your ecommerce operations with ease.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <DashboardFilters />
+          <Link
+            href="/admin/products"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Product
+          </Link>
+        </div>
       </div>
-
-      {/* Date Range Filters */}
-      <DashboardFilters />
-
       {/* Main KPI Stats Cards */}
       <DashboardStats stats={stats} />
 

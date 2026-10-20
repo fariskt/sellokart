@@ -74,16 +74,16 @@ export function ReviewsTable({
   onDelete,
 }: ReviewsTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Rating</TableHead>
-            <TableHead className="max-w-[280px]">Comment</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rating</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground max-w-[280px]">Comment</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Created At</TableHead>
             <TableHead className="w-14" />
           </TableRow>
         </TableHeader>

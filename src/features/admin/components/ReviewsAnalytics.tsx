@@ -41,11 +41,11 @@ export function ReviewsAnalytics({ data, loading }: ReviewsAnalyticsProps) {
 
   // Prep Recharts data
   const chartData = [
-    { name: "5 Star", count: data.distribution.stars5, color: "#10B981" },
-    { name: "4 Star", count: data.distribution.stars4, color: "#10B981" },
-    { name: "3 Star", count: data.distribution.stars3, color: "#F59E0B" },
-    { name: "2 Star", count: data.distribution.stars2, color: "#F59E0B" },
-    { name: "1 Star", count: data.distribution.stars1, color: "#EF4444" },
+    { name: "5 Star", count: data.distribution.stars5, color: "var(--success)" },
+    { name: "4 Star", count: data.distribution.stars4, color: "var(--success)" },
+    { name: "3 Star", count: data.distribution.stars3, color: "var(--warning)" },
+    { name: "2 Star", count: data.distribution.stars2, color: "var(--warning)" },
+    { name: "1 Star", count: data.distribution.stars1, color: "var(--destructive)" },
   ];
 
   return (
@@ -64,8 +64,8 @@ export function ReviewsAnalytics({ data, loading }: ReviewsAnalyticsProps) {
               <Star
                 key={i}
                 className={`w-4 h-4 ${i < Math.round(data.averageRating)
-                    ? "fill-amber-500 text-amber-500"
-                    : "text-muted border-muted"
+                  ? "fill-amber-500 text-amber-500"
+                  : "text-muted border-muted"
                   }`}
               />
             ))}
@@ -92,7 +92,7 @@ export function ReviewsAnalytics({ data, loading }: ReviewsAnalyticsProps) {
                 <YAxis
                   dataKey="name"
                   type="category"
-                  stroke="#888888"
+                  stroke="var(--muted-foreground)"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -101,8 +101,8 @@ export function ReviewsAnalytics({ data, loading }: ReviewsAnalyticsProps) {
                 <Tooltip
                   formatter={(value: any) => [Number(value), "Reviews"]}
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}

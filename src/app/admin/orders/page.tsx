@@ -27,9 +27,5 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     endDate: params.endDate,
   });
 
-  return (
-    <div className="p-6">
-      <OrdersPageClient initialData={ordersData} />
-    </div>
-  );
+  return <OrdersPageClient initialData={ordersData} />;
 }

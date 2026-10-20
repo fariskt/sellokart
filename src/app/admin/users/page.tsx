@@ -1,10 +1,18 @@
-import * as React from "react";
+import { createClient } from "@/lib/supabase/server";
+import { UsersClient } from "./UsersClient";
 
-export default function Page() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Users</h1>
-      <p className="text-muted-foreground">This is the placeholder for users/page.tsx.</p>
-    </div>
-  );
+export const metadata = {
+  title: "Users & Staff | Admin",
+  description: "View and manage registered user accounts and administrator profiles.",
+};
+
+export default async function UsersPage() {
+  const supabase = await createClient();
+
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return <UsersClient initialProfiles={profiles || []} />;
 }

@@ -1,4 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RecentCustomerItem } from "../lib/types";
 
 interface RecentCustomersTableProps {
@@ -51,17 +52,12 @@ export function RecentCustomersTable({ customers }: RecentCustomersTableProps) {
             customers.map((c) => (
               <TableRow key={c.id} className="hover:bg-muted/10 transition-colors">
                 <TableCell>
-                  {c.avatar ? (
-                    <img
-                      src={c.avatar}
-                      alt={c.name || "Customer"}
-                      className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                  <Avatar className="size-8 rounded-lg border border-border shrink-0">
+                    {c.avatar && <AvatarImage src={c.avatar} alt={c.name || "Customer"} className="rounded-lg" />}
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-bold text-xs uppercase">
                       {getInitials(c.name)}
-                    </div>
-                  )}
+                    </AvatarFallback>
+                  </Avatar>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">

@@ -36,35 +36,22 @@ export function DashboardFilters() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-4 bg-card p-4 rounded-lg border border-border shadow-2xs">
-        {/* Date Filter Selection */}
-        <div className="w-full sm:w-60 space-y-1.5">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Analytics Period
-          </label>
-          <AppSelect
-            key={`range-${range}`}
-            name="range"
-            value={range}
-            onValueChange={(val) => {
-              if (val !== "custom") {
-                updateParams({ range: val, startDate: null, endDate: null });
-              } else {
-                updateParams({ range: val });
-              }
-            }}
-            options={rangeOptions}
-            placeholder="Select Range"
-          />
-        </div>
-
-        {/* Informative placeholder text */}
-        <div className="text-xs text-muted-foreground italic hidden md:block">
-          All metrics and charts automatically filter based on the selected period.
-        </div>
-      </div>
 
       {/* Custom Date Picker (rendered conditionally) */}
+      <AppSelect
+        key={`range-${range}`}
+        name="range"
+        value={range}
+        onValueChange={(val) => {
+          if (val !== "custom") {
+            updateParams({ range: val, startDate: null, endDate: null });
+          } else {
+            updateParams({ range: val });
+          }
+        }}
+        options={rangeOptions}
+        placeholder="Select Range"
+      />
       {range === "custom" && (
         <div className="flex flex-wrap items-end gap-3 bg-muted/30 p-4 rounded-lg border border-dashed border-border/80">
           <div className="space-y-1.5">

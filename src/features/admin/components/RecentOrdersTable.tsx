@@ -1,10 +1,12 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RecentOrderItem } from "../lib/types";
 import { useRouter } from "next/navigation";
 import { Eye } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RecentOrdersTableProps {
   orders: RecentOrderItem[];
@@ -35,33 +37,45 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
 
   function getStatusBadge(status: string) {
     const statusStyles: Record<string, string> = {
-      pending: "bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      processing: "bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      shipped: "bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      delivered: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      cancelled: "bg-zinc-500/10 text-zinc-700 dark:bg-zinc-500/20 dark:text-zinc-400 border border-zinc-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      refunded: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+      pending: "bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20",
+      processing: "bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/20",
+      shipped: "bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border-purple-500/20",
+      delivered: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20",
+      cancelled: "bg-zinc-500/10 text-zinc-700 dark:bg-zinc-500/20 dark:text-zinc-400 border-zinc-500/20",
+      refunded: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-rose-500/20",
     };
 
     return (
-      <span className={statusStyles[status] || "border rounded-full px-2 py-0.5 text-[10px] font-semibold"}>
+      <Badge
+        variant="outline"
+        className={cn(
+          "rounded-lg font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5",
+          statusStyles[status]
+        )}
+      >
         {status}
-      </span>
+      </Badge>
     );
   }
 
   function getPaymentStatusBadge(status: string) {
     const statusStyles: Record<string, string> = {
-      pending: "bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      paid: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      failed: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-      refunded: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+      pending: "bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20",
+      paid: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20",
+      failed: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-rose-500/20",
+      refunded: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-rose-500/20",
     };
 
     return (
-      <span className={statusStyles[status] || "border rounded-full px-2 py-0.5 text-[10px] font-semibold"}>
+      <Badge
+        variant="outline"
+        className={cn(
+          "rounded-lg font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5",
+          statusStyles[status]
+        )}
+      >
         {status}
-      </span>
+      </Badge>
     );
   }
 
@@ -115,7 +129,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-full border border-transparent hover:border-border hover:bg-muted cursor-pointer"
+                    className="h-8 w-8 rounded-lg border border-transparent hover:border-border hover:bg-muted cursor-pointer"
                     onClick={() => router.push(`/admin/orders?search=${o.order_number}`)}
                   >
                     <Eye className="w-4 h-4 text-muted-foreground" />

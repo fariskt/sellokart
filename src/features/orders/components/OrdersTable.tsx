@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Eye, Edit3 } from "lucide-react";
 import { Order } from "../lib/types";
 
@@ -47,48 +48,48 @@ export function OrdersTable({ orders, onView, onUpdateStatus }: OrdersTableProps
 
   function getStatusBadge(status: string) {
     const statusStyles: Record<string, string> = {
-      pending: "bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      processing: "bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      shipped: "bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      delivered: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      cancelled: "bg-zinc-500/10 text-zinc-700 dark:bg-zinc-500/20 dark:text-zinc-400 border border-zinc-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      refunded: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
+      pending: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200/60",
+      processing: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border-blue-200/60",
+      shipped: "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border-purple-200/60",
+      delivered: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200/60",
+      cancelled: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200",
+      refunded: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200/60",
     };
 
     return (
-      <span className={statusStyles[status] || "border rounded-full px-2.5 py-0.5 text-xs font-semibold"}>
+      <Badge className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusStyles[status] || ""}`}>
         {status}
-      </span>
+      </Badge>
     );
   }
 
   function getPaymentStatusBadge(status: string) {
     const statusStyles: Record<string, string> = {
-      pending: "bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      paid: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      failed: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-      refunded: "bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
+      pending: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200/60",
+      paid: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200/60",
+      failed: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200/60",
+      refunded: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200/60",
     };
 
     return (
-      <span className={statusStyles[status] || "border rounded-full px-2.5 py-0.5 text-xs font-semibold"}>
+      <Badge className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusStyles[status] || ""}`}>
         {status}
-      </span>
+      </Badge>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Order Number</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead className="text-center">Total Items</TableHead>
-            <TableHead className="text-right">Total Amount</TableHead>
-            <TableHead>Order Status</TableHead>
-            <TableHead>Payment Status</TableHead>
-            <TableHead>Created Date</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Order Number</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Customer</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">Total Items</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Total Amount</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Order Status</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payment Status</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Created Date</TableHead>
             <TableHead className="w-16" />
           </TableRow>
         </TableHeader>

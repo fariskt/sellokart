@@ -27,9 +27,5 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     endDate: params.endDate,
   });
 
-  return (
-    <div className="p-6">
-      <NotificationsPageClient initialData={notificationsData} />
-    </div>
-  );
+  return <NotificationsPageClient initialData={notificationsData} />;
 }

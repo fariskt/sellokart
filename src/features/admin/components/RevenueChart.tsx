@@ -65,16 +65,16 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
               data={data}
               margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-zinc-800" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                stroke="#888888"
+                stroke="var(--muted-foreground)"
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="#888888"
+                stroke="var(--muted-foreground)"
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -83,8 +83,8 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
               <Tooltip
                 formatter={(value: any) => [formatCurrency(Number(value)), "Revenue"]}
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
@@ -94,7 +94,7 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
                 name="Revenue (₹)"
                 type="monotone"
                 dataKey="revenue"
-                stroke="hsl(var(--primary))"
+                stroke="var(--primary)"
                 strokeWidth={3}
                 dot={{ r: 2 }}
                 activeDot={{ r: 5 }}

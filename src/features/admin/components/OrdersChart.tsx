@@ -57,16 +57,16 @@ export function OrdersChart({ data, loading }: OrdersChartProps) {
               data={data}
               margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-zinc-800" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                stroke="#888888"
+                stroke="var(--muted-foreground)"
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="#888888"
+                stroke="var(--muted-foreground)"
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -75,8 +75,8 @@ export function OrdersChart({ data, loading }: OrdersChartProps) {
               <Tooltip
                 formatter={(value: any) => [Number(value), "Orders"]}
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
@@ -85,7 +85,7 @@ export function OrdersChart({ data, loading }: OrdersChartProps) {
               <Bar
                 name="Orders Placed"
                 dataKey="orders"
-                fill="hsl(var(--primary))"
+                fill="var(--primary)"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

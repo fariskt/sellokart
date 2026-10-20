@@ -21,9 +21,5 @@ export default async function ShipmentsPage({ searchParams }: ShipmentsPageProps
     courier: params.courier,
   });
 
-  return (
-    <div className="p-6">
-      <ShipmentsPageClient initialData={shipmentsData} />
-    </div>
-  );
+  return <ShipmentsPageClient initialData={shipmentsData} />;
 }

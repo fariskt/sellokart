@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { DashboardStatsData } from "../lib/types";
-import { IndianRupee, ShoppingCart, Users, Package, RefreshCw } from "lucide-react";
+import { IndianRupee, ShoppingCart, Users, Package, RefreshCw, ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DashboardStatsProps {
   stats: DashboardStatsData;
@@ -17,10 +18,10 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
 
   const cards = [
     {
-      label: "Revenue Status",
+      label: "Total Revenue",
       value: formatCurrency(stats.revenue.total),
       icon: IndianRupee,
-      className: "border-emerald-500/20 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400",
+      isFeatured: true,
       subStats: [
         { label: "Today", value: formatCurrency(stats.revenue.today) },
         { label: "This Month", value: formatCurrency(stats.revenue.thisMonth) },
@@ -30,7 +31,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       label: "Orders Summary",
       value: stats.orders.total,
       icon: ShoppingCart,
-      className: "border-blue-500/20 bg-blue-500/5 text-blue-700 dark:text-blue-400",
+      isFeatured: false,
       subStats: [
         { label: "Today", value: stats.orders.today },
         { label: "Pending", value: stats.orders.pending },
@@ -41,61 +42,79 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       label: "Customers Insights",
       value: stats.customers.total,
       icon: Users,
-      className: "border-purple-500/20 bg-purple-500/5 text-purple-700 dark:text-purple-400",
+      isFeatured: false,
       subStats: [
         { label: "New This Month", value: stats.customers.newThisMonth },
       ],
     },
     {
-      label: "Product Inventory",
+      label: "Product Catalog",
       value: stats.products.total,
       icon: Package,
-      className: "border-amber-500/20 bg-amber-500/5 text-amber-700 dark:text-amber-400",
+      isFeatured: false,
       subStats: [
         { label: "Active", value: stats.products.active },
         { label: "Out of Stock", value: stats.products.outOfStock, highlight: stats.products.outOfStock > 0 },
       ],
     },
-    {
-      label: "Returns & Exchanges",
-      value: stats.returns.total,
-      icon: RefreshCw,
-      className: "border-rose-500/20 bg-rose-500/5 text-rose-700 dark:text-rose-400",
-      subStats: [
-        { label: "Pending", value: stats.returns.pending },
-        { label: "Completed", value: stats.returns.completed },
-      ],
-    },
   ];
 
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
       {cards.map((card) => {
-        const Icon = card.icon;
         return (
           <Card
             key={card.label}
-            className={`p-4 border transition-all duration-300 shadow-2xs hover:shadow-xs flex flex-col justify-between min-h-[140px] bg-card`}
+            className={cn(
+              "p-5 transition-all duration-300 flex flex-col justify-between min-h-[160px] rounded-2xl relative overflow-hidden group",
+              card.isFeatured
+                ? "bg-primary text-primary-foreground border-transparent shadow-sm"
+                : "bg-card border-border/80 shadow-2xs hover:shadow-xs"
+            )}
           >
             <div>
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center justify-between gap-2">
+                <p className={cn(
+                  "text-xs font-bold uppercase tracking-wider",
+                  card.isFeatured ? "text-primary-foreground/80" : "text-muted-foreground"
+                )}>
                   {card.label}
                 </p>
-                <div className={`p-1.5 rounded-md border ${card.className}`}>
-                  <Icon className="w-4 h-4 shrink-0" />
+                <div
+                  className={cn(
+                    "w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 shrink-0",
+                    card.isFeatured
+                      ? "bg-primary-foreground/15 text-primary-foreground"
+                      : "border border-border/80 text-muted-foreground bg-muted/20"
+                  )}
+                  title="View details"
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <p className="mt-2 text-2xl  tracking-tight text-foreground">
+              <p className={cn(
+                "mt-3 text-3xl font-bold tracking-tight",
+                card.isFeatured ? "text-primary-foreground" : "text-foreground"
+              )}>
                 {card.value}
               </p>
             </div>
 
-            <div className="mt-3 pt-3 border-t border-border/60 flex flex-wrap gap-x-3 gap-y-1">
+            <div className="mt-4 pt-3 border-t border-current/10 flex flex-wrap gap-1.5">
               {card.subStats.map((sub) => (
-                <div key={sub.label} className="text-[10px] flex items-center gap-1 font-medium">
-                  <span className="text-muted-foreground">{sub.label}:</span>
-                  <span className={(sub as any).highlight ? "text-destructive font-bold" : "text-foreground font-semibold"}>
+                <div
+                  key={sub.label}
+                  className={cn(
+                    "text-[10px] inline-flex items-center gap-1 font-medium px-2 py-0.5 rounded-full",
+                    card.isFeatured
+                      ? "bg-primary-foreground/15 text-primary-foreground/90"
+                      : (sub as any).highlight
+                        ? "bg-destructive/10 text-destructive font-bold"
+                        : "bg-muted/70 text-muted-foreground"
+                  )}
+                >
+                  <span>{sub.label}:</span>
+                  <span className="font-semibold text-current">
                     {sub.value}
                   </span>
                 </div>

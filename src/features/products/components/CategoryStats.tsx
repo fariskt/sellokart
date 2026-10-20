@@ -12,20 +12,24 @@ export function CategoryStats({
   subCategories,
 }: Props) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
       <StatCard
         label="Total Categories"
         value={total}
+        isFeatured={true}
+        description="Active catalog departments"
       />
 
       <StatCard
         label="Parent Categories"
         value={rootCategories}
+        description="Root product groups"
       />
 
       <StatCard
         label="Sub Categories"
         value={subCategories}
+        description="Nested category segments"
       />
     </div>
   );

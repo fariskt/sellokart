@@ -33,7 +33,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
             {productRes.message || "The requested product profile does not exist or has been deleted."}
           </p>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button asChild variant="outline" className="rounded-lg">
           <Link href="/admin/products">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Products
@@ -74,13 +74,13 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
           <TabsList className="bg-muted p-1 rounded-lg flex flex-wrap h-auto w-fit">
             <TabsTrigger
               value="overview"
-              className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+              className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="reviews"
-              className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+              className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs"
             >
               Reviews ({reviews.length})
             </TabsTrigger>

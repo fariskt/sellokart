@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, History, SlidersHorizontal } from "lucide-react";
 import { InventoryItem } from "../lib/types";
 
@@ -27,22 +28,22 @@ interface InventoryTableProps {
 function getStockBadge(stock: number) {
   if (stock === 0) {
     return (
-      <span className="inline-flex items-center rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:text-rose-400">
+      <Badge className="rounded-full border-rose-200/60 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 px-2.5 py-0.5 text-xs font-semibold">
         Out of Stock
-      </span>
+      </Badge>
     );
   }
   if (stock <= 10) {
     return (
-      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+      <Badge className="rounded-full border-amber-200/60 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 px-2.5 py-0.5 text-xs font-semibold">
         Low Stock
-      </span>
+      </Badge>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+    <Badge className="rounded-full border-emerald-200/60 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 px-2.5 py-0.5 text-xs font-semibold">
       In Stock
-    </span>
+    </Badge>
   );
 }
 
@@ -60,17 +61,17 @@ function formatDate(dateStr: string) {
 
 export function InventoryTable({ items, onAdjust, onHistory }: InventoryTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>SKU</TableHead>
-            <TableHead>Variant</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead className="text-right">Stock</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">SKU</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Variant</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Stock</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Created At</TableHead>
             <TableHead className="w-14" />
           </TableRow>
         </TableHeader>

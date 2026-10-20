@@ -94,6 +94,7 @@ export const adminNavigation: NavigationGroup[] = [
     items: [
       { name: "Notifications", href: "/admin/notifications", icon: Bell },
       { name: "Users & Staff", href: "/admin/users", icon: User },
+      { name: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
 ];

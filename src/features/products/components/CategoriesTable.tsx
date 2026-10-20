@@ -19,21 +19,21 @@ interface Props {
 
 export function CategoriesTable({ categories, onView, onEdit }: Props) {
   return (
-    <div className="overflow-hidden rounded-[var(--radius)] border bg-card">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Image</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Image</TableHead>
 
-            <TableHead>Name</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Name</TableHead>
 
-            <TableHead>Slug</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Slug</TableHead>
 
-            <TableHead>Parent Category</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Parent Category</TableHead>
 
-            <TableHead>Created At</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Created At</TableHead>
 
-            <TableHead />
+            <TableHead className="w-14" />
           </TableRow>
         </TableHeader>
 

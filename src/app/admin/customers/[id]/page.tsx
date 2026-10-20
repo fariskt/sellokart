@@ -45,7 +45,7 @@ export default async function CustomerDetailsPage({ params }: CustomerDetailsPag
             {profileRes.message || "The requested customer profile does not exist or has been deleted."}
           </p>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button asChild variant="outline" className="rounded-lg">
           <Link href="/admin/customers">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Customers
@@ -101,19 +101,19 @@ export default async function CustomerDetailsPage({ params }: CustomerDetailsPag
         <div className="lg:col-span-3">
           <Tabs defaultValue="orders" className="space-y-6">
             <TabsList className="bg-muted p-1 rounded-lg flex flex-wrap h-auto w-fit">
-              <TabsTrigger value="orders" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+              <TabsTrigger value="orders" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
                 Orders ({orders.length})
               </TabsTrigger>
-              <TabsTrigger value="addresses" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+              <TabsTrigger value="addresses" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
                 Addresses ({addresses.length})
               </TabsTrigger>
-              <TabsTrigger value="returns" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+              <TabsTrigger value="returns" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
                 Returns ({returnsData.length})
               </TabsTrigger>
-              <TabsTrigger value="reviews" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+              <TabsTrigger value="reviews" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
                 Reviews ({reviews.length})
               </TabsTrigger>
-              <TabsTrigger value="wishlist" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-md data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+              <TabsTrigger value="wishlist" className="cursor-pointer text-xs font-semibold px-3.5 py-1.5 rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
                 Wishlist ({wishlist.length})
               </TabsTrigger>
             </TabsList>

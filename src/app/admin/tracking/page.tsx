@@ -1,10 +1,14 @@
-import * as React from "react";
+import { getShipments } from "@/features/shipments/lib/shipments.action";
+import { TrackingClient } from "./TrackingClient";
 
-export default function Page() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin &gt; Tracking</h1>
-      <p className="text-muted-foreground">This is the placeholder for tracking/page.tsx.</p>
-    </div>
-  );
+export const metadata = {
+  title: "Shipment Tracking | Admin",
+  description: "Live carrier telemetry and fulfillment progress for dispatch orders.",
+};
+
+export default async function TrackingPage() {
+  const allShipments = await getShipments().catch(() => []);
+  const trackedShipments = allShipments.filter((s) => Boolean(s.tracking_number));
+
+  return <TrackingClient shipments={trackedShipments} />;
 }

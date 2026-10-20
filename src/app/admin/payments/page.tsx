@@ -25,9 +25,5 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
     endDate: params.endDate,
   });
 
-  return (
-    <div className="p-6">
-      <PaymentsPageClient initialData={paymentsData} />
-    </div>
-  );
+  return <PaymentsPageClient initialData={paymentsData} />;
 }

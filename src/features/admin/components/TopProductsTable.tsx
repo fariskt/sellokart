@@ -41,7 +41,7 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
             products.map((p) => (
               <TableRow key={p.id} className="hover:bg-muted/10 transition-colors">
                 <TableCell>
-                  <div className="w-10 h-10 bg-muted/40 rounded-md border border-border flex items-center justify-center p-1.5 overflow-hidden shrink-0">
+                  <div className="w-10 h-10 bg-muted/40 rounded-lg border border-border flex items-center justify-center p-1.5 overflow-hidden shrink-0">
                     <img
                       src={p.image_url || "/placeholder-image.jpg"}
                       alt={p.name}

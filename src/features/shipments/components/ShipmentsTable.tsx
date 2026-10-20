@@ -44,16 +44,16 @@ function formatDate(dateStr: string | null) {
 
 export function ShipmentsTable({ shipments, onView, onUpdate }: ShipmentsTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Tracking Number</TableHead>
-            <TableHead>Order Number</TableHead>
-            <TableHead>Courier</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Shipped At</TableHead>
-            <TableHead>Delivered At</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tracking Number</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Order Number</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Courier</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Shipped At</TableHead>
+            <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Delivered At</TableHead>
             <TableHead className="w-14" />
           </TableRow>
         </TableHeader>

@@ -25,9 +25,5 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
     customerType: params.customerType,
   });
 
-  return (
-    <div className="p-6">
-      <CustomersPageClient initialData={initialData} />
-    </div>
-  );
+  return <CustomersPageClient initialData={initialData} />;
 }

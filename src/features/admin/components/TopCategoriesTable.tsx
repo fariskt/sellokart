@@ -9,7 +9,14 @@ interface TopCategoriesTableProps {
   categories: TopCategoryItem[];
 }
 
-const COLORS = ["#3B82F6", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444", "#EC4899", "#6366F1"];
+const COLORS = [
+  "var(--primary)",
+  "var(--success)",
+  "var(--warning)",
+  "var(--destructive)",
+  "var(--ring)",
+  "var(--accent-foreground)",
+];
 
 export function TopCategoriesTable({ categories }: TopCategoriesTableProps) {
   const [mounted, setMounted] = useState(false);
@@ -35,7 +42,7 @@ export function TopCategoriesTable({ categories }: TopCategoriesTableProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
         {/* Table representation */}
-        <div className="border border-border rounded-md overflow-hidden">
+        <div className="border border-border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -71,7 +78,7 @@ export function TopCategoriesTable({ categories }: TopCategoriesTableProps) {
         </div>
 
         {/* Pie Chart representation */}
-        <div className="h-[220px] w-full flex items-center justify-center border border-border rounded-md bg-muted/5 p-2 text-xs">
+        <div className="h-[220px] w-full flex items-center justify-center border border-border rounded-lg bg-muted/5 p-2 text-xs">
           {!mounted ? (
             <div className="text-muted-foreground">Loading chart...</div>
           ) : categories.length === 0 ? (
@@ -96,8 +103,8 @@ export function TopCategoriesTable({ categories }: TopCategoriesTableProps) {
                 <Tooltip
                   formatter={(value: any) => [formatCurrency(Number(value)), "Revenue"]}
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
                     fontSize: "10px",
                   }}

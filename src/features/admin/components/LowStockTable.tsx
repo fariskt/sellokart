@@ -1,4 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { LowStockProductItem } from "../lib/types";
 
 interface LowStockTableProps {
@@ -9,15 +10,21 @@ export function LowStockTable({ products }: LowStockTableProps) {
   function getStockBadge(stock: number) {
     if (stock === 0) {
       return (
-        <span className="bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+        <Badge
+          variant="outline"
+          className="rounded-lg bg-rose-500/10 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-rose-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+        >
           Out of Stock
-        </span>
+        </Badge>
       );
     }
     return (
-      <span className="bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+      <Badge
+        variant="outline"
+        className="rounded-lg bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+      >
         {stock} Units Left
-      </span>
+      </Badge>
     );
   }
 

@@ -32,15 +32,13 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
   ]);
 
   return (
-    <div className="p-6">
-      <InventoryPageClient
-        initialData={{
-          data: inventoryData.data,
-          stats,
-          pagination: inventoryData.pagination,
-        }}
-        categories={(categoriesData as any[]).map((c: any) => ({ id: c.id, name: c.name }))}
-      />
-    </div>
+    <InventoryPageClient
+      initialData={{
+        data: inventoryData.data,
+        stats,
+        pagination: inventoryData.pagination,
+      }}
+      categories={(categoriesData as any[]).map((c: any) => ({ id: c.id, name: c.name }))}
+    />
   );
 }

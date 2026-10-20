@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { AuthNavbar } from "@/components/auth-navbar";
 import { useSidebarStore } from "@/store/sidebar-store";
 import { cn } from "@/lib/utils";
+import { Navbar } from "@/components/landing/Navbar";
 
 export default function AdminLayout({
   children,
@@ -24,13 +24,13 @@ export default function AdminLayout({
 
   return (
     <div className="w-full min-h-screen bg-background">
-      <AuthNavbar />
+      <Navbar />
       <Sidebar />
       <div className={cn(
         "w-full flex flex-col min-h-screen transition-all duration-300",
         isExpanded ? "md:pl-64" : "md:pl-16"
       )}>
-        <main className="flex-1 w-full overflow-x-hidden bg-muted/10 pt-24 px-6">
+        <main className="flex-1 w-full overflow-x-hidden bg-slate-50/60 dark:bg-muted/10 pt-24 px-6 pb-12">
           {children}
         </main>
       </div>
