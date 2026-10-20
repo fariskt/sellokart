@@ -29,7 +29,7 @@ export function LowStockTable({ products }: LowStockTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xs">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-2xs">
       <div className="p-4 border-b border-border/80 bg-muted/10">
         <h3 className="text-sm font-semibold text-destructive flex items-center gap-1.5">
           <span className="inline-block w-2 h-2 rounded-full bg-destructive animate-pulse" />

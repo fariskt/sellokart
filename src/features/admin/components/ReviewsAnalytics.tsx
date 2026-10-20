@@ -49,7 +49,7 @@ export function ReviewsAnalytics({ data, loading }: ReviewsAnalyticsProps) {
   ];
 
   return (
-    <Card className="p-4 bg-card border border-border shadow-2xs">
+    <Card className="p-6 bg-card border border-border shadow-2xs rounded-3xl">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-foreground">Reviews Summary</h3>
         <p className="text-xs text-muted-foreground mt-0.5">Customer feedback and rating distributions</p>

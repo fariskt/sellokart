@@ -27,7 +27,7 @@ export function RecentCustomersTable({ customers }: RecentCustomersTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xs">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-2xs">
       <div className="p-4 border-b border-border/80 bg-muted/10">
         <h3 className="text-sm font-semibold text-foreground">Recent Customers</h3>
         <p className="text-xs text-muted-foreground mt-0.5">Latest 10 registered accounts</p>

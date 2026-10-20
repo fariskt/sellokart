@@ -29,6 +29,47 @@ import { useSidebarStore } from "@/store/sidebar-store";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "../common/Logo";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import React, { Fragment } from "react";
+
+const ROUTE_LABELS: Record<string, string> = {
+  admin: "Dashboard",
+  products: "Products",
+  orders: "Orders",
+  customers: "Customers",
+  tracking: "Shipment Tracking",
+  users: "Users & Staff",
+  inventory: "Inventory",
+  settings: "Settings",
+  reviews: "Reviews",
+  payments: "Payments",
+  categories: "Categories",
+  shipments: "Shipments",
+  notifications: "Notifications",
+  account: "My Account",
+};
+
+function getDashboardBreadcrumbs(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs: { label: string; href: string; isLast: boolean }[] = [];
+  let path = "";
+
+  segments.forEach((seg, idx) => {
+    path += `/${seg}`;
+    const isLast = idx === segments.length - 1;
+    const label = ROUTE_LABELS[seg.toLowerCase()] || seg.charAt(0).toUpperCase() + seg.slice(1);
+    crumbs.push({ label, href: path, isLast });
+  });
+
+  return crumbs;
+}
 
 const POPULAR_SEARCHES = ["Hoodie", "Runner", "Sneakers", "Jacket", "Cargo", "Cap"];
 
@@ -274,15 +315,37 @@ export function Navbar() {
                 />
               </Link>
               <div className="hidden md:flex items-center gap-3">
-                <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-landing-primary-light text-landing-primary font-display border border-landing-primary/10">
-                  {isAdmin ? "Admin Console" : "My Account"}
-                </span>
+                <Breadcrumb>
+                  <BreadcrumbList className="text-xs font-medium">
+                    {getDashboardBreadcrumbs(pathname).map((crumb, idx) => (
+                      <Fragment key={crumb.href}>
+                        {idx > 0 && <BreadcrumbSeparator className="text-muted-foreground/40" />}
+                        <BreadcrumbItem>
+                          {crumb.isLast ? (
+                            <BreadcrumbPage className="font-semibold text-foreground">
+                              {crumb.label}
+                            </BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink asChild>
+                              <Link
+                                href={crumb.href}
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                {crumb.label}
+                              </Link>
+                            </BreadcrumbLink>
+                          )}
+                        </BreadcrumbItem>
+                      </Fragment>
+                    ))}
+                  </BreadcrumbList>
+                </Breadcrumb>
                 <Link
                   href="/"
-                  className="text-[13px] font-bold tracking-wide text-landing-dark hover:text-landing-primary transition-colors font-display flex items-center gap-1.5 cursor-pointer ml-1"
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 cursor-pointer ml-1 border-l border-border/80 pl-3"
                 >
-                  <ArrowLeft size={14} />
-                  <span>Back to Store</span>
+                  <ArrowLeft size={13} />
+                  <span>Store</span>
                 </Link>
               </div>
             </div>

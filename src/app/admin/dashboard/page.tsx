@@ -52,7 +52,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   ]);
 
   return (
-    <div className="p-6">
+    <div>
       <DashboardPageClient
         stats={stats}
         revenueAnalytics={revenueAnalytics}

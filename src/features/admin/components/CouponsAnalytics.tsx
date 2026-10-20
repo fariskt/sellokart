@@ -30,7 +30,7 @@ export function CouponsAnalytics({ data }: CouponsAnalyticsProps) {
   ];
 
   return (
-    <Card className="p-4 bg-card border border-border shadow-2xs space-y-4">
+    <Card className="p-6 bg-card border border-border shadow-2xs space-y-4 rounded-3xl">
       <div>
         <h3 className="text-sm font-semibold text-foreground">Coupon & Promotions Analytics</h3>
         <p className="text-xs text-muted-foreground mt-0.5">Campaign performance and redemption highlights</p>

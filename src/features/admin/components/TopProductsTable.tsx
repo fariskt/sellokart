@@ -15,7 +15,7 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xs">
+    <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-2xs">
       <div className="p-4 border-b border-border/80 bg-muted/10">
         <h3 className="text-sm font-semibold text-foreground">Top Selling Products</h3>
         <p className="text-xs text-muted-foreground mt-0.5">Highest units sold first</p>

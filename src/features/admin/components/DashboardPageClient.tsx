@@ -79,8 +79,16 @@ export function DashboardPageClient({
 
       {/* Revenue & Orders Charts (Two-column layout) */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <RevenueChart data={revenueAnalytics} />
-        <OrdersChart data={ordersAnalytics} />
+        <RevenueChart
+          data={revenueAnalytics}
+          totalRevenue={stats.revenue.total}
+          thisMonthRevenue={stats.revenue.thisMonth}
+        />
+        <OrdersChart
+          data={ordersAnalytics}
+          totalOrders={stats.orders.total}
+          todayOrders={stats.orders.today}
+        />
       </div>
 
       {/* Top Products & Top Categories */}
