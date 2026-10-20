@@ -24,6 +24,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 declare global {
   interface Window {
@@ -103,6 +111,7 @@ export default function CheckoutPage() {
   });
 
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [priceMismatchModal, setPriceMismatchModal] = useState<{
     newTotal: number;
     newTotalPaise: number;
@@ -112,6 +121,8 @@ export default function CheckoutPage() {
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [saveAddress, setSaveAddress] = useState(true);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
+  const [isPricingLoading, setIsPricingLoading] = useState(true);
 
   // Hydration & user session resolution
   useEffect(() => {
@@ -162,17 +173,27 @@ export default function CheckoutPage() {
               setZipCode(defaultAddr.postal_code);
             }
           }
+        })
+        .finally(() => {
+          setIsLoadingAddresses(false);
         });
     });
   }, [router]);
 
   // Fetch authoritative pricing from server
   useEffect(() => {
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      setIsPricingLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsPricingLoading(true);
 
     fetch("/api/pricing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         items: items.map((i) => ({
           id: i.id,
@@ -201,7 +222,20 @@ export default function CheckoutPage() {
           }
         }
       })
-      .catch((err) => console.error("Checkout pricing fetch failed:", err));
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Checkout pricing fetch failed:", err);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsPricingLoading(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
   }, [items, appliedCouponCode, city, state, zipCode]);
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -235,7 +269,7 @@ export default function CheckoutPage() {
       toast.error("Please enter your Last Name.");
       return;
     }
-    if (!email.trim() || !email.includes("@")) {
+    if (email.trim() && !email.includes("@")) {
       toast.error("Please enter a valid Email address.");
       return;
     }
@@ -243,8 +277,8 @@ export default function CheckoutPage() {
       toast.error("Please enter a valid Phone number.");
       return;
     }
-    if (!city.trim() || !state.trim()) {
-      toast.error("Please enter your City and State.");
+    if (!state.trim()) {
+      toast.error("Please enter your State.");
       return;
     }
     if (!zipCode.trim()) {
@@ -278,13 +312,13 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           customer: {
             name: fullName,
-            email: email.trim(),
+            email: email.trim() || "",
             phone: phone.trim(),
           },
           shippingAddress: {
             addressLine1: description.trim(),
             addressLine2: null,
-            city: city.trim(),
+            city: city.trim() || "",
             state: state.trim(),
             postalCode: zipCode.trim(),
             country: "India",
@@ -321,24 +355,33 @@ export default function CheckoutPage() {
         throw new Error(orderData.error || "Failed to initialize payment session with server.");
       }
 
-      // Save address to user's account if requested
-      if (saveAddress && user?.id) {
-        try {
-          const supabase = createClient();
-          await supabase.from("addresses").insert({
-            user_id: user.id,
-            full_name: fullName,
-            phone: phone.trim(),
-            address_line_1: description.trim(),
-            address_line_2: null,
-            city: city.trim(),
-            state: state.trim(),
-            postal_code: zipCode.trim(),
-            country: "India",
-            is_default: savedAddresses.length === 0,
-          });
-        } catch (addrErr) {
-          console.warn("Could not save address to account:", addrErr);
+      // Save address to user's account if requested and NOT already using a saved or duplicate address
+      if (saveAddress && user?.id && !selectedAddressId) {
+        const isDuplicate = savedAddresses.some(
+          (addr) =>
+            addr.address_line_1.trim().toLowerCase() === description.trim().toLowerCase() &&
+            addr.postal_code.trim() === zipCode.trim() &&
+            (addr.full_name || "").trim().toLowerCase() === fullName.toLowerCase()
+        );
+
+        if (!isDuplicate) {
+          try {
+            const supabase = createClient();
+            await supabase.from("addresses").insert({
+              user_id: user.id,
+              full_name: fullName,
+              phone: phone.trim(),
+              address_line_1: description.trim(),
+              address_line_2: null,
+              city: city.trim() || null,
+              state: state.trim(),
+              postal_code: zipCode.trim(),
+              country: "India",
+              is_default: savedAddresses.length === 0,
+            });
+          } catch (addrErr) {
+            console.warn("Could not save address to account:", addrErr);
+          }
         }
       }
 
@@ -380,10 +423,13 @@ export default function CheckoutPage() {
               throw new Error(verifyData.error || "Payment verification failed on the server.");
             }
 
-            // 4. Verification successful: clear cart and redirect to success page
+            // 4. Verification successful: navigate directly to success page without intermediate cart flash
+            setIsNavigating(true);
+            setIsVerifyingPayment(false);
+            setIsProcessing(false);
             clearCart();
             toast.success("Payment verified successfully!");
-            router.push(
+            router.replace(
               `/checkout/success?order_id=${encodeURIComponent(orderId)}&order_number=${encodeURIComponent(
                 orderNumber
               )}`
@@ -395,14 +441,15 @@ export default function CheckoutPage() {
                 ? verifyErr.message
                 : "Payment was received, but server verification is pending.";
             toast.error(verifyMsg);
+            setIsNavigating(true);
+            setIsVerifyingPayment(false);
             setIsProcessing(false);
-            router.push(
+            // DO NOT clear cart on failed payment! Cart items remain completely safe.
+            router.replace(
               `/checkout/failed?order_id=${encodeURIComponent(orderId)}&reason=${encodeURIComponent(
                 verifyMsg
               )}`
             );
-          } finally {
-            setIsVerifyingPayment(false);
           }
         },
         prefill: {
@@ -420,7 +467,9 @@ export default function CheckoutPage() {
         modal: {
           ondismiss: function () {
             setIsProcessing(false);
-            toast.info("Payment window was closed. Your details remain saved.");
+            setIsVerifyingPayment(false);
+            setIsNavigating(false);
+            toast.info("Payment window was closed. Your cart remains saved.");
           },
         },
       };
@@ -436,9 +485,17 @@ export default function CheckoutPage() {
 
       rzpInstance.on("payment.failed", function (failResponse: RazorpayErrorResponse) {
         console.error("Razorpay payment failure:", failResponse.error);
+        const failMsg =
+          failResponse.error?.description || "Payment failed. Please try again with another method.";
+        toast.error(failMsg);
+        setIsNavigating(true);
         setIsProcessing(false);
-        toast.error(
-          failResponse.error?.description || "Payment failed. Please try again with another method."
+        setIsVerifyingPayment(false);
+        // DO NOT clear cart on payment failure!
+        router.replace(
+          `/checkout/failed?order_id=${encodeURIComponent(orderId)}&reason=${encodeURIComponent(
+            failMsg
+          )}`
         );
       });
 
@@ -448,13 +505,137 @@ export default function CheckoutPage() {
       const errMsg = err instanceof Error ? err.message : "Could not start payment.";
       toast.error(errMsg);
       setIsProcessing(false);
+      setIsVerifyingPayment(false);
+      setIsNavigating(false);
     }
   };
 
   if (!mounted) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="max-w-6xl mx-auto pt-3 pb-6 px-4 sm:px-6 space-y-8 font-sans">
+        {/* Header & Stepper Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-4 w-52" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-16 rounded-full" />
+            <div className="w-8 h-px bg-border" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <div className="w-8 h-px bg-border" />
+            <Skeleton className="h-5 w-18 rounded-full" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+          {/* Left Column Skeleton */}
+          <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-3xl border border-border/60 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-2 border-b border-border/50">
+              <Skeleton className="h-7 w-44" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-20 w-full rounded-xl" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Skeleton className="h-10 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Order Summary) Skeleton */}
+          <div className="lg:col-span-5 xl:col-span-4 bg-muted/30 rounded-3xl border border-border/60 p-6 sm:p-7 space-y-6">
+            <div className="flex items-center justify-between pb-2 border-b border-border/50">
+              <Skeleton className="h-7 w-36" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-12 h-12 rounded-xl" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-28" />
+                    <Skeleton className="h-2.5 w-12" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-12 h-12 rounded-xl" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-32" />
+                    <Skeleton className="h-2.5 w-12" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+            <div className="space-y-3 pt-3 border-t border-border/50">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-14" />
+              </div>
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </div>
+            <div className="pt-4 border-t border-border/50 flex justify-between items-center">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-8 w-28" />
+            </div>
+            <Skeleton className="h-12 w-full rounded-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // During payment verification or transition to result page, show dedicated verifying screen without jumping to cart
+  if (isVerifyingPayment || isNavigating) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 space-y-4 font-sans">
+        <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+            Verifying your payment...
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Please wait while we confirm your transaction and finalize your order.
+          </p>
+        </div>
       </div>
     );
   }
@@ -462,7 +643,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-md mx-auto pt-24 pb-16 px-4 text-center space-y-4 font-sans">
-        <div className="w-16 h-16 rounded-full bg-landing-primary-light flex items-center justify-center mx-auto text-landing-primary">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto text-primary">
           <ShoppingBag className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-medium text-foreground">Your cart is empty</h2>
@@ -477,7 +658,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-8 font-sans">
+    <div className="max-w-6xl mx-auto pt-3 pb-6 px-4 sm:px-6 space-y-8 font-sans">
       {/* Official Razorpay Standard Checkout Script */}
       <Script
         id="razorpay-checkout-sdk"
@@ -541,10 +722,24 @@ export default function CheckoutPage() {
           </div>
 
           {/* Saved Address quick picker if available */}
-          {savedAddresses.length > 0 && (
-            <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 text-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-foreground">Saved Delivery Addresses</span>
+          {isLoadingAddresses ? (
+            <div className="p-4 sm:p-5 rounded-2xl bg-muted/40 border border-border text-xs space-y-3">
+              <div className="flex justify-between items-center pb-1 border-b border-border/60">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <Skeleton className="h-16 w-full rounded-xl" />
+                <Skeleton className="h-16 w-full rounded-xl" />
+              </div>
+            </div>
+          ) : savedAddresses.length > 0 ? (
+            <div className="p-4 sm:p-5 rounded-2xl bg-muted/40 border border-border text-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-border/60">
+                <div>
+                  <span className="font-bold text-foreground text-sm block">Saved Delivery Addresses</span>
+                  <span className="text-[11px] text-muted-foreground">Choose where you'd like your order delivered</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -557,56 +752,63 @@ export default function CheckoutPage() {
                     setState("");
                     setZipCode("");
                   }}
-                  className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-primary hover:underline cursor-pointer self-start sm:self-auto"
                 >
                   + Enter new address
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {savedAddresses.map((addr) => {
-                  const isSelected = selectedAddressId === addr.id;
-                  return (
-                    <button
-                      type="button"
-                      key={addr.id}
-                      onClick={() => {
+
+              {/* Dropdown Selector */}
+              <div className="space-y-1.5">
+                <Select
+                  value={selectedAddressId || "new"}
+                  onValueChange={(val) => {
+                    if (val === "new") {
+                      setSelectedAddressId(null);
+                      setFirstName(user?.user_metadata?.full_name?.split(" ")[0] || "");
+                      setLastName(user?.user_metadata?.full_name?.split(" ").slice(1).join(" ") || "");
+                      setPhone(user?.user_metadata?.phone || "");
+                      setDescription("");
+                      setCity("");
+                      setState("");
+                      setZipCode("");
+                    } else {
+                      const addr = savedAddresses.find((a) => a.id === val);
+                      if (addr) {
                         setSelectedAddressId(addr.id);
                         const parts = (addr.full_name || "").trim().split(" ");
                         setFirstName(parts[0] || "");
                         setLastName(parts.slice(1).join(" ") || "");
                         if (addr.phone) setPhone(addr.phone);
                         setDescription(addr.address_line_1);
-                        setCity(addr.city);
+                        setCity(addr.city || "");
                         setState(addr.state);
                         setZipCode(addr.postal_code);
-                      }}
-                      className={cn(
-                        "p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between text-xs space-y-1.5 shadow-2xs",
-                        isSelected
-                          ? "border-foreground bg-foreground/5 ring-1 ring-foreground"
-                          : "border-border/80 bg-white hover:border-foreground/50"
-                      )}
-                    >
-                      <div className="flex items-center justify-between font-bold text-foreground">
-                        <span className="truncate">{addr.full_name}</span>
-                        {addr.is_default && (
-                          <span className="text-[9px] font-bold text-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">
-                            Default
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2">
-                        {addr.address_line_1}, {addr.city}, {addr.state} - {addr.postal_code}
-                      </p>
-                      <span className="text-[10px] text-muted-foreground/80">
-                        📞 {addr.phone}
-                      </span>
-                    </button>
-                  );
-                })}
+                      }
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full h-11 rounded-xl bg-card border-border text-xs sm:text-sm font-medium">
+                    <SelectValue placeholder="Choose a saved delivery address..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border rounded-xl shadow-lg">
+                    <SelectItem value="new" className="text-xs sm:text-sm font-medium text-primary">
+                      + Enter a new address
+                    </SelectItem>
+                    {savedAddresses.map((addr) => (
+                      <SelectItem key={addr.id} value={addr.id} className="text-xs sm:text-sm">
+                        <span className="font-semibold text-foreground">{addr.full_name}</span>
+                        <span className="text-muted-foreground ml-1.5">
+                          — {addr.address_line_1}{addr.city ? `, ${addr.city}` : ""}, {addr.state} ({addr.postal_code})
+                          {addr.is_default ? " [Default]" : ""}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          )}
+          ) : null}
 
           <div className="space-y-4 pt-1">
             {/* Row 1: First Name* | Last Name* */}
@@ -621,7 +823,7 @@ export default function CheckoutPage() {
                   placeholder="John"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  className="h-11 rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
@@ -636,17 +838,17 @@ export default function CheckoutPage() {
                   placeholder="Doe"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  className="h-11 rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
             </div>
 
-            {/* Row 2: Email* | Phone number* */}
+            {/* Row 2: Email (Optional) | Phone number* */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs font-medium text-foreground">
-                  Email*
+                  Email <span className="text-muted-foreground font-normal">(Optional)</span>
                 </Label>
                 <Input
                   id="email"
@@ -654,7 +856,7 @@ export default function CheckoutPage() {
                   placeholder="john@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  className="h-11 rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
@@ -663,8 +865,8 @@ export default function CheckoutPage() {
                 <Label htmlFor="phone" className="text-xs font-medium text-foreground">
                   Phone number*
                 </Label>
-                <div className="flex rounded-xl border border-border/80 overflow-hidden focus-within:ring-1 focus-within:ring-foreground bg-white">
-                  <div className="px-3 bg-muted/40 border-r border-border/60 flex items-center justify-center text-xs font-semibold text-muted-foreground select-none">
+                <div className="flex rounded-xl border border-border overflow-hidden focus-within:ring-1 focus-within:ring-foreground bg-card">
+                  <div className="px-3 bg-muted/40 border-r border-border flex items-center justify-center text-xs font-semibold text-muted-foreground select-none">
                     IND +91
                   </div>
                   <input
@@ -680,11 +882,11 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Row 3: City* | State* | Zip Code* */}
+            {/* Row 3: City (Optional) | State* | Zip Code* */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="city" className="text-xs font-medium text-foreground">
-                  City*
+                  City <span className="text-muted-foreground font-normal">(Optional)</span>
                 </Label>
                 <Input
                   id="city"
@@ -692,7 +894,7 @@ export default function CheckoutPage() {
                   placeholder="Mumbai"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  className="h-11 rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
@@ -707,7 +909,7 @@ export default function CheckoutPage() {
                   placeholder="Maharashtra"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  className="h-11 rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
@@ -722,7 +924,7 @@ export default function CheckoutPage() {
                   placeholder="400001"
                   value={zipCode}
                   onChange={(e) => setZipCode(e.target.value)}
-                  className="h-11 rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm"
+                  className="h-11 rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                   disabled={isProcessing}
                 />
               </div>
@@ -742,27 +944,29 @@ export default function CheckoutPage() {
                   setDescription(e.target.value);
                   setSelectedAddressId(null);
                 }}
-                className="rounded-xl border-border/80 focus-visible:ring-1 focus-visible:ring-foreground text-sm resize-none"
+                className="rounded-xl border-border focus-visible:ring-1 focus-visible:ring-foreground text-sm resize-none"
                 disabled={isProcessing}
               />
             </div>
 
-            {/* Save Address Checkbox */}
-            <div className="flex items-center space-x-2 pt-1">
-              <input
-                id="saveAddress"
-                type="checkbox"
-                checked={saveAddress}
-                onChange={(e) => setSaveAddress(e.target.checked)}
-                className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
-              />
-              <Label
-                htmlFor="saveAddress"
-                className="text-xs text-muted-foreground cursor-pointer select-none font-medium"
-              >
-                Save this shipping address to my account for future orders
-              </Label>
-            </div>
+            {/* Save Address Checkbox - only show if entering a new address */}
+            {!selectedAddressId && (
+              <div className="flex items-center space-x-2 pt-1">
+                <input
+                  id="saveAddress"
+                  type="checkbox"
+                  checked={saveAddress}
+                  onChange={(e) => setSaveAddress(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <Label
+                  htmlFor="saveAddress"
+                  className="text-xs text-muted-foreground cursor-pointer select-none font-medium"
+                >
+                  Save this shipping address to my account for future orders
+                </Label>
+              </div>
+            )}
           </div>
 
           {/* Return to Cart */}
@@ -827,39 +1031,56 @@ export default function CheckoutPage() {
 
           {/* Calculations Breakdown */}
           <div className="space-y-3 text-xs sm:text-sm pt-1 border-t border-border/50">
-            <div className="flex justify-between text-muted-foreground">
+            <div className="flex justify-between items-center text-muted-foreground">
               <span>Subtotal</span>
-              <span className="font-semibold text-foreground">
-                ₹{pricing.subtotal.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
+              {isPricingLoading ? (
+                <Skeleton className="h-4 w-20" />
+              ) : (
+                <span className="font-semibold text-foreground">
+                  ₹{pricing.subtotal.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              )}
             </div>
 
-            <div className="flex justify-between text-muted-foreground">
+            <div className="flex justify-between items-center text-muted-foreground">
               <span>Shipping</span>
-              <span className="font-semibold text-foreground">
-                {pricing.shipping === 0 ? (
-                  <span className="text-emerald-600 font-bold">Free</span>
-                ) : (
-                  `₹${pricing.shipping.toFixed(2)}`
-                )}
-              </span>
+              {isPricingLoading ? (
+                <Skeleton className="h-4 w-14" />
+              ) : (
+                <span className="font-semibold text-foreground">
+                  {pricing.shipping === 0 ? (
+                    <span className="text-emerald-600 font-bold">Free</span>
+                  ) : (
+                    `₹${pricing.shipping.toFixed(2)}`
+                  )}
+                </span>
+              )}
             </div>
 
-            <div className="flex justify-between text-muted-foreground">
+            <div className="flex justify-between items-center text-muted-foreground">
               <span>GST included</span>
-              <span className="font-semibold text-foreground">
-                ₹{pricing.gstAmount.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
+              {isPricingLoading ? (
+                <Skeleton className="h-4 w-16" />
+              ) : (
+                <span className="font-semibold text-foreground">
+                  ₹{pricing.gstAmount.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              )}
             </div>
 
-            {pricing.discount > 0 && (
-              <div className="flex justify-between text-emerald-600 font-medium">
+            {isPricingLoading && appliedCouponCode ? (
+              <div className="flex justify-between items-center text-muted-foreground">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ) : pricing.discount > 0 ? (
+              <div className="flex justify-between items-center text-emerald-600 font-medium">
                 <span>Discount ({pricing.couponCode || appliedCouponCode})</span>
                 <span className="font-semibold">
                   -₹{pricing.discount.toLocaleString("en-IN", {
@@ -868,7 +1089,7 @@ export default function CheckoutPage() {
                   })}
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Promo code input matching Cart page */}
@@ -916,19 +1137,23 @@ export default function CheckoutPage() {
           {/* Total Payable */}
           <div className="pt-4 border-t border-border/50 flex justify-between items-center">
             <span className="text-base sm:text-lg font-medium text-foreground">Total payable</span>
-            <span className="text-2xl sm:text-3xl font-bold text-foreground">
-              ₹{pricing.total.toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+            {isPricingLoading ? (
+              <Skeleton className="h-8 w-28" />
+            ) : (
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">
+                ₹{pricing.total.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            )}
           </div>
 
           {/* Continue to Payment CTA */}
           <Button
             type="button"
             onClick={() => handleInitiatePayment(false)}
-            disabled={isProcessing}
+            disabled={isProcessing || isPricingLoading}
             className="w-full h-13 rounded-full font-display font-bold text-sm bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md disabled:opacity-60"
           >
             {isProcessing ? (
@@ -936,6 +1161,11 @@ export default function CheckoutPage() {
                 <Loader2 className="w-4 h-4 animate-spin mr-1" />
                 <span>Processing Payment...</span>
               </>
+            ) : isPricingLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <span className="text-muted-foreground font-normal">Calculating total...</span>
+              </div>
             ) : (
               <span>Continue to Payment</span>
             )}

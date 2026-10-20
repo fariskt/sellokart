@@ -25,14 +25,14 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="py-8 flex items-center justify-center gap-2 select-none font-display">
+    <div className="py-8 flex items-center justify-center gap-2 select-none">
       {/* Prev Page Button */}
       <button
         type="button"
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className={cn(
-          "w-10 h-10 rounded-full border border-landing-primary/20 bg-white/90 flex items-center justify-center text-landing-dark transition-all cursor-pointer hover:border-landing-primary hover:text-landing-primary shadow-xs",
+          "w-9 h-9 rounded-full border border-border bg-card flex items-center justify-center text-foreground transition-all cursor-pointer hover:bg-muted shadow-2xs",
           currentPage === 1 && "pointer-events-none opacity-40",
         )}
         aria-label="Previous Page"
@@ -49,10 +49,10 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
             key={page}
             onClick={() => handlePageChange(page)}
             className={cn(
-              "w-10 h-10 rounded-full text-xs  transition-all cursor-pointer font-display",
+              "w-9 h-9 rounded-full text-xs transition-all cursor-pointer",
               isCurrent
-                ? "bg-landing-primary text-white shadow-md shadow-landing-primary/30"
-                : "border border-landing-primary/15 bg-white/90 text-landing-dark hover:border-landing-primary hover:text-landing-primary shadow-xs",
+                ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                : "border border-border bg-card text-foreground hover:bg-muted shadow-2xs font-medium",
             )}
           >
             {page}
@@ -66,7 +66,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className={cn(
-          "w-10 h-10 rounded-full border border-landing-primary/20 bg-white/90 flex items-center justify-center text-landing-dark transition-all cursor-pointer hover:border-landing-primary hover:text-landing-primary shadow-xs",
+          "w-9 h-9 rounded-full border border-border bg-card flex items-center justify-center text-foreground transition-all cursor-pointer hover:bg-muted shadow-2xs",
           currentPage === totalPages && "pointer-events-none opacity-40",
         )}
         aria-label="Next Page"

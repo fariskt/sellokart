@@ -106,7 +106,7 @@ export default async function ProductsPage({
   );
 
   return (
-    <div className="bg-landing-hero-bg min-h-screen pt-24 pb-28">
+    <div className="min-h-screen pt-24 pb-28">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
         {/* Title & Search Section */}
         <ProductsHeaderMotion>
@@ -122,24 +122,24 @@ export default async function ProductsPage({
         </ProductsHeaderMotion>
 
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           {/* Sidebar Filters */}
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 lg:sticky lg:top-24 self-start h-fit z-10">
             <FiltersSidebar categories={categories} />
           </aside>
 
           {/* Product Listing Section */}
           <main className="lg:col-span-3 space-y-8">
             {/* Filter Results Summary Header */}
-            <div className="flex items-center justify-between py-2 pb-5 border-b border-landing-primary/10">
-              <span className="text-xs font-bold text-landing-primary-muted uppercase tracking-wider">
+            <div className="flex items-center justify-between py-2 pb-5 border-b border-border">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Showing{" "}
-                <span className="text-landing-dark">
+                <span className="text-foreground font-bold">
                   {totalItems === 0
                     ? "0"
                     : `${startIndex + 1} - ${Math.min(startIndex + pageSize, totalItems)}`}
                 </span>{" "}
-                of <span className="text-landing-dark">{totalItems}</span> items
+                of <span className="text-foreground font-bold">{totalItems}</span> items
               </span>
               <SortDropdown />
             </div>
@@ -148,11 +148,11 @@ export default async function ProductsPage({
             {paginatedProducts.length > 0 ? (
               <ProductGridMotion products={paginatedProducts} />
             ) : (
-              <div className="text-center py-20 bg-white/70 backdrop-blur-md border border-dashed border-landing-primary/20 rounded-3xl p-8">
-                <span className="text-xl  text-landing-dark block mb-2 font-display">
+              <div className="text-center py-20 bg-card border border-dashed border-border rounded-2xl p-8">
+                <span className="text-xl font-semibold text-foreground block mb-2">
                   No products found
                 </span>
-                <span className="text-sm font-medium text-landing-primary-muted font-display">
+                <span className="text-sm font-normal text-muted-foreground">
                   Try adjusting your filters, searching for a different keyword,
                   or clearing categories.
                 </span>

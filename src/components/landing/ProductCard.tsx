@@ -73,12 +73,12 @@ export function ProductCard({ product }: ProductCardProps) {
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="group bg-white rounded-xl p-2 sm:p-3.5 border border-slate-200/90 shadow-xs hover:shadow-xl transition-shadow duration-300 flex flex-col md:justify-between md:h-full h-full"
+      className="group bg-card rounded-2xl p-3 sm:p-3.5 border border-border shadow-2xs hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between h-full select-none"
     >
       <div>
         {/* Rounded Image Frame */}
-        <Link href={href} className="block overflow-hidden rounded-md">
-          <div className="relative w-full aspect-square rounded-md overflow-hidden bg-[#f7f7f9] flex items-center justify-center">
+        <Link href={href} className="block overflow-hidden rounded-xl">
+          <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-muted/40 flex items-center justify-center">
             <motion.img
               src={product?.image || "/placeholder-image.jpg"}
               alt={product?.name || "Product"}
@@ -91,61 +91,62 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
 
         {/* Product Info */}
-        <div className="mt-3 px-1">
+        <div className="mt-3 px-0.5">
           <Link href={href} className="block">
-            <h3 className="font-bold text-base sm:text-[17px] text-slate-900 tracking-tight leading-snug line-clamp-1 group-hover:text-landing-primary transition-colors">
+            <h3 className="font-semibold text-base sm:text-[17px] text-foreground tracking-tight leading-snug line-clamp-1 group-hover:text-primary transition-colors">
               {product.name}
             </h3>
           </Link>
 
           {/* Description line */}
-          <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed min-h-[32px]">
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed min-h-[32px]">
             {description}
           </p>
 
           {/* Star Rating Row */}
           <div className="flex items-center gap-1 mt-2">
-            <div className="flex items-center gap-0.5 text-amber-400">
+            <div className="flex items-center gap-0.5 text-amber-500">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
                   size={13}
-                  className="fill-amber-400 text-amber-400"
+                  className="fill-amber-500 text-amber-500"
                 />
               ))}
             </div>
-            <span className="text-xs font-semibold text-slate-600 ml-1">
+            <span className="text-xs font-semibold text-muted-foreground ml-1">
               4.8
             </span>
-          </div>
-
-          {/* Price & Discount Pill Row */}
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-xl sm:text-2xl font-bold text-slate-900 font-display">
-              ₹{currentPrice}
-            </span>
-
-            {hasDiscount && (
-              <>
-                <span className="text-xs sm:text-sm text-slate-400 line-through font-normal">
-                  ₹{originalPrice}
-                </span>
-                <span className="rounded-full bg-black text-white text-[10px] font-bold px-2 py-0.5">
-                  -{discountPercent}%
-                </span>
-              </>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Action Buttons Row */}
-      <div className="flex items-center gap-2 mt-3.5 pt-1 px-1">
+      {/* Bottom Block: Price and Action Button always aligned */}
+      <div className="mt-3 px-0.5">
+        {/* Price & Discount Pill Row */}
+        <div className="flex items-baseline gap-2 mb-3.5">
+          <span className="text-xl sm:text-2xl font-bold text-foreground font-display">
+            ₹{currentPrice}
+          </span>
+
+          {hasDiscount && (
+            <>
+              <span className="text-xs sm:text-sm text-muted-foreground line-through font-normal">
+                ₹{originalPrice}
+              </span>
+              <span className="rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2 py-0.5">
+                -{discountPercent}%
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Action Button */}
         <motion.button
           type="button"
           onClick={handleAddToCart}
           whileTap={{ scale: 0.96 }}
-          className="flex-1 py-2.5 px-3 rounded-full bg-black hover:bg-slate-800 text-white text-xs sm:text-[13px] font-semibold text-center transition-colors cursor-pointer shadow-xs select-none"
+          className="w-full py-2.5 px-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold text-center transition-colors cursor-pointer shadow-xs select-none"
         >
           <AnimatePresence mode="wait" initial={false}>
             {added ? (

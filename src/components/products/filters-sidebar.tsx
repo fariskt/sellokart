@@ -82,21 +82,21 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
   const hasActiveFilters = activeCategory || activeMinPrice || activeMaxPrice;
 
   return (
-    <div className="w-full bg-white/90 backdrop-blur-xl border border-landing-primary/10 rounded-3xl p-5 lg:p-6 shadow-[0_16px_48px_rgba(26,63,240,0.06)] select-none font-display">
+    <div className="w-full bg-card rounded-2xl p-5 border border-border shadow-2xs select-none">
       {/* Title / Mobile Toggle */}
-      <div className="flex items-center justify-between pb-3 lg:pb-4 border-b border-landing-primary/10">
+      <div className="flex items-center justify-between pb-3.5 border-b border-border">
         <button
           type="button"
           onClick={() => setIsMobileExpanded(!isMobileExpanded)}
-          className="flex items-center space-x-2 text-landing-dark  text-sm cursor-pointer lg:cursor-default"
+          className="flex items-center space-x-2 text-foreground font-semibold text-sm cursor-pointer lg:cursor-default"
         >
-          <SlidersHorizontal className="w-4 h-4 text-landing-primary" />
+          <SlidersHorizontal className="w-4 h-4 text-primary" />
           <span className="tracking-tight">Filters</span>
           {hasActiveFilters && (
-            <span className="w-2 h-2 rounded-full bg-landing-primary" />
+            <span className="w-2 h-2 rounded-full bg-primary" />
           )}
-          <span className="lg:hidden text-[11px] font-bold text-landing-primary flex items-center gap-1 ml-2">
-            ({isMobileExpanded ? "Tap to close" : "Tap to open"})
+          <span className="lg:hidden text-xs font-medium text-primary flex items-center gap-1 ml-2">
+            ({isMobileExpanded ? "Close" : "Open"})
             <ChevronDown
               className={cn(
                 "w-3.5 h-3.5 transition-transform duration-200",
@@ -109,7 +109,7 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-[11px] font-bold text-landing-primary hover:text-landing-primary-hover cursor-pointer tracking-wider uppercase transition-colors shrink-0"
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer tracking-wider uppercase transition-colors shrink-0"
           >
             Clear All
           </button>
@@ -119,16 +119,16 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
       {/* Filter Body: Collapsible on mobile, always visible on desktop */}
       <div
         className={cn(
-          "space-y-6 pt-5 lg:pt-6",
+          "space-y-6 pt-5",
           isMobileExpanded ? "block" : "hidden lg:block",
         )}
       >
         {/* Categories Filter */}
         <div className="space-y-3">
-          <h4 className="text-[10px]  tracking-[0.2em] uppercase text-landing-primary font-display">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Category
           </h4>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {categories.map((cat) => {
               const isSelected =
                 activeCategory.toLowerCase() === cat.toLowerCase();
@@ -136,14 +136,14 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
                 <motion.button
                   type="button"
                   key={cat}
-                  whileHover={{ x: 3 }}
+                  whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleCategoryChange(cat)}
                   className={cn(
-                    "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-between font-display",
+                    "w-full text-left px-3.5 py-2 rounded-xl text-xs transition-colors cursor-pointer flex items-center justify-between",
                     isSelected
-                      ? "bg-landing-primary text-white shadow-md shadow-landing-primary/25"
-                      : "text-landing-dark/80 hover:bg-landing-primary-light hover:text-landing-primary",
+                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted font-medium",
                   )}
                 >
                   <span>{cat}</span>
@@ -155,9 +155,9 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
         </div>
 
         {/* Price Range Filter */}
-        <div className="space-y-3 pt-4 border-t border-landing-primary/10">
-          <h4 className="text-[10px]  tracking-[0.2em] uppercase text-landing-primary font-display">
-            Price Range ($)
+        <div className="space-y-3 pt-4 border-t border-border">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Price Range (₹)
           </h4>
           <form onSubmit={handlePriceApply} className="space-y-3">
             <div className="flex items-center gap-2">
@@ -166,22 +166,22 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
                 placeholder="Min"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs font-bold border border-landing-primary/20 rounded-xl bg-white text-landing-dark placeholder:text-landing-primary-muted/60 focus:outline-none focus:ring-2 focus:ring-landing-primary/20 focus:border-landing-primary transition-all"
+                className="w-full px-3.5 py-2 text-xs font-medium border border-border rounded-xl bg-muted/40 text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
-              <span className="text-landing-primary-muted text-xs font-bold">-</span>
+              <span className="text-muted-foreground text-xs font-medium">-</span>
               <input
                 type="number"
                 placeholder="Max"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs font-bold border border-landing-primary/20 rounded-xl bg-white text-landing-dark placeholder:text-landing-primary-muted/60 focus:outline-none focus:ring-2 focus:ring-landing-primary/20 focus:border-landing-primary transition-all"
+                className="w-full px-3.5 py-2 text-xs font-medium border border-border rounded-xl bg-muted/40 text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             <motion.button
               type="submit"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3 rounded-xl bg-landing-dark hover:bg-landing-primary text-white text-[11px] uppercase tracking-[0.14em] shadow-md transition-colors cursor-pointer"
+              className="w-full py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-colors cursor-pointer shadow-xs"
             >
               Apply Price
             </motion.button>

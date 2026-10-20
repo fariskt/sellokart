@@ -35,21 +35,21 @@ export function SearchBar() {
   return (
     <form
       onSubmit={handleSearchSubmit}
-      className="relative w-full max-w-md select-none font-display"
+      className="relative w-full max-w-md select-none"
     >
-      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-landing-primary">
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground">
         <Search className="w-4 h-4" />
       </div>
       <input
         type="text"
-        placeholder="Search collection..."
+        placeholder="Search products..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full pl-11 pr-28 py-3 text-xs font-bold rounded-full bg-white/95 border border-landing-primary/20 text-landing-dark placeholder:text-landing-primary-muted/70 focus:outline-none focus:ring-2 focus:ring-landing-primary/20 focus:border-landing-primary transition-all shadow-xs"
+        className="w-full pl-11 pr-24 py-2.5 text-xs font-medium rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-2xs"
       />
       <button
         type="submit"
-        className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-full bg-landing-primary hover:bg-landing-primary-hover text-white text-[10px]  tracking-[0.12em] uppercase transition-all cursor-pointer shadow-sm active:scale-95"
+        className="absolute right-1.5 top-1.5 bottom-1.5 px-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold tracking-wider uppercase transition-all cursor-pointer shadow-xs active:scale-95"
       >
         Search
       </button>

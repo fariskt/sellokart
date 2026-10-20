@@ -26,10 +26,10 @@ export function SortDropdown() {
   };
 
   return (
-    <div className="flex items-center space-x-2.5 select-none font-display">
+    <div className="flex items-center space-x-2 select-none">
       <label
         htmlFor="sort-select"
-        className="text-[11px]  tracking-[0.1em] uppercase text-landing-primary-muted whitespace-nowrap"
+        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap"
       >
         Sort by:
       </label>
@@ -37,7 +37,7 @@ export function SortDropdown() {
         id="sort-select"
         value={activeSort}
         onChange={handleSortChange}
-        className="px-4 py-2.5 text-xs font-bold border border-landing-primary/20 bg-white/95 rounded-full text-landing-dark focus:outline-none focus:ring-2 focus:ring-landing-primary/20 focus:border-landing-primary transition-all cursor-pointer shadow-xs"
+        className="px-3.5 py-1.5 text-xs font-medium border border-border bg-card rounded-full text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer shadow-2xs"
       >
         <option value="popular">Most Popular</option>
         <option value="price-asc">Price: Low to High</option>

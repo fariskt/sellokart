@@ -28,13 +28,13 @@ function checkRateLimit(userId: string): boolean {
 const createOrderSchema = z.object({
   customer: z.object({
     name: z.string().min(2, "Full name must be at least 2 characters").max(100),
-    email: z.string().email("Invalid email address"),
+    email: z.string().email("Invalid email address").optional().or(z.literal("")),
     phone: z.string().min(10, "Phone number must be at least 10 digits").max(15),
   }),
   shippingAddress: z.object({
     addressLine1: z.string().min(3, "Address is required"),
     addressLine2: z.string().optional().nullable(),
-    city: z.string().min(2, "City is required"),
+    city: z.string().optional().nullable().default(""),
     state: z.string().min(2, "State is required"),
     postalCode: z.string().min(4, "Valid postal code is required"),
     country: z.string().default("India"),

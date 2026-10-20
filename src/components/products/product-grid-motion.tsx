@@ -9,7 +9,7 @@ interface ProductGridMotionProps {
 
 export function ProductGridMotion({ products }: ProductGridMotionProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-stretch">
       {products.map((prod, idx) => (
         <motion.div
           key={prod.id}
@@ -20,7 +20,7 @@ export function ProductGridMotion({ products }: ProductGridMotionProps) {
             delay: Math.min(idx * 0.04, 0.35),
             ease: "easeOut",
           }}
-          className="h-[390px]"
+          className="h-full flex flex-col"
         >
           <ProductCard product={prod} />
         </motion.div>

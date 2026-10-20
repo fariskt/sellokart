@@ -11,10 +11,10 @@ export interface PricingInput {
   couponCode?: string | null;
   userEmail?: string | null;
   destination?: {
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
   } | null;
 }
 
