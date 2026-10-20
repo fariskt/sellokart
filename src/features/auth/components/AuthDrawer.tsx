@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { Logo } from "@/components/common/Logo";
 import {
   Sheet,
   SheetContent,
@@ -44,14 +45,7 @@ export function AuthDrawer({
         {/* Drawer Top Bar */}
         <div className="w-full px-6 pt-5 pb-3 border-b border-landing-primary/10 flex items-center justify-between shrink-0 bg-white/70 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <Image
-              src="/logo4.png"
-              alt="Sellokart"
-              width={140}
-              height={40}
-              className="h-9 w-auto object-contain"
-              priority
-            />
+            <Logo variant="landing" />
           </div>
           <SheetClose asChild>
             <button

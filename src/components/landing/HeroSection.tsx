@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   ChevronLeft,
@@ -98,15 +98,17 @@ export function HeroSection() {
 
               {/* Pebble Pill Action Buttons */}
               <div className="flex flex-wrap items-center gap-3.5 mb-10">
-                <Link
-                  href="/products"
-                  className="rounded-full bg-white text-landing-dark hover:bg-landing-accent-light px-7 py-3.5 sm:py-4 inline-flex items-center gap-3 font-display font-bold text-sm tracking-wide shadow-xl hover:shadow-2xl transition-all group cursor-pointer"
-                >
-                  <span>Shop Collection</span>
-                  <span className="w-7 h-7 rounded-full bg-landing-dark text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                    <ArrowRight size={13} />
-                  </span>
-                </Link>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    href="/products"
+                    className="rounded-full bg-white text-landing-dark hover:bg-landing-accent-light px-7 py-3.5 sm:py-4 inline-flex items-center gap-3 font-display font-bold text-sm tracking-wide shadow-xl hover:shadow-2xl transition-all group cursor-pointer"
+                  >
+                    <span>Shop Collection</span>
+                    <span className="w-7 h-7 rounded-full bg-landing-dark text-white flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                      <ArrowRight size={13} />
+                    </span>
+                  </Link>
+                </motion.div>
               </div>
 
               {/* Pebble Slider Pagination Controls */}
@@ -125,28 +127,32 @@ export function HeroSection() {
                 </div>
                 {/* Arrow navigation buttons */}
                 <div className="flex items-center gap-1.5 ml-2">
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={() =>
                       setActiveSlide(
                         (prev) => (prev - 1 + slides.length) % slides.length
                       )
                     }
-                    className="w-8 h-8 rounded-full border border-white/30 text-white hover:bg-white hover:text-landing-dark flex items-center justify-center transition-all cursor-pointer"
+                    className="w-8 h-8 rounded-full border border-white/30 text-white hover:bg-white hover:text-landing-dark flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Previous slide"
                   >
                     <ChevronLeft size={16} />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={() =>
                       setActiveSlide((prev) => (prev + 1) % slides.length)
                     }
-                    className="w-8 h-8 rounded-full border border-white/30 text-white hover:bg-white hover:text-landing-dark flex items-center justify-center transition-all cursor-pointer"
+                    className="w-8 h-8 rounded-full border border-white/30 text-white hover:bg-white hover:text-landing-dark flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Next slide"
                   >
                     <ChevronRight size={16} />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -155,7 +161,7 @@ export function HeroSection() {
       </section>
 
       {/* Signature Marquee Ticker */}
-      <div className="relative w-full bg-gradient-to-r from-[#9ef2df] via-[#b6e8fa] to-[#d6dcfe] border-y border-[#1e3d48]/10 py-2.5 sm:py-3 overflow-hidden select-none">
+      <div className="relative w-full bg-white border-y border-[#0B422C] py-2.5 sm:py-3 overflow-hidden select-none">
         <div className="flex items-center whitespace-nowrap gap-8 sm:gap-10 animate-[marquee_25s_linear_infinite]">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="flex items-center gap-8 sm:gap-10 shrink-0">

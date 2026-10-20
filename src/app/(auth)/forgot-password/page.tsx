@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
+import { Logo } from "@/components/common/Logo";
 import { ArrowRight, ArrowLeft, Mail, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 
 export default function ForgotPasswordPage() {
@@ -47,16 +48,7 @@ export default function ForgotPasswordPage() {
 
       {/* Top Header Navigation */}
       <header className="w-full max-w-[1400px] mx-auto flex items-center justify-between py-2 sm:py-4 z-20">
-        <Link href="/" className="inline-flex items-center transition-transform hover:scale-105 duration-200">
-          <Image
-            src="/logo4.png"
-            alt="Sellokart"
-            width={150}
-            height={38}
-            className="h-8 sm:h-9 w-auto object-contain"
-            priority
-          />
-        </Link>
+        <Logo variant="landing" />
         <Link
           href="/login"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-landing-primary/15 bg-white/70 hover:bg-white text-xs font-bold text-landing-dark hover:text-landing-primary transition-all font-display shadow-xs backdrop-blur-md cursor-pointer"

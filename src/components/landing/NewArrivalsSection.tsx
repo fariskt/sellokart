@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ProductCard } from "./ProductCard";
 import { useLandingProducts } from "@/features/products/hooks/useLandingProducts";
 import { formatLandingProduct } from "@/features/products/lib/formatLandingProduct";
@@ -20,14 +21,20 @@ export function NewArrivalsSection() {
 
   return (
     <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
-      {/* Pebble Header with Tab Pills */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 sm:mb-14">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 sm:mb-14"
+      >
         <div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl  tracking-tight text-landing-dark font-display leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl tracking-tight text-landing-dark font-display leading-tight">
             Latest Products
           </h2>
         </div>
-      </div>
+      </motion.div>
 
       {/* Product Grid */}
       {isLoading ? (
@@ -41,22 +48,43 @@ export function NewArrivalsSection() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-7">
-          {products.map((product) => (
-            <div key={product.id} className="min-h-[380px]">
+          {products.map((product, idx) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{
+                duration: 0.45,
+                delay: Math.min(idx * 0.05, 0.35),
+                ease: "easeOut",
+              }}
+              className="min-h-[380px]"
+            >
               <ProductCard product={product} />
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
-      <div className="mt-12 pt-8 border-t border-landing-primary/10 flex items-center justify-end gap-6">
-        <Link
-          href="/products"
-          className="rounded-full bg-landing-dark text-white hover:bg-landing-primary px-7 py-3 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2.5 font-display transition-all cursor-pointer shadow-sm"
-        >
-          <span>View All Products</span>
-          <ArrowRight size={14} />
-        </Link>
-      </div>
+
+      {/* Footer Link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mt-12 pt-8 border-t border-landing-primary/10 flex items-center justify-end gap-6"
+      >
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Link
+            href="/products"
+            className="rounded-full bg-landing-dark text-white hover:bg-landing-primary px-7 py-3 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2.5 font-display transition-colors cursor-pointer shadow-sm"
+          >
+            <span>View All Products</span>
+            <ArrowRight size={14} />
+          </Link>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

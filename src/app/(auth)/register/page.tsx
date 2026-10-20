@@ -7,6 +7,7 @@ import { signup } from "@/features/auth/actions";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
+import { Logo } from "@/components/common/Logo";
 import {
   ArrowRight,
   ArrowLeft,
@@ -74,16 +75,7 @@ function RegisterContent() {
 
       {/* Top Header Navigation */}
       <header className="w-full max-w-[1400px] mx-auto flex items-center justify-between py-2 sm:py-0 z-20">
-        <Link href="/" className="inline-flex items-center transition-transform hover:scale-105 duration-200">
-          <Image
-            src="/logo4.png"
-            alt="Sellokart"
-            width={250}
-            height={70}
-            className="h-20 sm:h-28 w-full object-cover"
-            priority
-          />
-        </Link>
+        <Logo variant="landing" />
         <Link
           href={isCheckoutRedirect ? "/cart" : "/"}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-landing-primary/15 bg-white/70 hover:bg-white text-xs font-bold text-landing-dark hover:text-landing-primary transition-all font-display shadow-xs backdrop-blur-md cursor-pointer"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { FormattedLandingProduct } from "@/features/products/lib/formatLandingProduct";
 import { useCartStore } from "@/store/cart-store";
 
@@ -69,12 +70,16 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="group bg-white rounded-xl p-2 sm:p-3.5 border border-slate-200/90 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col md:justify-between md:h-full">
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="group bg-white rounded-xl p-2 sm:p-3.5 border border-slate-200/90 shadow-xs hover:shadow-xl transition-shadow duration-300 flex flex-col md:justify-between md:h-full h-full"
+    >
       <div>
         {/* Rounded Image Frame */}
-        <Link href={href} className="block">
+        <Link href={href} className="block overflow-hidden rounded-md">
           <div className="relative w-full aspect-square rounded-md overflow-hidden bg-[#f7f7f9] flex items-center justify-center">
-            <img
+            <motion.img
               src={product?.image || "/placeholder-image.jpg"}
               alt={product?.name || "Product"}
               className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
@@ -136,14 +141,39 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Action Buttons Row */}
       <div className="flex items-center gap-2 mt-3.5 pt-1 px-1">
-        <button
+        <motion.button
           type="button"
           onClick={handleAddToCart}
-          className="flex-1 py-2.5 px-3 rounded-full bg-black hover:bg-slate-800 text-white text-xs sm:text-[13px] font-semibold text-center transition-all cursor-pointer shadow-xs active:scale-95"
+          whileTap={{ scale: 0.96 }}
+          className="flex-1 py-2.5 px-3 rounded-full bg-black hover:bg-slate-800 text-white text-xs sm:text-[13px] font-semibold text-center transition-colors cursor-pointer shadow-xs select-none"
         >
-          {added ? "Added!" : "Add to Cart"}
-        </button>
+          <AnimatePresence mode="wait" initial={false}>
+            {added ? (
+              <motion.span
+                key="added"
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -3 }}
+                transition={{ duration: 0.15 }}
+                className="inline-block"
+              >
+                Added!
+              </motion.span>
+            ) : (
+              <motion.span
+                key="add"
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -3 }}
+                transition={{ duration: 0.15 }}
+                className="inline-block"
+              >
+                Add to Cart
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }

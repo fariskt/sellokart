@@ -305,15 +305,9 @@ export function Navbar() {
           {/* Left Side: Desktop Nav or Context Badge if on Sidebar page */}
           {hasSidebar ? (
             <div className="flex items-center gap-3 shrink-0">
-              <Link href="/" className="flex md:hidden items-center">
-                <Image
-                  src="/logo4.png"
-                  alt="Sellokart-Logo"
-                  width={140}
-                  height={140}
-                  className="h-7 sm:h-8 w-auto object-contain"
-                />
-              </Link>
+              <div className="flex md:hidden items-center">
+                <Logo variant="admin" />
+              </div>
               <div className="hidden md:flex items-center gap-3">
                 <Breadcrumb>
                   <BreadcrumbList className="text-xs font-medium">
@@ -375,15 +369,7 @@ export function Navbar() {
           {/* Center Logo (on non-sidebar pages) */}
           {!hasSidebar && (
             <div className="flex items-center">
-              <Link href="/">
-                <Image
-                  src="/logo4.png"
-                  alt="Sellokart-Logo"
-                  width={160}
-                  height={160}
-                  className="h-8 sm:h-20 w-auto object-contain"
-                />
-              </Link>
+              <Logo variant="landing" />
             </div>
           )}
 

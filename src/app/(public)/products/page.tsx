@@ -4,6 +4,8 @@ import { SortDropdown } from "@/components/products/sort-dropdown";
 import { SearchBar } from "@/components/products/search-bar";
 import { Pagination } from "@/components/products/pagination";
 import { ProductCard } from "@/components/landing/ProductCard";
+import { ProductGridMotion } from "@/components/products/product-grid-motion";
+import { ProductsHeaderMotion } from "@/components/products/products-header-motion";
 import { getLandingProducts } from "@/features/products/lib/product.action";
 import { getCategoriesPaginated } from "@/features/products/lib/categories.action";
 import { formatCatalogProduct } from "@/features/products/lib/formatCatalogProduct";
@@ -107,17 +109,17 @@ export default async function ProductsPage({
     <div className="bg-landing-hero-bg min-h-screen pt-24 pb-28">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
         {/* Title & Search Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-landing-primary/10 mb-10">
+        <ProductsHeaderMotion>
           <div>
             <h1
-              className="leading-none tracking-tight  text-landing-dark font-display"
+              className="leading-none tracking-tight text-landing-dark font-display"
               style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.8rem)" }}
             >
               Our Products
             </h1>
           </div>
           <SearchBar />
-        </div>
+        </ProductsHeaderMotion>
 
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -144,13 +146,7 @@ export default async function ProductsPage({
 
             {/* Product Grid */}
             {paginatedProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {paginatedProducts.map((prod) => (
-                  <div key={prod.id} className="h-[390px]">
-                    <ProductCard product={prod} />
-                  </div>
-                ))}
-              </div>
+              <ProductGridMotion products={paginatedProducts} />
             ) : (
               <div className="text-center py-20 bg-white/70 backdrop-blur-md border border-dashed border-landing-primary/20 rounded-3xl p-8">
                 <span className="text-xl  text-landing-dark block mb-2 font-display">

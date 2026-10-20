@@ -54,7 +54,7 @@ export function Sidebar() {
           isExpanded ? "px-3 justify-between" : "px-0 justify-center"
         )}>
           {isExpanded && (
-            <Logo />
+            <Logo variant="admin" />
           )}
           <button
             onClick={(e) => {

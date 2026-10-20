@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface FiltersSidebarProps {
   categories: string[];
@@ -132,12 +133,14 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
               const isSelected =
                 activeCategory.toLowerCase() === cat.toLowerCase();
               return (
-                <button
+                <motion.button
                   type="button"
                   key={cat}
+                  whileHover={{ x: 3 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleCategoryChange(cat)}
                   className={cn(
-                    "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-between font-display",
+                    "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-between font-display",
                     isSelected
                       ? "bg-landing-primary text-white shadow-md shadow-landing-primary/25"
                       : "text-landing-dark/80 hover:bg-landing-primary-light hover:text-landing-primary",
@@ -145,7 +148,7 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
                 >
                   <span>{cat}</span>
                   {isSelected && <X className="w-3.5 h-3.5" />}
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -174,12 +177,14 @@ export function FiltersSidebar({ categories }: FiltersSidebarProps) {
                 className="w-full px-3.5 py-2.5 text-xs font-bold border border-landing-primary/20 rounded-xl bg-white text-landing-dark placeholder:text-landing-primary-muted/60 focus:outline-none focus:ring-2 focus:ring-landing-primary/20 focus:border-landing-primary transition-all"
               />
             </div>
-            <button
+            <motion.button
               type="submit"
-              className="w-full py-3 rounded-xl bg-landing-dark hover:bg-landing-primary text-white text-[11px]  uppercase tracking-[0.14em] shadow-md transition-all cursor-pointer active:scale-98"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 rounded-xl bg-landing-dark hover:bg-landing-primary text-white text-[11px] uppercase tracking-[0.14em] shadow-md transition-colors cursor-pointer"
             >
               Apply Price
-            </button>
+            </motion.button>
           </form>
         </div>
       </div>
