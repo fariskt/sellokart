@@ -129,7 +129,7 @@ export default function CheckoutPage() {
     setMounted(true);
 
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
+    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
       if (!authUser) {
         router.replace("/login?next=/checkout");
         return;
@@ -149,34 +149,36 @@ export default function CheckoutPage() {
       }
 
       // Fetch customer addresses if logged in
-      supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .order("is_default", { ascending: false })
-        .then(({ data }) => {
-          if (data && data.length > 0) {
-            const addresses = data as SavedAddress[];
-            setSavedAddresses(addresses);
-            const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
-            if (defaultAddr) {
-              setSelectedAddressId(defaultAddr.id);
-              if (defaultAddr.full_name) {
-                const parts = defaultAddr.full_name.trim().split(" ");
-                setFirstName(parts[0] || "");
-                setLastName(parts.slice(1).join(" ") || "");
-              }
-              if (defaultAddr.phone) setPhone(defaultAddr.phone);
-              setDescription(defaultAddr.address_line_1);
-              setCity(defaultAddr.city);
-              setState(defaultAddr.state);
-              setZipCode(defaultAddr.postal_code);
+      try {
+        const { data } = await supabase
+          .from("addresses")
+          .select("*")
+          .eq("user_id", authUser.id)
+          .order("is_default", { ascending: false });
+
+        if (data && data.length > 0) {
+          const addresses = data as SavedAddress[];
+          setSavedAddresses(addresses);
+          const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+          if (defaultAddr) {
+            setSelectedAddressId(defaultAddr.id);
+            if (defaultAddr.full_name) {
+              const parts = defaultAddr.full_name.trim().split(" ");
+              setFirstName(parts[0] || "");
+              setLastName(parts.slice(1).join(" ") || "");
             }
+            if (defaultAddr.phone) setPhone(defaultAddr.phone);
+            setDescription(defaultAddr.address_line_1);
+            setCity(defaultAddr.city);
+            setState(defaultAddr.state);
+            setZipCode(defaultAddr.postal_code);
           }
-        })
-        .finally(() => {
-          setIsLoadingAddresses(false);
-        });
+        }
+      } catch (err) {
+        console.error("Failed to fetch customer addresses:", err);
+      } finally {
+        setIsLoadingAddresses(false);
+      }
     });
   }, [router]);
 
